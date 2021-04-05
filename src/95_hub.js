@@ -1221,19 +1221,27 @@ let hub_props = {
 		if (this.engine_start(filename)) {
 			config.path = filename;
 			this.save_config();
+		} else {
+			alert("Failed to start this engine.");
+			this.engine.send_ack_engine();
 		}
 	},
 
 	restart_engine: function() {
 		this.engine.warn_send_fail = false;			// Don't want "send failed" warnings from old engine any more.
 		this.set_behaviour("halt");
-		this.engine_start(config.path);
+		if (this.engine_start(config.path)) {
+			// pass
+		} else {
+			alert("Failed to restart the engine.");
+			this.engine.send_ack_engine();
+		}
 	},
 
-	engine_start: function(filepath) {
+	engine_start: function(filepath, blue_fail) {
 
 		if (!filepath || typeof filepath !== "string" || fs.existsSync(filepath) === false) {
-			if (!load_err1 && !load_err2) {															// Globals in start.js - they take priority if set.
+			if (blue_fail && !load_err1 && !load_err2) {
 				this.err_receive(`<span class="blue">${messages.engine_not_present}</span>`);
 				this.err_receive("");
 			}
@@ -1243,8 +1251,13 @@ let hub_props = {
 		let args = engineconfig[filepath] ? engineconfig[filepath].args : [];
 
 		let new_engine = NewEngine(this);
-		if (new_engine.setup(filepath, args, this) === false) {
-			console.log("While trying to start engine, .setup() failed.");
+		let success = new_engine.setup(filepath, args, this);
+
+		if (success === false) {
+			if (blue_fail && !load_err1 && !load_err2) {
+				this.err_receive(`<span class="blue">${messages.engine_failed_to_start}</span>`);
+				this.err_receive("");
+			}
 			return false;
 		}
 
@@ -1940,16 +1953,18 @@ let hub_props = {
 						this.show_fast_engine_chooser();
 					}
 				} else {									// Any other click
-					if (fs.existsSync(filepath)) {
-						this.switch_engine(filepath);
-						this.hide_fullbox();
-					} else {
-						alert("Engine was not found.");
-					}
+					this.switch_engine(filepath);
+					this.hide_fullbox();
 				}
 			}
 			return;
 		}
+	},
+
+	promotiontable_click: function(event) {
+		let s = EventPathString(event, "promotion_chooser_");
+		this.hide_promotiontable();
+		this.move(s);
 	},
 
 	handle_drop: function(event) {
@@ -2456,7 +2471,7 @@ let hub_props = {
 		lines.push("");
 
 		for (let name of Object.keys(this.engine.sent_options)) {
-			lines.push(`${name}<br>  <span class="green">${this.engine.sent_options[name]}</span>`);
+			lines.push(`${name}<br>    <span class="green">${this.engine.sent_options[name]}</span>`);
 		}
 
 		fullbox_content.innerHTML = lines.join("<br>");
@@ -2504,28 +2519,14 @@ let hub_props = {
 
 	show_promotiontable: function(partial_move) {
 
-		promotiontable.innerHTML = "";
-
-		let tr = document.createElement("tr");
-		promotiontable.appendChild(tr);
-
 		let pieces = this.tree.node.board.active === "w" ? ["Q", "R", "B", "N"] : ["q", "r", "b", "n"];
 
 		for (let piece of pieces) {
-
-			let td = document.createElement("td");
+			let td = document.getElementsByClassName("promotion_" + piece.toLowerCase())[0];		// Our 4 TDs each have a unique class.
+			td.id = "promotion_chooser_" + partial_move + piece.toLowerCase();						// We store the actual move in the id.
 			td.width = config.square_size;
 			td.height = config.square_size;
 			td.style["background-image"] = images[piece].string_for_bg_style;
-
-			// This isn't a memory leak is it? The handlers are deleted when the element is deleted, right?
-
-			td.addEventListener("mousedown", () => {
-				this.hide_promotiontable();
-				this.move(partial_move + piece.toLowerCase());
-			});
-
-			tr.appendChild(td);
 		}
 
 		promotiontable.style.display = "block";

@@ -12,7 +12,7 @@ Log("===========================================================================
 Log(`Nibbler startup at ${new Date().toUTCString()}`);
 
 let hub = NewHub();
-hub.engine_start(config.path);		// This obliterates any error log, so must come before the following...
+hub.engine_start(config.path, true);
 
 if (load_err1) {
 	hub.err_receive(`<span class="blue">While loading config.json: ${load_err1}</span>`);
@@ -196,6 +196,10 @@ graph.addEventListener("mousedown", (event) => {
 
 statusbox.addEventListener("mousedown", (event) => {
 	hub.statusbox_click(event);
+});
+
+promotiontable.addEventListener("mousedown", (event) => {
+	hub.promotiontable_click(event);
 });
 
 document.addEventListener("wheel", (event) => {
