@@ -170,8 +170,7 @@ let hub_props = {
 		}
 
 		// Don't do anything if behaviour is already correct. But
-		// "halt" always triggers a behave() call for safety reasons,
-		// and "analysis_locked" needs to check if we're in a new position.
+		// "halt" always triggers a behave() call for safety reasons.
 
 		if (s === config.behaviour) {
 			switch (s) {
@@ -179,6 +178,11 @@ let hub_props = {
 				break;					// i.e. do NOT immediately return
 			case "analysis_locked":
 				if (this.leela_lock_node !== this.tree.node) {
+					break;				// i.e. do NOT immediately return
+				}
+				return;
+			case "analysis_free":
+				if (!this.engine.search_desired.node) {
 					break;				// i.e. do NOT immediately return
 				}
 				return;
