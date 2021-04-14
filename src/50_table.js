@@ -32,7 +32,7 @@ const table_prototype = {
 
 		// if (info.uci_nodes < this.eval_nodes) return;	// This can feel unintuitive.
 
-		this.eval = info.board.active === "w" ? info.value() : 1 - info.value();
+		this.eval = info.board.active === "w" ? info.cp / 100 : -info.cp / 100;
 		this.eval_nodes = info.uci_nodes;
 	},
 
@@ -149,14 +149,13 @@ const info_prototype = {
 		if (this.leelaish && this.n === 0) {
 			return "?";
 		}
-		let val = this.value();
-		if ((pov === "w" && this.board.active === "b") || (pov === "b" && this.board.active === "w")) {
-			val = 1 - val;
+		if (typeof this.mate === "number" && this.mate !== 0) {
+			return this.mate_string(pov);
 		}
-		return (val * 100).toFixed(dp);
+	 	return this.cp_string(pov, dp);
 	},
 
-	cp_string: function(pov) {
+	cp_string: function(pov, dp=2) {
 		if (!this.__touched || typeof this.cp !== "number") {
 			return "?";
 		}
@@ -165,9 +164,9 @@ const info_prototype = {
 		}
 		let cp = this.cp;
 		if ((pov === "w" && this.board.active === "b") || (pov === "b" && this.board.active === "w")) {
-			cp = 0 - cp;
+			cp = -cp;
 		}
-		let ret = (cp / 100).toFixed(2);
+		let ret = (cp / 100).toFixed(dp);
 		if (cp > 0) {
 			ret = "+" + ret;
 		}
@@ -183,9 +182,9 @@ const info_prototype = {
 			mate = 0 - mate;
 		}
 		if (mate < 0) {
-			return `(-M${0 - mate})`;
+			return `-#${0 - mate}`;
 		} else {
-			return `(+M${mate})`;
+			return `#${mate}`;
 		}
 	},
 

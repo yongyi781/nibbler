@@ -345,20 +345,20 @@ const node_prototype = {
 		if (board.no_moves()) {
 			if (board.king_in_check()) {
 				this.__terminal = "Checkmate";						// The PGN writer checks for this exact string! (Lame...)
-				this.table.eval = board.active === "w" ? 0 : 1;
+				this.table.eval = board.active === "w" ? -320 : 320;
 			} else {
 				this.__terminal = "Stalemate";
-				this.table.eval = 0.5;
+				this.table.eval = 0;
 			}
 		} else if (board.insufficient_material()) {
 			this.__terminal = "Insufficient Material";
-			this.table.eval = 0.5;
+			this.table.eval = 0;
 		} else if (board.halfmove >= 100) {
 			this.__terminal = "50 Move Rule";
-			this.table.eval = 0.5;
+			this.table.eval = 0;
 		} else if (this.is_triple_rep()) {
 			this.__terminal = "Triple Repetition";
-			this.table.eval = 0.5;
+			this.table.eval = 0;
 		} else {
 			this.__terminal = "";
 		}

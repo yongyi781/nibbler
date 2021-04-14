@@ -39,6 +39,7 @@ body {
 
 .full_growth {
 	flex-grow: 100;			/* The actual number only matters if compared to other flex-grow havers */
+	min-width: 0;
 }
 
 #boardsquares {
@@ -135,11 +136,11 @@ input[type=text]:focus {
 	color: #cccccc;						/* only used for Lc0 stderr output at startup */
 	font-family: Consolas, monospace;
 	margin-bottom: 10px;
-	overflow-x: hidden;
-	overflow-y: auto;
+	overflow-x: scroll;
+	overflow-y: scroll;
 	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
-	white-space: pre-wrap;
+	white-space: nowrap;
 }
 
 #movelist {
@@ -155,6 +156,7 @@ input[type=text]:focus {
 
 #graphbox {
 	pointer-events: auto;
+	background-color: #111;
 }
 
 #graph {

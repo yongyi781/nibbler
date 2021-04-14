@@ -339,7 +339,7 @@ function menu_build() {
 				},
 				{
 					label: "Write PGN to clipboard",
-					accelerator: "CommandOrControl+K",
+					accelerator: "CommandOrControl+Shift+C",
 					click: () => {
 						win.webContents.send("call", "pgn_to_clipboard");
 					}
@@ -509,17 +509,14 @@ function menu_build() {
 				},
 				{
 					label: "Cut",
-					accelerator: "CommandOrControl+X",
 					role: "cut",
 				},
 				{
 					label: "Copy",
-					accelerator: "CommandOrControl+C",
 					role: "copy",
 				},
 				{
 					label: "Paste",
-					accelerator: "CommandOrControl+V",
 					role: "paste",
 				},
 				{
@@ -527,7 +524,6 @@ function menu_build() {
 				},
 				{
 					label: "Quit",
-					accelerator: "CommandOrControl+Q",
 					role: "quit"
 				},
 			]
@@ -637,7 +633,7 @@ function menu_build() {
 				},
 				{
 					label: "Promote line to main line",
-					accelerator: "CommandOrControl+L",
+					accelerator: "CommandOrControl+D",
 					click: () => {
 						win.webContents.send("call", "promote_to_main_line");
 					}
@@ -654,19 +650,21 @@ function menu_build() {
 				},
 				{
 					label: "Delete node",
-					accelerator: "CommandOrControl+Backspace",
+					accelerator: "Backspace",
 					click: () => {
 						win.webContents.send("call", "delete_node");
 					}
 				},
 				{
 					label: "Delete children",
+					accelerator: "CommandOrControl+Shift+Backspace",
 					click: () => {
 						win.webContents.send("call", "delete_children");
 					}
 				},
 				{
 					label: "Delete siblings",
+					accelerator: "CommandOrControl+Backspace",
 					click: () => {
 						win.webContents.send("call", "delete_siblings");
 					}
@@ -676,6 +674,7 @@ function menu_build() {
 				},
 				{
 					label: "Delete ALL other lines",
+					accelerator: "CommandOrControl+W",
 					click: () => {
 						win.webContents.send("call", "delete_other_lines");
 					}
@@ -704,7 +703,7 @@ function menu_build() {
 			submenu: [
 				{
 					label: "Go",
-					accelerator: "CommandOrControl+G",
+					accelerator: "G",
 					click: () => {
 						win.webContents.send("call", {
 							fn: "set_behaviour",
@@ -714,7 +713,7 @@ function menu_build() {
 				},
 				{
 					label: "Go and lock engine",
-					accelerator: "CommandOrControl+Shift+G",
+					accelerator: "Shift+G",
 					click: () => {
 						win.webContents.send("call", {
 							fn: "set_behaviour",
@@ -733,7 +732,7 @@ function menu_build() {
 				},
 				{
 					label: "Halt",
-					accelerator: "CommandOrControl+H",
+					accelerator: "H",
 					click: () => {
 						win.webContents.send("call", {
 							fn: "set_behaviour",
@@ -977,7 +976,7 @@ function menu_build() {
 			submenu: [
 				{
 					label: "Flip board",
-					accelerator: "CommandOrControl+F",
+					accelerator: "F",
 					click: () => {
 						win.webContents.send("call", {
 							fn: "toggle",
@@ -990,6 +989,7 @@ function menu_build() {
 				},
 				{
 					label: "Arrows",
+					accelerator: "A",
 					type: "checkbox",
 					checked: config.arrows_enabled,
 					click: () => {
@@ -1053,7 +1053,6 @@ function menu_build() {
 							label: "Winrate",
 							type: "checkbox",
 							checked: config.arrowhead_type === 0,
-							accelerator: "F5",
 							click: () => {
 								set_checks("Display", "Arrowhead type", "Winrate");
 								win.webContents.send("set", {
@@ -1066,7 +1065,6 @@ function menu_build() {
 							label: "Node %",
 							type: "checkbox",
 							checked: config.arrowhead_type === 1,
-							accelerator: "F6",
 							click: () => {
 								set_checks("Display", "Arrowhead type", "Node %");
 								win.webContents.send("set", {
@@ -1079,7 +1077,6 @@ function menu_build() {
 							label: "Policy",
 							type: "checkbox",
 							checked: config.arrowhead_type === 2,
-							accelerator: "F7",
 							click: () => {
 								set_checks("Display", "Arrowhead type", "Policy");
 								win.webContents.send("set", {
@@ -1092,7 +1089,6 @@ function menu_build() {
 							label: "MultiPV rank",
 							type: "checkbox",
 							checked: config.arrowhead_type === 3,
-							accelerator: "F8",
 							click: () => {
 								set_checks("Display", "Arrowhead type", "MultiPV rank");
 								win.webContents.send("set", {
@@ -1237,6 +1233,18 @@ function menu_build() {
 				{
 					label: "Arrow filter (others)",
 					submenu: [
+						{
+							label: "Diff < 100%",
+							type: "checkbox",
+							checked: config.ab_filter_threshold === 1,
+							click: () => {
+								set_checks("Display", "Arrow filter (others)", "Diff < 100%");
+								win.webContents.send("set", {
+									key: "ab_filter_threshold",
+									value: 1
+								});
+							}
+						},
 						{
 							label: "Diff < 15%",
 							type: "checkbox",
@@ -1447,7 +1455,6 @@ function menu_build() {
 				},
 				{
 					label: "Draw PV on mouseover",
-					accelerator: "CommandOrControl+D",
 					type: "checkbox",
 					checked: config.hover_draw,
 					click: () => {
@@ -1891,7 +1898,7 @@ function menu_build() {
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_arrow_size",
-									args: [24, 32, 40]
+									args: [7, 24, 17]
 								});
 							}
 						},
@@ -1900,7 +1907,7 @@ function menu_build() {
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_arrow_size",
-									args: [16, 24, 32]
+									args: [6, 22, 16]
 								});
 							}
 						},
@@ -1909,7 +1916,7 @@ function menu_build() {
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_arrow_size",
-									args: [12, 18, 24]
+									args: [5, 20, 15]
 								});
 							}
 						},
@@ -1918,7 +1925,16 @@ function menu_build() {
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_arrow_size",
-									args: [8, 12, 18]
+									args: [4, 16, 13]
+								});
+							}
+						},
+						{
+							label: "Favorite",
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_arrow_size",
+									args: [4, 16, 13]
 								});
 							}
 						},
@@ -3180,37 +3196,13 @@ function menu_build() {
 					label: "MultiPV",
 					submenu: [
 						{
-							label: "5",
+							label: "1",
 							type: "checkbox",
 							checked: false,
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_uci_option_permanent",
-									args: ["MultiPV", 5]
-								});
-								// Will receive an ack IPC which sets menu checks.
-							}
-						},
-						{
-							label: "4",
-							type: "checkbox",
-							checked: false,
-							click: () => {
-								win.webContents.send("call", {
-									fn: "set_uci_option_permanent",
-									args: ["MultiPV", 4]
-								});
-								// Will receive an ack IPC which sets menu checks.
-							}
-						},
-						{
-							label: "3",
-							type: "checkbox",
-							checked: false,
-							click: () => {
-								win.webContents.send("call", {
-									fn: "set_uci_option_permanent",
-									args: ["MultiPV", 3]
+									args: ["MultiPV", 1]
 								});
 								// Will receive an ack IPC which sets menu checks.
 							}
@@ -3228,13 +3220,109 @@ function menu_build() {
 							}
 						},
 						{
-							label: "1",
+							label: "3",
 							type: "checkbox",
 							checked: false,
 							click: () => {
 								win.webContents.send("call", {
 									fn: "set_uci_option_permanent",
-									args: ["MultiPV", 1]
+									args: ["MultiPV", 3]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "4",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 4]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "5",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 5]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "6",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 6]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "7",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 7]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "8",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 8]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "9",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 9]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "10",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 10]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "500",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 500]
 								});
 								// Will receive an ack IPC which sets menu checks.
 							}

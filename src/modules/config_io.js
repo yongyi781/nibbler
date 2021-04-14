@@ -43,10 +43,7 @@ exports.defaults = {
 	"active_square": "#66aaaa",
 	"move_squares_with_alpha": "#ffff0026",
 
-	"best_colour": "#66aaaa",
-	"good_colour": "#66aa66",
-	"bad_colour": "#cccc66",
-	"terrible_colour": "#cc6666",
+	"colors": {},
 	"actual_move_colour": "#cc9966",
 
 	"searchmoves_buttons": true,

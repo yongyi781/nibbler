@@ -1773,11 +1773,10 @@ let hub_props = {
 	},
 
 	boardfriends_click: function(event) {
-
 		let s = EventPathString(event, "overlay_");
 		let p = Point(s);
 
-		if (!p) {
+		if (!p || event.button !== 0) {
 			return;
 		}
 
@@ -1820,7 +1819,7 @@ let hub_props = {
 
 	infobox_click: function(event) {
 
-		if (this.info_handler.clickers_are_valid_for_node(this.tree.node) === false) {
+		if (event.button !== 0 || this.info_handler.clickers_are_valid_for_node(this.tree.node) === false) {
 			return;
 		}
 
@@ -1842,7 +1841,6 @@ let hub_props = {
 		}
 
 		switch (config.pv_click_event) {
-
 		case 0:
 			return;
 
@@ -2122,7 +2120,7 @@ let hub_props = {
 	set_arrow_size: function(width, radius, fontsize) {
 		config.arrow_width = width;
 		config.arrowhead_radius = radius;
-		config.board_font = `${fontsize}px Arial`;
+		config.board_font = `bold ${fontsize}px Open Sans`;
 		this.save_config();
 	},
 

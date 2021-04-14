@@ -79,6 +79,7 @@ function NewGrapher() {
 		let last_x = null;
 		let last_y = null;
 		let last_n = null;
+		const factor = 0.2;
 
 		// This loop creates all edges that we are going to draw, and marks each
 		// edge as dashed or not...
@@ -91,7 +92,7 @@ function NewGrapher() {
 
 				let x = width * n / graph_length;
 
-				let y = (1 - e) * height;
+				let y = (1 - e * factor) * height / 2;
 				if (y < 1) y = 1;
 				if (y > height - 2) y = height - 2;
 

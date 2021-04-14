@@ -100,10 +100,11 @@ let arrow_props = {
 
 		for (let i = 0; i < info_list.length; i++) {
 
-			let loss = 0;
+			let loss = 1000;
 
-			if (typeof best_info.q === "number" && typeof info_list[i].q === "number") {
-				loss = best_info.value() - info_list[i].value();
+			if (info_list[i].depth > 0) {
+				loss = (best_info.cp - info_list[i].cp) / 100;
+				console.log(info_list[i]);
 			}
 
 			let ok = true;
@@ -148,11 +149,12 @@ let arrow_props = {
 			// Note that we don't set show_move_was_forced for ab mode.
 			// If it wasn't already set, then we have good info for this move.
 
-			if (mode === "ab") {
-				if (loss >= config.ab_filter_threshold) {
-					ok = false;
-				}
-			}
+			// No filter for now
+			// if (mode === "ab") {
+			// 	if (loss >= config.ab_filter_threshold) {
+			// 		ok = false;
+			// 	}
+			// }
 
 			// Go ahead, if the various tests don't filter the move out...
 
@@ -161,22 +163,29 @@ let arrow_props = {
 				let [x1, y1] = XY(info_list[i].move.slice(0, 2));
 				let [x2, y2] = XY(info_list[i].move.slice(2, 4));
 
-				let colour;
+				let colour = config.colors.blunder.color;
 
 				if (info_list[i].move === show_move && config.next_move_unique_colour) {
 					colour = config.actual_move_colour;
 				} else if (info_list[i].move === show_move && show_move_was_forced) {
-					colour = config.terrible_colour;
+					colour = config.colors.blunder.color;
 				} else if (info_list[i].__touched === false) {
-					colour = config.terrible_colour;
-				} else if (info_list[i] === best_info) {
-					colour = config.best_colour;
-				} else if (loss < config.bad_move_threshold) {
-					colour = config.good_colour;
-				} else if (loss < config.terrible_move_threshold) {
-					colour = config.bad_colour;
+					colour = config.colors.blunder.color;
+				} else if (best_info.mate !== 0) {
+					if (info_list[i].mate === best_info.mate) {
+						colour = config.colors.best.color;
+					} else if (Math.sign(info_list[i].mate) === Math.sign(best_info.mate)) {
+						colour = config.colors.good.color;
+					} else {
+						colour = config.colors.blunder.color;
+					}
 				} else {
-					colour = config.terrible_colour;
+					for (let [, v] of Object.entries(config.colors)) {
+						if (loss <= v.threshold) {
+							colour = v.color;
+							break;
+						}
+					}
 				}
 
 				let x_head_adjustment = 0;				// Adjust head of arrow for castling moves...
@@ -197,13 +206,18 @@ let arrow_props = {
 					}
 				}
 
+				let width = Math.min(config.arrow_width, Math.max(1, config.arrow_width * (1 - loss)));
+				if (info_list[i].mate !== best_info.mate && Math.sign(info_list[i].mate) === Math.sign(best_info.mate)) {
+					width = config.arrow_width / 2;
+				}
 				arrows.push({
 					colour: colour,
 					x1: x1,
 					y1: y1,
 					x2: x2 + x_head_adjustment,
 					y2: y2,
-					info: info_list[i]
+					info: info_list[i],
+					width: width
 				});
 
 				// If there is no one_click_move set for the target square, then set it
@@ -260,33 +274,15 @@ let arrow_props = {
 			return 0;
 		});
 
-		boardctx.lineWidth = config.arrow_width;
 		boardctx.textAlign = "center";
 		boardctx.textBaseline = "middle";
 		boardctx.font = config.board_font;
 
 		for (let o of arrows) {
-
 			let cc1 = CanvasCoords(o.x1, o.y1);
 			let cc2 = CanvasCoords(o.x2, o.y2);
 
-			if (o.info.move === show_move && config.next_move_outline) {		// Draw the outline at the layer just below the actual arrow.
-				boardctx.strokeStyle = "black";
-				boardctx.fillStyle = "black";
-				boardctx.lineWidth = config.arrow_width + 4;
-				boardctx.beginPath();
-				boardctx.moveTo(cc1.cx, cc1.cy);
-				boardctx.lineTo(cc2.cx, cc2.cy);
-				boardctx.stroke();
-				boardctx.lineWidth = config.arrow_width;
-
-				if (show_move_head) {			// This is the best layer to draw the head outline.
-					boardctx.beginPath();
-					boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius + 2, 0, 2 * Math.PI);
-					boardctx.fill();
-				}
-			}
-
+			boardctx.lineWidth = o.width;
 			boardctx.strokeStyle = o.colour;
 			boardctx.fillStyle = o.colour;
 			boardctx.beginPath();
@@ -295,24 +291,41 @@ let arrow_props = {
 			boardctx.stroke();
 		}
 
-		for (let o of heads) {
+		for (let o of arrows) {
+			let cc1 = CanvasCoords(o.x1, o.y1);
+			let cc2 = CanvasCoords(o.x2, o.y2);
 
+			if (o.info.move === show_move && config.next_move_outline) {		// Draw the outline at the layer just below the actual arrow.
+				boardctx.strokeStyle = "#35f";
+				boardctx.lineWidth = 3;
+				boardctx.beginPath();
+				boardctx.moveTo(cc1.cx, cc1.cy);
+				boardctx.lineTo(cc2.cx, cc2.cy);
+				boardctx.stroke();
+
+				if (show_move_head) {			// This is the best layer to draw the head outline.
+					boardctx.beginPath();
+					boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius + 1, 0, 2 * Math.PI);
+					boardctx.stroke();
+				}
+			}
+		}
+
+		for (let o of heads) {
 			let cc2 = CanvasCoords(o.x2, o.y2);
 
 			boardctx.fillStyle = o.colour;
 			boardctx.beginPath();
 			boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
 			boardctx.fill();
-			boardctx.fillStyle = "black";
+			// Text color: winning, losing, drawn
+			boardctx.fillStyle = o.info.cp < 0 ? "#100" : "#ff0";
 
 			let s = "?";
 
 			switch (config.arrowhead_type) {
 			case 0:
-				s = o.info.value_string(0, config.ev_pov);
-				if (s === "100" && o.info.q < 1.0) {
-					s = "99";								// Don't round up to 100.
-				}
+				s = o.info.value_string(1, config.ev_pov);
 				break;
 			case 1:
 				if (node.table.nodes > 0) {
@@ -374,7 +387,6 @@ let arrow_props = {
 		let heads = [];
 
 		for (let i = 0; i < info_list.length; i++) {
-
 			let [x1, y1] = XY(info_list[i].move.slice(0, 2));
 			let [x2, y2] = XY(info_list[i].move.slice(2, 4));
 
@@ -447,7 +459,6 @@ let arrow_props = {
 		boardctx.font = config.board_font;
 
 		for (let o of arrows) {
-
 			let cc1 = CanvasCoords(o.x1, o.y1);
 			let cc2 = CanvasCoords(o.x2, o.y2);
 
@@ -460,7 +471,6 @@ let arrow_props = {
 		}
 
 		for (let o of heads) {
-
 			let cc2 = CanvasCoords(o.x2, o.y2);
 
 			boardctx.fillStyle = o.colour;

@@ -25,7 +25,7 @@ let tree_manipulation_props = {
 	// Where relevant, return values of the methods are whether this.node changed -
 	// i.e. whether the hub has to call position_changed()
 
-	replace_tree: function(root) {
+	replace_tree: function (root) {
 		DestroyTree(this.root);
 		this.root = root;
 		this.node = root;
@@ -35,7 +35,7 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	set_node: function(node) {
+	set_node: function (node) {
 
 		// Note that we may call dom_easy_highlight_change() so don't
 		// rely on this to draw any nodes that never got drawn.
@@ -56,23 +56,23 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	prev: function() {
+	prev: function () {
 		return this.set_node(this.node.parent);				// OK if undefined
 	},
 
-	next: function() {
+	next: function () {
 		return this.set_node(this.node.children[0]);		// OK if undefined
 	},
 
-	goto_root: function() {
+	goto_root: function () {
 		return this.set_node(this.root);
 	},
 
-	goto_end: function() {
+	goto_end: function () {
 		return this.set_node(this.node.get_end());
 	},
 
-	previous_sibling: function() {
+	previous_sibling: function () {
 		if (!this.node.parent || this.node.parent.children.length < 2) {
 			return false;
 		}
@@ -87,7 +87,7 @@ let tree_manipulation_props = {
 		return false;		// Can't get here.
 	},
 
-	next_sibling: function() {
+	next_sibling: function () {
 		if (!this.node.parent || this.node.parent.children.length < 2) {
 			return false;
 		}
@@ -102,7 +102,7 @@ let tree_manipulation_props = {
 		return false;		// Can't get here.
 	},
 
-	return_to_main_line: function() {
+	return_to_main_line: function () {
 
 		let main_line = this.root.future_history();
 		let history = this.node.history();
@@ -128,7 +128,7 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	delete_node: function() {
+	delete_node: function () {
 
 		if (!this.node.parent) {
 			this.delete_children();
@@ -143,7 +143,7 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	make_move: function(s) {
+	make_move: function (s) {
 
 		// s must be exactly a legal move, including having promotion char iff needed (e.g. e2e1q)
 
@@ -158,7 +158,7 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	make_move_sequence: function(moves, set_this_node = true) {
+	make_move_sequence: function (moves, set_this_node = true) {
 
 		if (Array.isArray(moves) === false || moves.length === 0) {
 			return false;
@@ -183,14 +183,14 @@ let tree_manipulation_props = {
 		return true;
 	},
 
-	add_move_sequence: function(moves) {
+	add_move_sequence: function (moves) {
 		return this.make_move_sequence(moves, false);
 	},
 
 	// -------------------------------------------------------------------------------------------------------------
 	// The following methods don't ever change this.node - so the caller has no action to take. No return value.
 
-	promote_to_main_line: function() {
+	promote_to_main_line: function () {
 
 		let node = this.node;
 		let changed = false;
@@ -215,7 +215,7 @@ let tree_manipulation_props = {
 		}
 	},
 
-	promote: function() {
+	promote: function () {
 
 		let node = this.node;
 		let changed = false;
@@ -242,7 +242,7 @@ let tree_manipulation_props = {
 		}
 	},
 
-	delete_other_lines: function() {
+	delete_other_lines: function () {
 
 		this.promote_to_main_line();
 
@@ -263,7 +263,7 @@ let tree_manipulation_props = {
 		}
 	},
 
-	delete_children: function() {
+	delete_children: function () {
 
 		if (this.node.children.length > 0) {
 			for (let child of this.node.children) {
@@ -274,7 +274,7 @@ let tree_manipulation_props = {
 		}
 	},
 
-	delete_siblings: function() {
+	delete_siblings: function () {
 
 		let changed = false;
 
@@ -295,20 +295,20 @@ let tree_manipulation_props = {
 
 	// -------------------------------------------------------------------------------------------------------------
 
-	handle_click: function(event) {
+	handle_click: function (event) {
+		if (event.button === 0) {
+			let n = EventPathN(event, "node_");
+			if (typeof n !== "number") {
+				return false;
+			}
 
-		let n = EventPathN(event, "node_");
-		if (typeof n !== "number") {
-			return false;
+			let node = live_nodes[n.toString()];
+
+			if (!node || node.destroyed) {		// Probably the check for .destroyed is unnecessary.
+				return false;
+			}
+
+			return this.set_node(node);
 		}
-
-		let node = live_nodes[n.toString()];
-
-		if (!node || node.destroyed) {		// Probably the check for .destroyed is unnecessary.
-			return false;
-		}
-
-		return this.set_node(node);
 	},
 };
-
