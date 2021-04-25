@@ -106,7 +106,7 @@ td {
 #statusbox {
 	border: none;
 	display: block;
-	font-family: Consolas, monospace;
+	font-family: "Consolas", monospace;
 	margin-bottom: 1em;
 	pointer-events: auto;
 	/* white-space: pre; */
@@ -120,7 +120,7 @@ td {
 	color: #6cccee;
 	display: block;
 	float: bottom;
-	font-family: Consolas, monospace;
+	font-family: "Noto Sans", sans-serif;
 	font-size: 100%;
 	pointer-events: auto;
 	user-select: auto;
@@ -134,7 +134,7 @@ input[type=text]:focus {
 
 #infobox {
 	color: #cccccc;						/* only used for Lc0 stderr output at startup */
-	font-family: Consolas, monospace;
+	font-family: "Noto Sans", sans-serif;
 	margin-bottom: 10px;
 	overflow-x: scroll;
 	overflow-y: scroll;
@@ -144,8 +144,9 @@ input[type=text]:focus {
 }
 
 #movelist {
-	color: #999999;
-	font-family: "Open Sans", monospace;
+	color: #666;
+	font-family: "Noto Sans", sans-serif;
+	font-weight: bold;
 	margin-top: 1em;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -204,8 +205,23 @@ ul {
 	color: #6cccee;
 }
 
+.bold {
+	font-weight: bold;
+}
+
+.movenumber {
+	font-size: 13px;
+	color: #88c;
+}
+
 .infoline {
 	margin-bottom: 1em;
+}
+
+.infoline strong {
+	display: inline-block;
+	width: 55px;
+	text-align: center;
 }
 
 .enginechooser {

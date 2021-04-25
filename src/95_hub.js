@@ -2118,7 +2118,7 @@ let hub_props = {
 	set_arrow_size: function(width, radius, fontsize) {
 		config.arrow_width = width;
 		config.arrowhead_radius = radius;
-		config.board_font = `bold ${fontsize}px Open Sans`;
+		config.board_font = `bold ${fontsize}px Noto Sans`;
 		this.save_config();
 	},
 

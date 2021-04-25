@@ -28,7 +28,7 @@ const open_dialog = electron.dialog.showOpenDialogSync || electron.dialog.showOp
 // Create an alert() function...
 
 let alert = (msg) => {
-	electron.dialog.showMessageBox({message: stringify(msg), title: "Alert", buttons: ["OK"]}, () => {});
+	electron.dialog.showMessageBox({ message: stringify(msg), title: "Alert", buttons: ["OK"] }, () => { });
 	// Providing a callback makes the window not block the process.
 };
 
@@ -165,55 +165,55 @@ function startup() {
 
 		switch (msg.key) {
 
-		case "weightsfile":
-			loaded_weights = msg.val;
-			set_one_check(msg.val ? true : false, "Engine", "Weights", "Lc0 WeightsFile...");
-			break;
+			case "weightsfile":
+				loaded_weights = msg.val;
+				set_one_check(msg.val ? true : false, "Engine", "Weights", "Lc0 WeightsFile...");
+				break;
 
-		case "evalfile":
-			loaded_evalfile = msg.val;
-			set_one_check(msg.val ? true : false, "Engine", "Weights", "Stockfish EvalFile...");
-			break;
+			case "evalfile":
+				loaded_evalfile = msg.val;
+				set_one_check(msg.val ? true : false, "Engine", "Weights", "Stockfish EvalFile...");
+				break;
 
-		case "syzygypath":
-			set_one_check(msg.val ? true : false, "Engine", "Choose Syzygy path...");
-			break;
+			case "syzygypath":
+				set_one_check(msg.val ? true : false, "Engine", "Choose Syzygy path...");
+				break;
 
-		case "backend":
-			set_checks("Engine", "Backend", msg.val);
-			break;
+			case "backend":
+				set_checks("Engine", "Backend", msg.val);
+				break;
 
-		case "threads":
-			set_checks("Engine", "Threads", msg.val);
-			break;
+			case "threads":
+				set_checks("Engine", "Threads", msg.val);
+				break;
 
-		case "hash":
-			let mb = parseInt(msg.val, 10);
-			if (Number.isNaN(mb) === false) {
-				let gb = Math.floor(mb / 1024);
-				set_checks("Engine", "Hash", `${gb} GB`);
-			} else {
-				set_checks("Engine", "Hash", "");			// i.e. clear all
-			}
-			break;
+			case "hash":
+				let mb = parseInt(msg.val, 10);
+				if (Number.isNaN(mb) === false) {
+					let gb = Math.floor(mb / 1024);
+					set_checks("Engine", "Hash", `${gb} GB`);
+				} else {
+					set_checks("Engine", "Hash", "");			// i.e. clear all
+				}
+				break;
 
-		case "multipv":
-			set_checks("Engine", "MultiPV", msg.val);		// If it's "500" it will clear all.
-			break;
+			case "multipv":
+				set_checks("Engine", "MultiPV", msg.val);		// If it's "500" it will clear all.
+				break;
 
-		case "temperature":			// Sketchy because there are equivalent representations.
-			if (msg.val === "0" || msg.val === "0.0") {
-				set_checks("Play", "Temperature", "0");
-			} else if (msg.val === "1" || msg.val === "1.0") {
-				set_checks("Play", "Temperature", "1.0");
-			} else {
-				set_checks("Play", "Temperature", msg.val);
-			}
-			break;
+			case "temperature":			// Sketchy because there are equivalent representations.
+				if (msg.val === "0" || msg.val === "0.0") {
+					set_checks("Play", "Temperature", "0");
+				} else if (msg.val === "1" || msg.val === "1.0") {
+					set_checks("Play", "Temperature", "1.0");
+				} else {
+					set_checks("Play", "Temperature", msg.val);
+				}
+				break;
 
-		case "tempdecaymoves":		// Not so sketchy because it should be a string of an integer.
-			set_checks("Play", "TempDecayMoves", msg.val === "0" ? "Infinite" : msg.val);
-			break;
+			case "tempdecaymoves":		// Not so sketchy because it should be a string of an integer.
+				set_checks("Play", "TempDecayMoves", msg.val === "0" ? "Infinite" : msg.val);
+				break;
 		}
 	});
 
@@ -228,7 +228,7 @@ function startup() {
 
 	win.loadFile(
 		path.join(__dirname, "nibbler.html"),
-		{query: query}
+		{ query: query }
 	);
 }
 
@@ -281,7 +281,7 @@ function menu_build() {
 						let files = open_dialog({
 							defaultPath: config.pgn_dialog_folder,
 							properties: ["openFile"],
-							filters: [{name: "PGN", extensions: ["pgn"]}, {name: "All files", extensions: ["*"]}]
+							filters: [{ name: "PGN Files", extensions: ["pgn"] }, { name: "All Files", extensions: ["*"] }]
 						});
 						if (Array.isArray(files) && files.length > 0) {
 							let file = files[0];
@@ -322,7 +322,13 @@ function menu_build() {
 							alert(messages.save_not_enabled);
 							return;
 						}
-						let file = save_dialog({defaultPath: config.pgn_dialog_folder});
+						let file = save_dialog({
+							defaultPath: config.pgn_dialog_folder,
+							filters: [
+								{ name: 'PGN Files', extensions: ['pgn'] },
+								{ name: 'All Files', extensions: ['*'] }
+							]
+						});
 						if (typeof file === "string" && file.length > 0) {
 							win.webContents.send("call", {
 								fn: "save",
@@ -2669,18 +2675,6 @@ function menu_build() {
 					label: "Node limit - auto-eval / play",
 					submenu: [
 						{
-							label: "1,000,000,000",
-							type: "checkbox",
-							checked: false,
-							click: () => {
-								win.webContents.send("call", {
-									fn: "set_node_limit_special",
-									args: [1 * billion]
-								});
-								// Will receive an ack IPC which sets menu checks.
-							}
-						},
-						{
 							label: "100,000,000",
 							type: "checkbox",
 							checked: false,
@@ -2693,6 +2687,18 @@ function menu_build() {
 							}
 						},
 						{
+							label: "30,000,000",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_node_limit_special",
+									args: [30 * million]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
 							label: "10,000,000",
 							type: "checkbox",
 							checked: false,
@@ -2700,6 +2706,18 @@ function menu_build() {
 								win.webContents.send("call", {
 									fn: "set_node_limit_special",
 									args: [10 * million]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "3,000,000",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_node_limit_special",
+									args: [3 * million]
 								});
 								// Will receive an ack IPC which sets menu checks.
 							}
@@ -3316,6 +3334,30 @@ function menu_build() {
 							}
 						},
 						{
+							label: "15",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 15]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "20",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["MultiPV", 20]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
 							label: "500",
 							type: "checkbox",
 							checked: false,
@@ -3396,7 +3438,7 @@ function menu_build() {
 						let files = open_dialog({
 							defaultPath: config.book_dialog_folder,
 							properties: ["openFile"],
-							filters: [{name: "Polyglot", extensions: ["bin"]}, {name: "All files", extensions: ["*"]}]
+							filters: [{ name: "Polyglot Files", extensions: ["bin"] }, { name: "All Files", extensions: ["*"] }]
 						});
 						if (Array.isArray(files) && files.length > 0) {
 							let file = files[0];
@@ -3424,7 +3466,7 @@ function menu_build() {
 						let files = open_dialog({
 							defaultPath: config.book_dialog_folder,
 							properties: ["openFile"],
-							filters: [{name: "PGN", extensions: ["pgn"]}, {name: "All files", extensions: ["*"]}]
+							filters: [{ name: "PGN Files", extensions: ["pgn"] }, { name: "All Files", extensions: ["*"] }]
 						});
 						if (Array.isArray(files) && files.length > 0) {
 							let file = files[0];
@@ -4210,7 +4252,7 @@ function menu_build() {
 	}
 
 	if (scriptlist_in_menu.length > 0) {
-		scriptlist_in_menu.push({type: "separator"});
+		scriptlist_in_menu.push({ type: "separator" });
 	}
 	scriptlist_in_menu.push({
 		label: "How to add scripts",

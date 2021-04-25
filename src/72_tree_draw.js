@@ -91,12 +91,12 @@ let tree_draw_props = {
 			}
 
 			if (node.current_line) {
-				classes.push("white");		// Otherwise, inherits gray colour from movelist CSS
+				classes.push("white bold");		// Otherwise, inherits gray colour from movelist CSS
 			}
 
 			pseudoelements.push({
 				opener: `<span class="${classes.join(" ")}" id="node_${node.id}">`,
-				text: node.token(),
+				text: node.token(false, false, true),
 				closer: `</span>`
 			});
 		}
@@ -144,7 +144,7 @@ let tree_draw_props = {
 			return;
 		}
 
-		let text = node.token();
+		let text = node.token(false, false, true);
 
 		if (typeof element.innerHTML === "string" && element.innerHTML.endsWith(" ")) {
 			text += " ";

@@ -79,7 +79,7 @@ function NewGrapher() {
 		let last_x = null;
 		let last_y = null;
 		let last_n = null;
-		const factor = 0.2;
+		const factor = 1 / 7;
 
 		// This loop creates all edges that we are going to draw, and marks each
 		// edge as dashed or not...
@@ -89,12 +89,9 @@ function NewGrapher() {
 			let e = eval_list[n];
 
 			if (e !== null) {
-
+				let isMate = Math.abs(e) >= 80;
 				let x = width * n / graph_length;
-
-				let y = (1 - e * factor) * height / 2;
-				if (y < 1) y = 1;
-				if (y > height - 2) y = height - 2;
+				let y = Math.min(isMate ? height - 2 : height - 8, Math.max(isMate ? 1 : 7, (1 - e * factor) * height / 2));
 
 				if (last_x !== null) {
 					all_edges.push({

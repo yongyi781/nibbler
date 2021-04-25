@@ -104,7 +104,6 @@ let arrow_props = {
 
 			if (info_list[i].depth > 0) {
 				loss = (best_info.cp - info_list[i].cp) / 100;
-				console.log(info_list[i]);
 			}
 
 			let ok = true;
@@ -281,26 +280,35 @@ let arrow_props = {
 		for (let o of arrows) {
 			let cc1 = CanvasCoords(o.x1, o.y1);
 			let cc2 = CanvasCoords(o.x2, o.y2);
+			// Compute the amount to subtract so the line doesn't cross the circle.
+			let dist = Math.hypot(cc2.cx - cc1.cx, cc2.cy - cc1.cy);
+			let dx = (config.arrowhead_radius - 1) * (cc2.cx - cc1.cx) / dist;
+			let dy = (config.arrowhead_radius - 1) * (cc2.cy - cc1.cy) / dist;
 
 			boardctx.lineWidth = o.width;
 			boardctx.strokeStyle = o.colour;
 			boardctx.fillStyle = o.colour;
 			boardctx.beginPath();
 			boardctx.moveTo(cc1.cx, cc1.cy);
-			boardctx.lineTo(cc2.cx, cc2.cy);
+			boardctx.lineTo(cc2.cx - dx, cc2.cy - dy);
 			boardctx.stroke();
 		}
 
+		// Draw the next move head now.
 		for (let o of arrows) {
-			let cc1 = CanvasCoords(o.x1, o.y1);
-			let cc2 = CanvasCoords(o.x2, o.y2);
-
 			if (o.info.move === show_move && config.next_move_outline) {		// Draw the outline at the layer just below the actual arrow.
-				boardctx.strokeStyle = "#35f";
+				let cc1 = CanvasCoords(o.x1, o.y1);
+				let cc2 = CanvasCoords(o.x2, o.y2);
+				// Compute the amount to subtract so the line doesn't cross the circle.
+				let dist = Math.hypot(cc2.cx - cc1.cx, cc2.cy - cc1.cy);
+				let dx = config.arrowhead_radius * (cc2.cx - cc1.cx) / dist;
+				let dy = config.arrowhead_radius * (cc2.cy - cc1.cy) / dist;
+
+				boardctx.strokeStyle = config.actual_move_colour;
 				boardctx.lineWidth = 3;
 				boardctx.beginPath();
 				boardctx.moveTo(cc1.cx, cc1.cy);
-				boardctx.lineTo(cc2.cx, cc2.cy);
+				boardctx.lineTo(cc2.cx - dx, cc2.cy - dy);
 				boardctx.stroke();
 
 				if (show_move_head) {			// This is the best layer to draw the head outline.
@@ -319,7 +327,7 @@ let arrow_props = {
 			boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
 			boardctx.fill();
 			// Text color: winning, losing, drawn
-			boardctx.fillStyle = o.info.cp < 0 ? "#100" : "#ff0";
+			boardctx.fillStyle = o.info.cp < 0 ? "#100" : o.info.cp > 0 ? "#df0" : "#eee";
 
 			let s = "?";
 
@@ -390,7 +398,7 @@ let arrow_props = {
 			let [x1, y1] = XY(info_list[i].move.slice(0, 2));
 			let [x2, y2] = XY(info_list[i].move.slice(2, 4));
 
-			let colour = i === 0 ? config.best_colour : config.good_colour;
+			let colour = i === 0 ? config.colors.best.color : config.colors.good.color;
 
 			let x_head_adjustment = 0;				// Adjust head of arrow for castling moves...
 			let normal_castling_flag = false;

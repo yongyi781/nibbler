@@ -131,7 +131,7 @@ let infobox_props = {
 			}
 
 			if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
-				substrings.push(`<span class="blue">${value_string} </span>`);
+				substrings.push(`<strong class="blue">${value_string} </strong>`);
 			} else {
 				substrings.push(`${value_string} `);
 			}
