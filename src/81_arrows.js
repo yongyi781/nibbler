@@ -327,7 +327,7 @@ let arrow_props = {
 			boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
 			boardctx.fill();
 			// Text color: winning, losing, drawn
-			boardctx.fillStyle = o.info.cp < 0 ? "#100" : o.info.cp > 0 ? "#df0" : "#eee";
+			boardctx.fillStyle = o.info.cp < 0 ? "#383800" : o.info.cp > 0 ? "#ffffaa" : "#000000";
 
 			let s = "?";
 

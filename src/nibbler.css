@@ -144,7 +144,7 @@ input[type=text]:focus {
 }
 
 #movelist {
-	color: #666;
+	color: #808080;
 	font-family: "Noto Sans", sans-serif;
 	font-weight: bold;
 	margin-top: 1em;
@@ -174,7 +174,7 @@ ul {
 }
 
 .pink {
-	color: #ffaaaa;
+	color: #ffb0b0;
 }
 
 .white {
@@ -211,7 +211,7 @@ ul {
 
 .movenumber {
 	font-size: 13px;
-	color: #88c;
+	color: #7777bb;
 }
 
 .infoline {
@@ -220,7 +220,7 @@ ul {
 
 .infoline strong {
 	display: inline-block;
-	width: 55px;
+	width: 50px;
 	text-align: center;
 }
 

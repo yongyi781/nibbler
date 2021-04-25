@@ -131,9 +131,9 @@ let infobox_props = {
 			}
 
 			if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
-				substrings.push(`<strong class="blue">${value_string} </strong>`);
+				substrings.push(`<strong class="blue">${value_string}</strong> `);
 			} else {
-				substrings.push(`${value_string} `);
+				substrings.push(`<strong>${value_string}</strong> `);
 			}
 
 			// The PV...
@@ -193,7 +193,7 @@ let infobox_props = {
 
 				if (extra_stat_strings.length > 0) {
 					if (config.infobox_stats_newline) {
-						substrings.push("<br>");
+						substrings.push("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
 					}
 					substrings.push(`<span class="gray">(${extra_stat_strings.join(', ')})</span>`);
 				}
