@@ -76,21 +76,21 @@ function NewStatusHandler() {
 			let status_string = "";
 
 			if (config.behaviour === "halt" && !engine.search_running.node) {
-				status_string += `<span id="gobutton_clicker" class="yellow">HALTED (go?) </span>`;
+				status_string += `<span id="gobutton_clicker" class="yellow btn">Halted (go?)</span> `;
 			} else if (config.behaviour === "halt" && engine.search_running.node) {
-				status_string += `<span class="yellow">HALTING... </span>`;
+				status_string += `<span class="yellow">Halting...</span> `;
 			} else if (config.behaviour === "analysis_locked") {
-				status_string += `<span class="blue">Locked! </span>`;
+				status_string += `<span class="blue">Locked!</span> `;
 			} else if (config.behaviour === "play_white" && node.board.active !== "w") {
-				status_string += `<span class="yellow">YOUR MOVE </span>`;
+				status_string += `<span class="yellow">Your move</span> `;
 			} else if (config.behaviour === "play_black" && node.board.active !== "b") {
-				status_string += `<span class="yellow">YOUR MOVE </span>`;
+				status_string += `<span class="yellow">Your move</span> `;
 			} else if (config.behaviour === "self_play") {
-				status_string += `<span class="green">Self-play! </span>`;
+				status_string += `<span class="green">Self-play!</span> `;
 			} else if (config.behaviour === "auto_analysis") {
-				status_string += `<span class="green">Auto-eval! </span>`;
+				status_string += `<span class="green">Auto-eval!</span> `;
 			} else if (config.behaviour === "analysis_free") {
-				status_string += `<span id="haltbutton_clicker" class="green">ANALYSIS (halt?) </span>`;
+				status_string += `<span id="haltbutton_clicker" class="green btn">Analyzing (halt?)</span> `;
 			}
 
 			if (config.book_explorer) {
@@ -101,6 +101,7 @@ function NewStatusHandler() {
 
 				status_string += `<span class="gray">${NString(node.table.nodes)} ${node.table.nodes === 1 ? "node" : "nodes"}`;
 				status_string += `, ${DurationString(node.table.time)} (N/s: ${NString(node.table.nps)})`;
+				status_string += `, ${node.table.hashfull / 10}% hash full`;
 				if (engineconfig[engine.filepath].options["SyzygyPath"]) {
 					status_string += `, ${NString(node.table.tbhits)} ${node.table.tbhits === 1 ? "tbhit" : "tbhits"}`;
 				}

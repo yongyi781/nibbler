@@ -91,7 +91,7 @@ let tree_draw_props = {
 			}
 
 			if (node.current_line) {
-				classes.push("white bold");		// Otherwise, inherits gray colour from movelist CSS
+				classes.push("white");		// Otherwise, inherits gray colour from movelist CSS
 			}
 
 			pseudoelements.push({

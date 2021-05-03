@@ -106,7 +106,7 @@ td {
 #statusbox {
 	border: none;
 	display: block;
-	font-family: "Consolas", monospace;
+	font-family: "Noto Sans", sans-serif;
 	margin-bottom: 1em;
 	pointer-events: auto;
 	/* white-space: pre; */
@@ -153,6 +153,16 @@ input[type=text]:focus {
 	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
 	white-space: pre-wrap;
+}
+
+#movelist > span {
+	cursor: pointer;
+	padding-left: 3px;
+	border-radius: 2px;
+}
+
+#movelist > span:hover {
+	background-color: #555577;
 }
 
 #graphbox {
@@ -224,6 +234,16 @@ ul {
 	text-align: center;
 }
 
+.pv {
+	cursor: pointer;
+	padding-left: 3px;
+}
+
+.pv:hover {
+	background-color: #555577;
+	border-radius: 2px;
+}
+
 .enginechooser {
 	margin-bottom: 1em;
 }
@@ -245,15 +265,26 @@ ul {
 }
 
 span.movelist_highlight_blue {
-	background-color: #222244;
+	background-color: #333355;
 	color: #6cccee;
 }
 
 span.movelist_highlight_yellow {
-	background-color: #444422;
+	background-color: #555533;
 	color: #ffff00;
 }
 
 span.nobr {
 	white-space: nowrap;				/* Used for O-O and O-O-O moves */
+}
+
+.btn {
+	cursor: pointer;
+	background-color: #333;
+	border-radius: 1px;
+	padding: 5px;
+}
+
+.cursor-pointer {
+	cursor: pointer;
 }

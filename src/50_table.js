@@ -15,6 +15,7 @@ const table_prototype = {
 		this.version = 0;						// Incremented on any change
 		this.nodes = 0;							// Stat sent by engine
 		this.nps = 0;							// Stat sent by engine
+		this.hashfull = 0;
 		this.tbhits = 0;						// Stat sent by engine
 		this.time = 0;							// Stat sent by engine
 		this.eval = null;						// Used by grapher only, value from White's POV
@@ -160,18 +161,27 @@ const info_prototype = {
 	 	return this.cp_string(pov, dp);
 	},
 
-	cp_string: function(pov, dp=2) {
+	// Returns pawns
+	cp_with_pov: function(pov) {
 		if (!this.__touched || typeof this.cp !== "number") {
-			return "?";
+			return NaN;
 		}
 		if (this.leelaish && this.n === 0) {
-			return "?";
+			return NaN;
 		}
 		let cp = this.cp;
 		if ((pov === "w" && this.board.active === "b") || (pov === "b" && this.board.active === "w")) {
 			cp = -cp;
 		}
-		let ret = (cp / 100).toFixed(dp);
+		return cp / 100;
+	},
+
+	cp_string: function(pov, dp=2) {
+		let cp = this.cp_with_pov(pov);
+		if (isNaN(cp)) {
+			return "";
+		}
+		let ret = cp.toFixed(dp);
 		if (cp > 0) {
 			ret = "+" + ret;
 		}
@@ -277,12 +287,12 @@ const info_prototype = {
 					ret.push(`P: ?`);
 				}
 			}
-			if (opts.v) {
-				if (typeof this.v === "number") {
-					ret.push(`V: ${this.v.toFixed(3)}`);
-				} else {
-					ret.push(`V: ?`);
-				}
+		}
+		if (opts.v) {
+			if (typeof this.v === "number") {
+				ret.push(`V: ${this.v.toFixed(3)}`);
+			} else {
+				ret.push(`V: ?`);
 			}
 		}
 

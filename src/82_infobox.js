@@ -106,10 +106,10 @@ let infobox_props = {
 
 			if (config.searchmoves_buttons) {
 				if (searchmoves.includes(info.move)) {
-					substrings.push(`<span id="searchmove_${info.move}" class="yellow">${config.focus_on_text} </span>`);
+					substrings.push(`<span id="searchmove_${info.move}" class="yellow cursor-pointer">${config.focus_on_text} </span>`);
 				} else {
 					if (allow_inactive_focus) {
-						substrings.push(`<span id="searchmove_${info.move}" class="gray">${config.focus_off_text} </span>`);
+						substrings.push(`<span id="searchmove_${info.move}" class="gray cursor-pointer">${config.focus_off_text} </span>`);
 					}
 				}
 			}
@@ -160,7 +160,7 @@ let infobox_props = {
 					}
 				}
 
-				substrings.push(`<span id="infobox_${clicker_index++}" class="${spanclass}">${numstring}${nice_pv[i]} </span>`);
+				substrings.push(`<span id="infobox_${clicker_index++}" class="pv ${spanclass}">${numstring}${nice_pv[i]} </span>`);
 				this.info_clickers.push({
 					move: info.pv[i],
 					is_start: i === 0,
