@@ -10,7 +10,7 @@ const boardsquares = document.getElementById("boardsquares");
 const canvas = document.getElementById("canvas");
 const fenbox = document.getElementById("fenbox");
 const graph = document.getElementById("graph");
-const graphbox = document.getElementById("graphbox");
+const rightgridder = document.getElementById("rightgridder");
 const infobox = document.getElementById("infobox");
 const movelist = document.getElementById("movelist");
 const fullbox = document.getElementById("fullbox");
@@ -71,10 +71,6 @@ if (images.validate_folder(config.override_piece_directory)) {
 } else {
 	images.load_from(path.join(__dirname, "pieces"));
 }
-
-// Debug (see start.js).............................................
-
-let debuggo = Object.create(null);
 
 // Standard options, for either type of engine......................
 // Note that UCI_Chess960 is handled specially by engine.js

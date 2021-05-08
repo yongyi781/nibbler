@@ -403,13 +403,12 @@ let hub_props = {
 	// Spin, our main loop...
 
 	spin: function() {
-		debuggo.spin = debuggo.spin ? debuggo.spin + 1 : 1;
 		this.tick++;
 		this.draw();
 		this.purge_finished_loaders();
 		this.update_graph_eval(this.engine.search_running.node);		// Possibly null.
+		this.maybe_save_window_size();
 		setTimeout(this.spin.bind(this), config.update_delay);
-		debuggo.spin -= 1;
 	},
 
 	purge_finished_loaders: function() {
@@ -426,12 +425,17 @@ let hub_props = {
 		}
 	},
 
+	maybe_save_window_size: function() {
+		if (this.window_resize_time && performance.now() - this.window_resize_time > 1000) {
+			this.window_resize_time = null;
+			this.save_window_size();
+		}
+	},
+
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Drawing properties...
 
 	draw: function() {
-
-		debuggo.draw = debuggo.draw ? debuggo.draw + 1 : 1;
 
 		// We do the :hover reaction first. This way, we are detecting hover based on the previous cycle's state.
 		// This should prevent the sort of flicker that can occur if we try to detect hover based on changes we
@@ -455,8 +459,6 @@ let hub_props = {
 		this.draw_infobox();
 
 		this.grapher.draw(this.tree.node);
-
-		debuggo.draw -= 1;
 	},
 
 	draw_friendlies_in_table: function(board) {
@@ -2185,8 +2187,7 @@ let hub_props = {
 		boardfriends.width = canvas.width = boardsquares.width = config.board_size;
 		boardfriends.height = canvas.height = boardsquares.height = config.board_size;
 
-		boardfriends.style.left = canvas.style.left = boardsquares.offsetLeft.toString() + "px";
-		boardfriends.style.top = canvas.style.top = boardsquares.offsetTop.toString() + "px";
+		rightgridder.style["height"] = `${canvas.height}px`;
 
 		for (let y = 0; y < 8; y++) {
 			for (let x = 0; x < 8; x++) {
@@ -2197,22 +2198,12 @@ let hub_props = {
 			}
 		}
 
-		// Making the heights of the right side divs is something I never figured out with CSS...
-
 		if (config.graph_height <= 0) {
-			graphbox.style.display = "none";
+			graph.style.display = "none";
 		} else {
-			graphbox.style.height = config.graph_height.toString() + "px";
 			graph.style.height = config.graph_height.toString() + "px";
-			graphbox.style.display = "";
+			graph.style.display = "";
 		}
-
-		let infobox_top = infobox.getBoundingClientRect().top;
-		let canvas_bottom = canvas.getBoundingClientRect().bottom;
-		let graph_top = canvas_bottom - (graphbox.getBoundingClientRect().bottom - graphbox.getBoundingClientRect().top);
-
-		let infobox_margin_adjustment = config.graph_height <= 0 ? 0 : 10;		// Bottom margin irrelevant if no graph.
-		infobox.style.height = (graph_top - infobox_top - infobox_margin_adjustment).toString() + "px";
 
 		promotiontable.style.left = (boardsquares.offsetLeft + config.square_size * 2).toString() + "px";
 		promotiontable.style.top = (boardsquares.offsetTop + config.square_size * 3.5).toString() + "px";
