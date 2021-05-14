@@ -27,23 +27,12 @@ body {
 #gridder {
 	display: grid;
 	height: 100vh;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: min-content min-content 1fr;
+	grid-template-columns: min-content min-content auto;
+	grid-template-rows: min-content min-content auto;
 	grid-template-areas:
-		"a b"
-		"f f"
-		"g g";
-}
-
-.flexible_row {
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-}
-
-.full_growth {
-	flex-grow: 100;			/* The actual number only matters if compared to other flex-grow havers */
-	min-width: 0;
+		"a h b"
+		"f f f"
+		"g g g";
 }
 
 #rightgridder {
@@ -61,7 +50,7 @@ body {
 
 #boardsquares {
 	grid-area: a;
-	margin: 1em 0 0 1em;
+	margin: 12px 6px 12px 12px;
 	background-size: cover;
 	border-collapse: collapse;
 	table-layout: fixed;
@@ -70,7 +59,7 @@ body {
 
 #canvas {
 	grid-area: a;
-	margin: 1em 0 0 1em;
+	margin: 12px 6px 12px 12px;
 	display: block;
 	outline-offset: 6px;
 	z-index: 2;
@@ -78,7 +67,7 @@ body {
 
 #boardfriends {
 	grid-area: a;
-	margin: 1em 0 0 1em;
+	margin: 12px 6px 12px 12px;
 	border-collapse: collapse;
 	pointer-events: auto;
 	table-layout: fixed;
@@ -94,22 +83,13 @@ body {
 	z-index: 4;
 }
 
-#fullbox {
-	background-color: #080808;
-	display: none;						/* better than visibility: hidden - never intercepts inputs */
-	font-family: Consolas, monospace;
-	font-size: 100%;
-	height: 100%;
-	left: 0;
-	overflow-y: auto;
-}
-
 #statusbox {
 	grid-area: c;
-	margin: 0 0 0 1em;
+	margin: 0 0 0 12px;
+	padding: 5px 0px;
 	border: none;
 	display: block;
-	font-family: monospace, monospace;
+	font-family: "Noto Sans", sans-serif;
 	pointer-events: auto;
 	overflow: hidden;
 	white-space: pre;
@@ -117,17 +97,16 @@ body {
 
 #infobox {
 	grid-area: d;
-	margin: 1em 1em 0 1em;
+	margin: 12px 12px 0 12px;
 	display: block;
 	font-family: "Noto Sans", sans-serif;
-	margin-bottom: 1em;
+	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
 	color: #cccccc;						/* only used for Lc0 stderr output at startup */
-	font-family: monospace, monospace;
-	overflow-x: hidden;
-	overflow-y: auto;
+	overflow-x: scroll;
+	overflow-y: scroll;
 	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
-	white-space: pre-wrap;
+	white-space: nowrap;
 }
 
 #graph {
@@ -146,24 +125,6 @@ input[type=text]:focus {
 	outline-offset: 4px;
 }
 
-#infobox {
-	color: #cccccc;						/* only used for Lc0 stderr output at startup */
-	font-family: "Noto Sans", sans-serif;
-	margin-bottom: 10px;
-	overflow-x: scroll;
-	overflow-y: scroll;
-	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
-	pointer-events: auto;
-	white-space: nowrap;
-}
-
-#movelist {
-	color: #808080;
-	font-family: "Noto Sans", sans-serif;
-	font-weight: bold;
-	margin-top: 1em;
-}
-
 #fenbox {
 	grid-area: f;
 	margin: 1em 1em 0 1em;
@@ -172,7 +133,7 @@ input[type=text]:focus {
 	caret-color: white;
 	color: #6cccee;
 	display: block;
-	font-family: monospace, monospace;
+	font-family: "Noto Sans", sans-serif;
 	font-size: 100%;
 	pointer-events: auto;
 	user-select: auto;
@@ -182,8 +143,9 @@ input[type=text]:focus {
 	grid-area: g;
 	margin: 1em 1em 1em 1em;
 	display: block;
-	color: #999999;
-	font-family: monospace, monospace;
+	color: #808080;
+	font-family: "Noto Sans", sans-serif;
+	font-weight: bold;
 	overflow-x: hidden;
 	overflow-y: auto;
 	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
@@ -206,19 +168,10 @@ input[type=text]:focus {
 	background-color: #111;
 }
 
-#promotiontable {
-	border-collapse: collapse;
-	display: none;
-	pointer-events: auto;
-	position: fixed;
-	table-layout: fixed;
-	z-index: 4;
-}
-
 #fullbox {
 	background-color: #080808;
 	display: none;						/* better than visibility: hidden - never intercepts inputs */
-	font-family: monospace, monospace;
+	font-family: "Noto Sans", sans-serif;
 	font-size: 100%;
 	height: 100%;
 	left: 0;
@@ -294,7 +247,7 @@ ul {
 }
 
 .infoline {
-	margin-bottom: 1em;
+	margin-bottom: 0.5em;
 }
 
 .infoline strong {
@@ -349,11 +302,34 @@ span.nobr {
 
 .btn {
 	cursor: pointer;
-	background-color: #333;
-	border-radius: 1px;
-	padding: 5px;
+	background-color: #404549;
+	border-radius: 3px;
+	padding: 6px;
 }
 
 .cursor-pointer {
 	cursor: pointer;
+}
+
+#evalbarContainer {
+	grid-area: h;
+	margin: 12px 0;
+	width: 25px;
+	background-color: white;
+}
+
+#evalbar {
+	width: 100%;
+	height: 100%;
+	box-shadow: 0 0 5px rgb(0 0 0 / 70%) inset;
+}
+
+#evalbar.reverse {
+    transform: rotateX(180deg);
+}
+
+#evalbar .black {
+	width: 100%;
+	height: 50%;
+	background: #444;
 }

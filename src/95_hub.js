@@ -457,8 +457,18 @@ let hub_props = {
 
 		this.draw_statusbox();
 		this.draw_infobox();
+		this.draw_evalbar();
 
 		this.grapher.draw(this.tree.node);
+	},
+
+	draw_evalbar: function () {
+		let node = this.tree.node;
+		let e = node.table.eval;
+		if (e != null) {
+			let f = Math.max(0, Math.min(1, 0.5 - e / 7));
+			evalbarBlack.style = `height: ${f * 100}%`;
+		}
 	},
 
 	draw_friendlies_in_table: function(board) {
@@ -1873,46 +1883,50 @@ let hub_props = {
 	},
 
 	movelist_click: function(event) {
-		if (this.tree.handle_click(event)) {
-			this.position_changed(false, true);
+		if (event.button === 0) {
+			if (this.tree.handle_click(event)) {
+				this.position_changed(false, true);
+			}
 		}
 	},
 
 	winrate_click: function(event) {
+		if (event.button === 0) {
+			let node = this.grapher.node_from_click(this.tree.node, event);
 
-		let node = this.grapher.node_from_click(this.tree.node, event);
+			if (!node) {
+				return;
+			}
 
-		if (!node) {
-			return;
-		}
-
-		if (this.tree.set_node(node)) {
-			this.position_changed(false, true);
+			if (this.tree.set_node(node)) {
+				this.position_changed(false, true);
+			}
 		}
 	},
 
 	statusbox_click: function(event) {
-
-		if (EventPathString(event, "gobutton")) {
-			this.set_behaviour("analysis_free");
-			return;
-		}
-
-		if (EventPathString(event, "haltbutton")) {
-			this.set_behaviour("halt");
-			return;
-		}
-
-		if (EventPathString(event, "lock_return")) {
-			this.return_to_lock();
-			return;
-		}
-
-		if (EventPathString(event, "loadabort")) {
-			for (let loader of this.loaders) {
-				loader.shutdown();
+		if (event.button === 0) {
+			if (EventPathString(event, "gobutton")) {
+				this.set_behaviour("analysis_free");
+				return;
 			}
-			return;
+
+			if (EventPathString(event, "haltbutton")) {
+				this.set_behaviour("halt");
+				return;
+			}
+
+			if (EventPathString(event, "lock_return")) {
+				this.return_to_lock();
+				return;
+			}
+
+			if (EventPathString(event, "loadabort")) {
+				for (let loader of this.loaders) {
+					loader.shutdown();
+				}
+				return;
+			}
 		}
 	},
 
@@ -2071,6 +2085,7 @@ let hub_props = {
 			}
 		}
 
+		evalbar.className = config.flip ? "reverse" : "";
 		this.draw();								// For the canvas stuff.
 	},
 

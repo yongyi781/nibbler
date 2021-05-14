@@ -10,7 +10,7 @@ function NewStatusHandler() {
 
 	sh.set_special_message = function(s, css_class, duration) {
 		if (!css_class) css_class = "yellow";
-		if (!duration) duration = 3000;
+		if (!duration) duration = 1000;
 		this.special_message = s;
 		this.special_message_class = css_class;
 		this.special_message_timeout = performance.now() + duration;

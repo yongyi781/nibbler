@@ -280,19 +280,17 @@ let tree_manipulation_props = {
 	// -------------------------------------------------------------------------------------------------------------
 
 	handle_click: function (event) {
-		if (event.button === 0) {
-			let n = EventPathN(event, "node_");
-			if (typeof n !== "number") {
-				return false;
-			}
-
-			let node = live_nodes[n.toString()];
-
-			if (!node || node.destroyed) {		// Probably the check for .destroyed is unnecessary.
-				return false;
-			}
-
-			return this.set_node(node);
+		let n = EventPathN(event, "node_");
+		if (typeof n !== "number") {
+			return false;
 		}
+
+		let node = live_nodes[n.toString()];
+
+		if (!node || node.destroyed) {		// Probably the check for .destroyed is unnecessary.
+			return false;
+		}
+
+		return this.set_node(node);
 	},
 };

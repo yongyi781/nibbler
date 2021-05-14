@@ -17,6 +17,8 @@ const fullbox = document.getElementById("fullbox");
 const fullbox_content = document.getElementById("fullbox_content");
 const promotiontable = document.getElementById("promotiontable");
 const statusbox = document.getElementById("statusbox");
+const evalbar = document.querySelector("#evalbar");
+const evalbarBlack = document.querySelector("#evalbar .black");
 
 // If require isn't available, we're in a browser:
 
