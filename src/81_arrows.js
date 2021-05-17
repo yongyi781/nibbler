@@ -12,7 +12,7 @@ let arrow_props = {
 			}
 		}
 
-		if (!config.arrows_enabled || !node || node.destroyed) {
+		if (!config.arrows_enabled || config.hide_lines || !node || node.destroyed) {
 			return;
 		}
 
