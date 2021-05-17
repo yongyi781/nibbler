@@ -85,6 +85,7 @@ exports.defaults = {
 	"infobox_pv_move_numbers": false,
 	"hover_draw": false,
 	"hover_method": 2,
+	"hide_lines": false,
 
 	"pv_click_event": 1,		// 0: nothing, 1: goto, 2: tree
 

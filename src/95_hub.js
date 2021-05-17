@@ -135,6 +135,7 @@ let hub_props = {
 			if (!this.engine.in_960_mode() && this.tree.node.board.normalchess === false) {
 				alert(messages.c960_warning);
 			}
+			evalbarBlack.style = "height: 50%";
 		}
 
 		if (this.tree.node.table.already_autopopulated === false) {
@@ -158,6 +159,7 @@ let hub_props = {
 		this.maybe_infer_info();						// Before node_exit_cleanup() so that previous ghost info is available when moving forwards.
 		this.behave("position");
 		this.draw();
+		this.update_evalbar(this.tree.node);
 
 		this.node_exit_cleanup();						// This feels like the right time to do this.
 		this.node_to_clean = this.tree.node;
@@ -422,6 +424,16 @@ let hub_props = {
 		let info = SortedMoveInfo(node)[0];								// Possibly undefined.
 		if (info) {
 			node.table.update_eval_from_move(info.move);
+			this.update_evalbar(node);
+		}
+	},
+
+	update_evalbar: function(node) {
+		let e = node.table.eval;
+		const factor = 1 / 7;
+		if (e != null) {
+			let f = Math.max(0, Math.min(1, (1 - e * factor) / 2));
+			evalbarBlack.style = `height: ${f * 100}%`;
 		}
 	},
 
@@ -457,18 +469,8 @@ let hub_props = {
 
 		this.draw_statusbox();
 		this.draw_infobox();
-		this.draw_evalbar();
 
 		this.grapher.draw(this.tree.node);
-	},
-
-	draw_evalbar: function () {
-		let node = this.tree.node;
-		let e = node.table.eval;
-		if (e != null) {
-			let f = Math.max(0, Math.min(1, 0.5 - e / 7));
-			evalbarBlack.style = `height: ${f * 100}%`;
-		}
 	},
 
 	draw_friendlies_in_table: function(board) {

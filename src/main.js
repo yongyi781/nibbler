@@ -1451,6 +1451,18 @@ function menu_build() {
 					}
 				},
 				{
+					label: "Hide lines",
+					accelerator: "s",
+					type: "checkbox",
+					checked: config.hide_lines,
+					click: () => {
+						win.webContents.send("call", {
+							fn: "toggle",
+							args: ["hide_lines"]
+						})
+					}
+				},
+				{
 					type: "separator"
 				},
 				{

@@ -332,4 +332,5 @@ span.nobr {
 	width: 100%;
 	height: 50%;
 	background: #444;
+	transition: height 0.2s;
 }

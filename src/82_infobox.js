@@ -2,7 +2,7 @@
 
 let infobox_props = {
 
-	draw_infobox: function(node, mouse_point, active_square, active_colour, hoverdraw_div, allow_inactive_focus) {
+	draw_infobox: function (node, mouse_point, active_square, active_colour, hoverdraw_div, allow_inactive_focus) {
 
 		let searchmoves = node.searchmoves;
 
@@ -56,13 +56,13 @@ let infobox_props = {
 
 		let no_skip_reasons = [];
 
-		if (node.id !== this.last_drawn_node_id)                                no_skip_reasons.push("node");
-		if (node.table.version !== this.last_drawn_version)                     no_skip_reasons.push("table version");
-		if (highlight_move !== this.last_drawn_highlight_move)                  no_skip_reasons.push("highlight move");
-		if (highlight_class !== this.last_drawn_highlight_class)                no_skip_reasons.push("highlight class");
-		if (info_list.length !== this.last_drawn_length)                        no_skip_reasons.push("info list length");
-		if (allow_inactive_focus !== this.last_drawn_allow_inactive_focus)      no_skip_reasons.push("allow inactive focus");
-		if (CompareArrays(searchmoves, this.last_drawn_searchmoves) === false)  no_skip_reasons.push("searchmoves");
+		if (node.id !== this.last_drawn_node_id) no_skip_reasons.push("node");
+		if (node.table.version !== this.last_drawn_version) no_skip_reasons.push("table version");
+		if (highlight_move !== this.last_drawn_highlight_move) no_skip_reasons.push("highlight move");
+		if (highlight_class !== this.last_drawn_highlight_class) no_skip_reasons.push("highlight class");
+		if (info_list.length !== this.last_drawn_length) no_skip_reasons.push("info list length");
+		if (allow_inactive_focus !== this.last_drawn_allow_inactive_focus) no_skip_reasons.push("allow inactive focus");
+		if (CompareArrays(searchmoves, this.last_drawn_searchmoves) === false) no_skip_reasons.push("searchmoves");
 
 		draw_infobox_no_skip_reasons = no_skip_reasons.join(", ");	// For debugging only.
 
@@ -138,37 +138,39 @@ let infobox_props = {
 
 			// The PV...
 
-			let colour = active_colour;
-			let movenum = node.board.fullmove;			// Only matters for config.infobox_pv_move_numbers
-			let nice_pv = info.nice_pv();
+			if (!config.hide_lines) {
+				let colour = active_colour;
+				let movenum = node.board.fullmove;			// Only matters for config.infobox_pv_move_numbers
+				let nice_pv = info.nice_pv();
 
-			for (let i = 0; i < nice_pv.length; i++) {
-				let spanclass = "";
-				if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
-					spanclass = colour === "w" ? "white" : "pink";
-				}
-				if (nice_pv[i].includes("O-O")) {
-					spanclass += (spanclass.length > 0) ? " nobr" : "nobr";
-				}
-
-				let numstring = "";
-				if (config.infobox_pv_move_numbers) {
-					if (colour === "w") {
-						numstring = `${movenum}. `;
-					} else if (colour === "b" && i === 0) {
-						numstring = `${movenum}... `;
+				for (let i = 0; i < nice_pv.length; i++) {
+					let spanclass = "";
+					if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
+						spanclass = colour === "w" ? "white" : "pink";
 					}
-				}
+					if (nice_pv[i].includes("O-O")) {
+						spanclass += (spanclass.length > 0) ? " nobr" : "nobr";
+					}
 
-				substrings.push(`<span id="infobox_${clicker_index++}" class="pv ${spanclass}">${numstring}${nice_pv[i]} </span>`);
-				this.info_clickers.push({
-					move: info.pv[i],
-					is_start: i === 0,
-					is_end: i === nice_pv.length - 1,
-				});
-				colour = OppositeColour(colour);
-				if (colour === "w") {
-					movenum++;
+					let numstring = "";
+					if (config.infobox_pv_move_numbers) {
+						if (colour === "w") {
+							numstring = `${movenum}. `;
+						} else if (colour === "b" && i === 0) {
+							numstring = `${movenum}... `;
+						}
+					}
+
+					substrings.push(`<span id="infobox_${clicker_index++}" class="pv ${spanclass}">${numstring}${nice_pv[i]} </span>`);
+					this.info_clickers.push({
+						move: info.pv[i],
+						is_start: i === 0,
+						is_end: i === nice_pv.length - 1,
+					});
+					colour = OppositeColour(colour);
+					if (colour === "w") {
+						movenum++;
+					}
 				}
 			}
 
@@ -178,17 +180,17 @@ let infobox_props = {
 
 				let extra_stat_strings = info.stats_list(
 					{
-						n:             config.show_n,
-						n_abs:         config.show_n_abs,
-						depth:         config.show_depth,
-						wdl:           config.show_wdl,
-						wdl_pov:       config.wdl_pov,
-						p:             config.show_p,
-						m:             config.show_m,
-						v:             config.show_v,
-						q:             config.show_q,
-						u:             config.show_u,
-						s:             config.show_s,
+						n: config.show_n,
+						n_abs: config.show_n_abs,
+						depth: config.show_depth,
+						wdl: config.show_wdl,
+						wdl_pov: config.wdl_pov,
+						p: config.show_p,
+						m: config.show_m,
+						v: config.show_v,
+						q: config.show_q,
+						u: config.show_u,
+						s: config.show_s,
 					}, node.table.nodes);
 
 				if (extra_stat_strings.length > 0) {
@@ -208,18 +210,18 @@ let infobox_props = {
 		infobox.innerHTML = substrings.join("");
 	},
 
-	must_draw_infobox: function() {
+	must_draw_infobox: function () {
 		this.last_drawn_version = null;
 	},
 
-	clickers_are_valid_for_node: function(node) {
+	clickers_are_valid_for_node: function (node) {
 		if (!node || !this.info_clickers_node_id) {
 			return false;
 		}
 		return node.id === this.info_clickers_node_id;
 	},
 
-	moves_from_click_n: function(n) {
+	moves_from_click_n: function (n) {
 
 		if (typeof n !== "number" || Number.isNaN(n)) {
 			return [];
