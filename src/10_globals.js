@@ -47,6 +47,7 @@ const path = require("path");
 const readline = require("readline");
 const stringify = require("./modules/stringify");
 const util = require("util");
+const fetch = require("node-fetch");
 
 // Globals..........................................................
 

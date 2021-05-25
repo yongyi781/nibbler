@@ -1,5 +1,5 @@
 {
-	"name": "Nibbler",
+	"name": "nibbler",
 	"version": "2.1.6",
 	"author": "Rooklift",
 	"description": "Leela Chess Zero (Lc0) interface",
@@ -8,5 +8,9 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/rooklift/nibbler"
+	},
+	"dependencies": {
+		"node-fetch": "^2.6.1",
+		"sync-fetch": "^0.3.0"
 	}
 }

@@ -136,6 +136,7 @@ exports.defaults = {
 	"log_useless_info": false,
 	"log_illegal_moves": true,
 	"log_positions": true,
+	"use_lichess_book": true
 };
 
 function fix(cfg) {

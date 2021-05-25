@@ -16,8 +16,6 @@ const engineconfig_io = require("./modules/engineconfig_io");
 const messages = require("./modules/messages");
 const path = require("path");
 const running_as_electron = require("./modules/running_as_electron");
-const stringify = require("./modules/stringify");
-const url = require("url");
 
 // We want sync save and open dialogs. In Electron 5 we could get these by calling
 // showSaveDialog or showOpenDialog without a callback, but in Electron 6 this no
@@ -3482,6 +3480,17 @@ function menu_build() {
 						} else {
 							win.webContents.send("call", "send_ack_book");		// Force an ack IPC to fix our menu check state.
 						}
+					}
+				},
+				{
+					label: "Use Lichess book",
+					type: "checkbox",
+					checked: config.use_lichess_book,
+					click: () => {
+						win.webContents.send("call", {
+							fn: "toggle",
+							args: ["use_lichess_book"],
+						});
 					}
 				},
 				{

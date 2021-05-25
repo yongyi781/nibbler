@@ -590,18 +590,9 @@ function NumbersBetween(a, b) {
 }
 
 function RandInt(min, max) {
-	if (typeof max !== "number") {		// DWIM.
-		max = min;
-		min = 0;
-	}
-	if (min >= max) {
-		return min;
-	}
-	let ret = Math.floor(Math.random() * (max - min)) + min;
-	if (ret >= max) {		// Probably impossible.
-		ret = min;
-	}
-	return ret;
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 function RandChoice(arr) {
@@ -609,6 +600,30 @@ function RandChoice(arr) {
 		return undefined;
 	}
 	return arr[RandInt(0, arr.length)];
+}
+
+// arr: { valueKey, weight } pairs
+function RandWeightedChoice(arr, valueKey = "value") {
+	let total_weight = 0;
+
+	if (Array.isArray(arr)) {
+		for (let o of arr) {
+			total_weight += o.weight;
+		}
+	}
+
+	if (total_weight <= 0) {
+		return null;
+	}
+
+	let rng = RandInt(0, total_weight);
+	let total = 0;
+	for (let o of arr) {			// The order doesn't matter at all when you think about it. No need to sort.
+		total += o.weight;
+		if (total > rng) {
+			return o[valueKey];
+		}
+	}
 }
 
 function HighlightString(s, prefix, classname) {
