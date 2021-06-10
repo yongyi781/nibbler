@@ -660,3 +660,25 @@ function FileExceedsGigabyte(filename, multiplier = 1) {
 		return false;		// Eh, who knows
 	}
 }
+
+function MoveQuality(best_info, info) {
+	if (info.__touched === false) {
+		return "unknown";
+	} else if (best_info.mate !== 0) {
+		if (info.mate === best_info.mate) {
+			return "best";
+		} else if (Math.sign(info.mate) === Math.sign(best_info.mate)) {
+			return "good";
+		} else {
+			return "blunder";
+		}
+	} else {
+		const loss = (best_info.cp - info.cp) / 100;
+		for (let [k, v] of Object.entries(config.colors)) {
+			if (loss <= v.threshold) {
+				return k;
+			}
+		}
+	}
+	return "unknown";
+}

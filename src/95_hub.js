@@ -225,39 +225,58 @@ let hub_props = {
 	},
 
 	lichess_book_move: async function () {
-		let url = new URL("https://explorer.lichess.ovh/lichess");
-		let params = new URLSearchParams();
+		const url = new URL("https://explorer.lichess.ovh/lichess");
+		const params = new URLSearchParams();
 		params.append("variant", "standard");
-		for (let s of ["bullet", "blitz", "rapid", "classical"]) {
+		for (let s of config.lichess_book_speeds) {
 			params.append("speeds[]", s);
 		}
-		for (let n of [1600, 1800, 2000, 2200, 2500]) {
+		for (let n of config.lichess_book_ratings) {
 			params.append("ratings[]", n);
 		}
 		params.append("fen", this.tree.node.board.fen(true));
 		url.search = params.toString();
 
-		const response = await fetch(url);
-		const json = await response.json();
-		console.dir(json);
+		let json;
 
-		if (json.moves != null && json.moves.length > 0) {
-			// Build weighted array
-			let moves = json.moves.map(m => { return { move: m.uci, weight: m.white + m.draws + m.black } });
-			let move = RandWeightedChoice(moves, "move");
-
-			let correct_node = this.tree.node;
-			let correct_behaviour = config.behaviour;
-
-			setTimeout(() => {
-				if (this.tree.node === correct_node && config.behaviour === correct_behaviour) {
-					this.move(move);
-				}
-			}, 0);
-			return true;
+		try {
+			const response = await fetch(url);
+			json = await response.json();
+		}
+		catch (e) {
+			console.log(e);
+			return false;
 		}
 
-		return false;
+		if (json.moves == null || json.moves.length <= 0) {
+			console.log("Lichess returned no moves");
+			return false;
+		}
+
+		// Build weighted array
+		let move;
+		if (config.lichess_top_moves_only) {
+			move = json.moves[0];
+		} else {
+			const moves = json.moves.map(m => { return { move: m, weight: m.white + m.draws + m.black } });
+			move = RandWeightedChoice(moves, "move");
+		}
+
+		if (move == null) {
+			return false;
+		}
+
+		console.log(`Chose #${json.moves.indexOf(move) + 1} move ${move.san} out of ${json.moves.length} from Lichess opening explorer`);
+
+		const correct_node = this.tree.node;
+		const correct_behaviour = config.behaviour;
+
+		setTimeout(() => {
+			if (this.tree.node === correct_node && config.behaviour === correct_behaviour) {
+				this.move(move.uci);
+			}
+		}, 0);
+		return true;
 	},
 
 	maybe_setup_book_move: async function () {

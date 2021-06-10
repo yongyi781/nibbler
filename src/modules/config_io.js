@@ -136,7 +136,10 @@ exports.defaults = {
 	"log_useless_info": false,
 	"log_illegal_moves": true,
 	"log_positions": true,
-	"use_lichess_book": true
+	"use_lichess_book": true,
+	"lichess_top_moves_only": false,
+	"lichess_book_speeds": ["blitz", "rapid", "classical"],
+	"lichess_book_ratings": [1600, 1800, 2000, 2200, 2500]
 };
 
 function fix(cfg) {

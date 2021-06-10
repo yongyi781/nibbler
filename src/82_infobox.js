@@ -86,6 +86,8 @@ let infobox_props = {
 		let clicker_index = 0;
 		let div_index = 0;
 
+		const best_info = info_list[0];
+
 		for (let info of info_list) {
 
 			// The div containing the PV etc...
@@ -131,7 +133,7 @@ let infobox_props = {
 			}
 
 			if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
-				substrings.push(`<strong class="blue">${value_string}</strong> `);
+				substrings.push(`<strong class="infobox-${MoveQuality(best_info, info)}">${value_string}</strong> `);
 			} else {
 				substrings.push(`<strong>${value_string}</strong> `);
 			}

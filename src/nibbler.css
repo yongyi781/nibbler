@@ -237,6 +237,22 @@ ul {
 	color: #6cccee;
 }
 
+.infobox-best {
+	color: #6cccee;
+}
+
+.infobox-good {
+	color: #5dcc5d;
+}
+
+.infobox-mistake {
+	color: #aaaa68;
+}
+
+.infobox-blunder {
+	color: #cc7c7c;
+}
+
 .bold {
 	font-weight: bold;
 }

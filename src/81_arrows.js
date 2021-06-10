@@ -148,12 +148,11 @@ let arrow_props = {
 			// Note that we don't set show_move_was_forced for ab mode.
 			// If it wasn't already set, then we have good info for this move.
 
-			// No filter for now
-			// if (mode === "ab") {
-			// 	if (loss >= config.ab_filter_threshold) {
-			// 		ok = false;
-			// 	}
-			// }
+			if (mode === "ab") {
+				if (loss >= config.ab_filter_threshold) {
+					ok = false;
+				}
+			}
 
 			// Go ahead, if the various tests don't filter the move out...
 
@@ -168,23 +167,9 @@ let arrow_props = {
 					colour = config.actual_move_colour;
 				} else if (info_list[i].move === show_move && show_move_was_forced) {
 					colour = config.colors.blunder.color;
-				} else if (info_list[i].__touched === false) {
-					colour = config.colors.blunder.color;
-				} else if (best_info.mate !== 0) {
-					if (info_list[i].mate === best_info.mate) {
-						colour = config.colors.best.color;
-					} else if (Math.sign(info_list[i].mate) === Math.sign(best_info.mate)) {
-						colour = config.colors.good.color;
-					} else {
-						colour = config.colors.blunder.color;
-					}
 				} else {
-					for (let [, v] of Object.entries(config.colors)) {
-						if (loss <= v.threshold) {
-							colour = v.color;
-							break;
-						}
-					}
+					const name = MoveQuality(best_info, info_list[i]);
+					colour = config.colors[name].color;
 				}
 
 				let x_head_adjustment = 0;				// Adjust head of arrow for castling moves...

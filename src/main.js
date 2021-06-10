@@ -672,7 +672,7 @@ function menu_build() {
 				},
 				{
 					label: "Delete ALL other lines",
-					accelerator: "CommandOrControl+W",
+					accelerator: "X",
 					click: () => {
 						win.webContents.send("call", "delete_other_lines");
 					}
@@ -1604,6 +1604,7 @@ function menu_build() {
 				},
 				{
 					label: "Book explorer mode",
+					accelerator: "E",
 					type: "checkbox",
 					checked: config.book_explorer,			// But this is never saved in the config file.
 					click: () => {
@@ -3490,6 +3491,17 @@ function menu_build() {
 						win.webContents.send("call", {
 							fn: "toggle",
 							args: ["use_lichess_book"],
+						});
+					}
+				},
+				{
+					label: "Top Lichess book moves only",
+					type: "checkbox",
+					checked: config.lichess_top_moves_only,
+					click: () => {
+						win.webContents.send("call", {
+							fn: "toggle",
+							args: ["lichess_top_moves_only"],
 						});
 					}
 				},
