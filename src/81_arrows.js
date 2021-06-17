@@ -2,7 +2,7 @@
 
 let arrow_props = {
 
-	draw_arrows: function(node, specific_source, show_move) {		// specific_source is a Point(), show_move is a string
+	draw_arrows: function (node, specific_source, show_move) {		// specific_source is a Point(), show_move is a string
 
 		// Function is responsible for updating the one_click_moves array.
 
@@ -12,7 +12,7 @@ let arrow_props = {
 			}
 		}
 
-		if (!config.arrows_enabled || config.hide_lines || !node || node.destroyed) {
+		if (!config.arrows_enabled || (config.hide_lines & !specific_source) || !node || node.destroyed) {
 			return;
 		}
 
@@ -46,60 +46,58 @@ let arrow_props = {
 
 		switch (mode) {
 
-		case "normal":
+			case "normal":
 
-			info_list = full_list;
-			break;
+				info_list = full_list;
+				break;
 
-		case "ab":
+			case "ab":
 
-			for (let info of full_list) {
-				if (info.__touched && info.subcycle >= full_list[0].subcycle) {
-					info_list.push(info);
-				} else if (info.move === show_move) {
-					info_list.push(info);
-					show_move_was_forced = true;
+				for (let info of full_list) {
+					if (info.__touched && info.subcycle >= full_list[0].subcycle) {
+						info_list.push(info);
+					} else if (info.move === show_move) {
+						info_list.push(info);
+						show_move_was_forced = true;
+					}
 				}
-			}
-			break;
+				break;
 
-		case "ghost":
+			case "ghost":
 
-			for (let info of full_list) {
-				if (info.__ghost) {
-					info_list.push(info);
-				} else if (info.move === show_move) {
-					info_list.push(info);
-					show_move_was_forced = true;
+				for (let info of full_list) {
+					if (info.__ghost) {
+						info_list.push(info);
+					} else if (info.move === show_move) {
+						info_list.push(info);
+						show_move_was_forced = true;
+					}
 				}
-			}
-			break;
+				break;
 
-		case "untouched":
+			case "untouched":
 
-			for (let info of full_list) {
-				if (info.move === show_move) {
-					info_list.push(info);
-					show_move_was_forced = true;
+				for (let info of full_list) {
+					if (info.move === show_move) {
+						info_list.push(info);
+						show_move_was_forced = true;
+					}
 				}
-			}
-			break;
+				break;
 
-		case "specific":
-
-			for (let info of full_list) {
-				if (info.move.slice(0, 2) === specific_source.s) {
-					info_list.push(info);
+			case "specific":
+				for (let info of full_list) {
+					if (info.move.slice(0, 2) === specific_source.s) {
+						info_list.push(info);
+					}
 				}
-			}
-			break;
+				break;
 
 		}
 
 		// ------------------------------------------------------------------------------------------------------------
 
 		for (let i = 0; i < info_list.length; i++) {
-
 			let loss = 1000;
 
 			if (info_list[i].depth > 0) {
@@ -195,13 +193,13 @@ let arrow_props = {
 					width = config.arrow_width / 2;
 				}
 				arrows.push({
-					colour: colour,
+					colour: config.hide_lines ? config.colors.blunder.color : colour,
 					x1: x1,
 					y1: y1,
 					x2: x2 + x_head_adjustment,
 					y2: y2,
 					info: info_list[i],
-					width: width
+					width: config.hide_lines ? 1 : width
 				});
 
 				// If there is no one_click_move set for the target square, then set it
@@ -210,7 +208,7 @@ let arrow_props = {
 				if (normal_castling_flag) {
 					if (!this.one_click_moves[x2 + x_head_adjustment][y2]) {
 						heads.push({
-							colour: colour,
+							colour: config.hide_lines ? config.colors.unknown.color : colour,
 							x2: x2 + x_head_adjustment,
 							y2: y2,
 							info: info_list[i]
@@ -223,7 +221,7 @@ let arrow_props = {
 				} else {
 					if (!this.one_click_moves[x2][y2]) {
 						heads.push({
-							colour: colour,
+							colour: config.hide_lines ? config.colors.unknown.color : colour,
 							x2: x2 + x_head_adjustment,
 							y2: y2,
 							info: info_list[i]
@@ -313,38 +311,38 @@ let arrow_props = {
 			boardctx.fill();
 			// Text color: winning, losing, drawn
 			let cp = o.info.cp_with_pov(config.ev_pov);
-			boardctx.fillStyle = cp < 0 ? "#000000" : cp > 0 ? "#ffffaa" : "#555555";
+			boardctx.fillStyle = cp < 0 || isNaN(cp) || config.hide_lines ? "#000000" : cp > 0 ? "#ffffaa" : "#555555";
 
 			let s = "?";
 
 			switch (config.arrowhead_type) {
-			case 0:
-				s = o.info.value_string(1, config.ev_pov);
-				break;
-			case 1:
-				if (node.table.nodes > 0) {
-					s = (100 * o.info.n / node.table.nodes).toFixed(0);
-				}
-				break;
-			case 2:
-				if (o.info.p > 0) {
-					s = o.info.p.toFixed(0);
-				}
-				break;
-			case 3:
-				s = o.info.multipv;
-				break;
-			case 4:
-				if (typeof o.info.m === "number") {
-					s = o.info.m.toFixed(0);
-				}
-				break;
-			default:
-				s = "!";
-				break;
+				case 0:
+					s = o.info.value_string(1, config.ev_pov);
+					break;
+				case 1:
+					if (node.table.nodes > 0) {
+						s = (100 * o.info.n / node.table.nodes).toFixed(0);
+					}
+					break;
+				case 2:
+					if (o.info.p > 0) {
+						s = o.info.p.toFixed(0);
+					}
+					break;
+				case 3:
+					s = o.info.multipv;
+					break;
+				case 4:
+					if (typeof o.info.m === "number") {
+						s = o.info.m.toFixed(0);
+					}
+					break;
+				default:
+					s = "!";
+					break;
 			}
 
-			if (o.info.__touched === false) {
+			if (o.info.__touched === false || config.hide_lines) {
 				s = "?";
 			}
 
@@ -365,7 +363,7 @@ let arrow_props = {
 	//
 	// Note that info_list here should not be modified.
 
-	draw_explorer_arrows: function(node, info_list) {
+	draw_explorer_arrows: function (node, info_list) {
 
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {

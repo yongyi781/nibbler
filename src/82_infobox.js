@@ -92,6 +92,7 @@ let infobox_props = {
 
 			// The div containing the PV etc...
 
+			const is_active = info.subcycle === best_subcycle || config.never_grayout_infolines;
 			let divclass = "infoline";
 
 			if (info.subcycle !== best_subcycle && !config.never_grayout_infolines) {
@@ -108,10 +109,10 @@ let infobox_props = {
 
 			if (config.searchmoves_buttons) {
 				if (searchmoves.includes(info.move)) {
-					substrings.push(`<span id="searchmove_${info.move}" class="yellow cursor-pointer">${config.focus_on_text} </span>`);
+					substrings.push(`<span id="searchmove_${info.move}" class="yellow cursor-pointer">${config.focus_on_text}</span> `);
 				} else {
 					if (allow_inactive_focus) {
-						substrings.push(`<span id="searchmove_${info.move}" class="gray cursor-pointer">${config.focus_off_text} </span>`);
+						substrings.push(`<span id="searchmove_${info.move}" class="gray cursor-pointer">${config.focus_off_text}</span> `);
 					}
 				}
 			}
@@ -132,10 +133,15 @@ let infobox_props = {
 				}
 			}
 
-			if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
+			if (is_active) {
 				substrings.push(`<strong class="infobox-${MoveQuality(best_info, info)}">${value_string}</strong> `);
 			} else {
 				substrings.push(`<strong>${value_string}</strong> `);
+			}
+
+			// The depth ...
+			if (config.show_depth && info.depth > 0) {
+				substrings.push(`<span class="infobox-depth">${info.depth}/${info.seldepth}</span> `);
 			}
 
 			// The PV...
@@ -184,7 +190,6 @@ let infobox_props = {
 					{
 						n: config.show_n,
 						n_abs: config.show_n_abs,
-						depth: config.show_depth,
 						wdl: config.show_wdl,
 						wdl_pov: config.wdl_pov,
 						p: config.show_p,

@@ -447,7 +447,7 @@ let hub_props = {
 		this.draw();
 		this.purge_finished_loaders();
 		this.update_graph_eval(this.engine.search_running.node);		// Possibly null.
-		this.maybe_save_window_size();
+		// this.maybe_save_window_size();
 		setTimeout(this.spin.bind(this), config.update_delay);
 	},
 

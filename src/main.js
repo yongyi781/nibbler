@@ -987,7 +987,6 @@ function menu_build() {
 				},
 				{
 					label: "Arrows",
-					accelerator: "A",
 					type: "checkbox",
 					checked: config.arrows_enabled,
 					click: () => {

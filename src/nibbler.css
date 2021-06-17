@@ -268,8 +268,14 @@ ul {
 
 .infoline strong {
 	display: inline-block;
-	width: 50px;
+	min-width: 50px;
 	text-align: center;
+}
+
+.infobox-depth {
+	display: inline-block;
+	min-width: 35px;
+	font-size: smaller;
 }
 
 .pv {
@@ -318,9 +324,13 @@ span.nobr {
 
 .btn {
 	cursor: pointer;
-	background-color: #404549;
-	border-radius: 3px;
+	background-color: #333333;
+	border-radius: 4px;
 	padding: 6px;
+}
+
+.btn:hover {
+	background-color: #404549;
 }
 
 .cursor-pointer {
