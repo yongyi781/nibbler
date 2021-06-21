@@ -2267,9 +2267,10 @@ let hub_props = {
 		this.draw();
 	},
 
-	save_window_size: function () {
-		config.width = window.innerWidth;
-		config.height = window.innerHeight;
+	save_window_size: function() {
+		let zoomfactor = parseFloat(querystring.parse(global.location.search)["zoomfactor"]);
+		config.width = Math.floor(window.innerWidth * zoomfactor);
+		config.height = Math.floor(window.innerHeight * zoomfactor);
 		this.save_config();
 	},
 
