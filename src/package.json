@@ -10,7 +10,6 @@
 		"url": "https://github.com/rooklift/nibbler"
 	},
 	"dependencies": {
-		"node-fetch": "^2.6.1",
-		"sync-fetch": "^0.3.0"
+		"node-fetch": "^2.6.1"
 	}
 }

@@ -2144,6 +2144,95 @@ function menu_build() {
 					]
 				},
 				{
+					label: "Graph max",
+					submenu: [
+						{
+							label: "7",
+							type: "checkbox",
+							checked: config.graph_max === 7,
+							click: () => {
+								set_checks("Sizes", "Graph max", "7");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 7,
+								});
+							}
+						},
+						{
+							label: "6",
+							type: "checkbox",
+							checked: config.graph_max === 6,
+							click: () => {
+								set_checks("Sizes", "Graph max", "6");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 6,
+								});
+							}
+						},
+						{
+							label: "5",
+							type: "checkbox",
+							checked: config.graph_max === 5,
+							click: () => {
+								set_checks("Sizes", "Graph max", "5");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 5,
+								});
+							}
+						},
+						{
+							label: "4",
+							type: "checkbox",
+							checked: config.graph_max === 4,
+							click: () => {
+								set_checks("Sizes", "Graph max", "4");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 4,
+								});
+							}
+						},
+						{
+							label: "3",
+							type: "checkbox",
+							checked: config.graph_max === 3,
+							click: () => {
+								set_checks("Sizes", "Graph max", "3");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 3,
+								});
+							}
+						},
+						{
+							label: "2",
+							type: "checkbox",
+							checked: config.graph_max === 2,
+							click: () => {
+								set_checks("Sizes", "Graph max", "2");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 2,
+								});
+							}
+						},
+						{
+							label: "1",
+							type: "checkbox",
+							checked: config.graph_max === 1,
+							click: () => {
+								set_checks("Sizes", "Graph max", "1");
+								win.webContents.send("set", {
+									key: "graph_max",
+									value: 1,
+								});
+							}
+						}
+					]
+				},
+				{
 					type: "separator"
 				},
 				{

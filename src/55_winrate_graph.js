@@ -79,7 +79,7 @@ function NewGrapher() {
 		let last_x = null;
 		let last_y = null;
 		let last_n = null;
-		const factor = 1 / 7;
+		const factor = 1 / config.graph_max;
 
 		// This loop creates all edges that we are going to draw, and marks each
 		// edge as dashed or not...

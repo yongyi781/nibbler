@@ -37,6 +37,7 @@ exports.defaults = {
 	"graph_height": 96,
 	"graph_line_width": 2,
 	"graph_minimum_length": 41,					// Desired depth + 1
+	"graph_max": 7,
 
 	"light_square": "#dadada",
 	"dark_square": "#b4b4b4",
