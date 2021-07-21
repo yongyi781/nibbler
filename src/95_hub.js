@@ -1341,6 +1341,9 @@ let hub_props = {
 
 		let standard_engine_options = leelaish ? standard_lc0_options : standard_ab_options;
 
+		// Note: for each key, we could check if the option is known, but that
+		// would be sketchy because we use secret stuff like "LogLiveStats".
+
 		for (let key of Object.keys(standard_engine_options)) {
 			this.engine.setoption(key, standard_engine_options[key]);
 		}
@@ -2301,7 +2304,12 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Misc...
 
-	set_special_message: function (s, css_class, duration) {
+	quit: function() {
+		this.engine.shutdown();
+		ipcRenderer.send("terminate");
+	},
+
+	set_special_message: function(s, css_class, duration) {
 		this.status_handler.set_special_message(s, css_class, duration);
 		this.draw_statusbox();
 	},

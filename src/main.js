@@ -88,6 +88,15 @@ function startup() {
 		alert(messages.renderer_hang);
 	});
 
+	win.once("close", (event) => {					// Note the once...
+		event.preventDefault();						// We prevent the close one time only,
+		win.webContents.send("call", "quit");		// to let renderer's "quit" method run once. It then sends "terminate" back.
+	});
+
+	electron.ipcMain.on("terminate", () => {
+		win.close();
+	});
+
 	electron.app.on("window-all-closed", () => {
 		electron.app.quit();
 	});
@@ -2294,7 +2303,7 @@ function menu_build() {
 							type: "checkbox",
 							checked: false,
 							click: () => {
-								let files = open_dialog({
+								let files = open_dialog(win, {
 									defaultPath: config.weights_dialog_folder,
 									properties: ["openFile"]
 								});
@@ -2324,7 +2333,7 @@ function menu_build() {
 							type: "checkbox",
 							checked: false,
 							click: () => {
-								let files = open_dialog({
+								let files = open_dialog(win, {
 									defaultPath: config.evalfile_dialog_folder,
 									properties: ["openFile"]
 								});
@@ -4270,7 +4279,7 @@ function menu_build() {
 							type: "checkbox",
 							checked: typeof config.logfile === "string" && config.logfile !== "",
 							click: () => {
-								let file = save_dialog();
+								let file = save_dialog(win, {});
 								if (typeof file === "string" && file.length > 0) {
 									win.webContents.send("call", {
 										fn: "set_logfile",
@@ -4389,6 +4398,7 @@ function get_submenu_items(menupath) {
 
 	let o = menu.items;
 	for (let p of menupath) {
+		p = stringify(p);
 		for (let item of o) {
 			if (item.label === p) {
 				if (item.submenu) {
@@ -4416,7 +4426,7 @@ function set_checks(...menupath) {
 		let items = get_submenu_items(menupath.slice(0, -1));
 		for (let n = 0; n < items.length; n++) {
 			if (items[n].checked !== undefined) {
-				items[n].checked = items[n].label === menupath[menupath.length - 1];
+				items[n].checked = items[n].label === stringify(menupath[menupath.length - 1]);
 			}
 		}
 	}, 50);
