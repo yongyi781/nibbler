@@ -16,6 +16,7 @@ const engineconfig_io = require("./modules/engineconfig_io");
 const messages = require("./modules/messages");
 const path = require("path");
 const running_as_electron = require("./modules/running_as_electron");
+const stringify = require("./modules/stringify");
 
 // We want sync save and open dialogs. In Electron 5 we could get these by calling
 // showSaveDialog or showOpenDialog without a callback, but in Electron 6 this no
