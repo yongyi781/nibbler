@@ -42,10 +42,11 @@ We are in one of these states (currently implicit in the logic):
 let NoSearch = Object.freeze({
 	node: null,
 	limit: null,
+	limit_by_time: false,
 	searchmoves: Object.freeze([])
 });
 
-function SearchParams(node = null, limit = null, searchmoves = null) {
+function SearchParams(node = null, limit = null, limit_by_time = false, searchmoves = null) {
 
 	if (!node) return NoSearch;
 
@@ -62,6 +63,7 @@ function SearchParams(node = null, limit = null, searchmoves = null) {
 	return Object.freeze({
 		node: node,
 		limit: limit,
+		limit_by_time: limit_by_time,
 		searchmoves: validated
 	});
 }
@@ -111,13 +113,13 @@ function NewEngine(hub) {
 			}
 
 			let lower = msg.toLowerCase();
-			let i1 = lower.indexOf("name");
-			let i2 = lower.indexOf("value");
+			let i1 = lower.indexOf(" name ");
+			let i2 = lower.indexOf(" value ");
 
 			if (i1 !== -1 && i2 !== -1 && i2 > i1) {
 
-				let key = lower.slice(i1 + 5, i2 - 1).trim();			// Keys are always lowercase.
-				let val = msg.slice(i2 + 6).trim();
+				let key = lower.slice(i1 + 6, i2).trim();			// Keys are always lowercase.
+				let val = msg.slice(i2 + 7).trim();
 
 				if (key.length > 0) {
 					this.sent_options[key] = val;
@@ -193,7 +195,7 @@ function NewEngine(hub) {
 
 		if (!n) {
 			s = "go infinite";
-		} else if (config.use_movetime) {			// Super-secret option for now. Not saved to config file.
+		} else if (this.search_desired.limit_by_time) {
 			s = `go movetime ${n}`;
 		} else {
 			s = `go nodes ${n}`;
@@ -213,22 +215,24 @@ function NewEngine(hub) {
 		this.hub.info_handler.engine_subcycle++;
 	};
 
-	eng.set_search_desired = function(node, limit, searchmoves) {
+	eng.set_search_desired = function(node, limit, limit_by_time, searchmoves) {
 
 		if (!this.ever_received_uciok || !this.ever_received_readyok) {
 			console.log("set_search_desired() aborted - too early");
 			return;
 		}
 
-		let params = SearchParams(node, limit, searchmoves);
+		let params = SearchParams(node, limit, limit_by_time, searchmoves);
 
 		// It is correct to check these against the *desired* search
 		// (which may or may not be the one currently running).
 
 		if (this.search_desired.node === params.node) {
 			if (this.search_desired.limit === params.limit) {
-				if (CompareArrays(this.search_desired.searchmoves, params.searchmoves)) {
-					return;
+				if (this.search_desired.limit_by_time === params.limit_by_time) {
+					if (CompareArrays(this.search_desired.searchmoves, params.searchmoves)) {
+						return;
+					}
 				}
 			}
 		}
@@ -361,6 +365,10 @@ function NewEngine(hub) {
 		return this.sent_options["uci_chess960"] === "true";				// The string "true" since these values are always strings.
 	};
 
+	eng.known = function(s) {
+		return this.known_options[s.toLowerCase()] !== undefined;
+	};
+
 	eng.send_ack_engine = function() {
 		ipcRenderer.send("ack_engine", this.filepath);
 	};
@@ -434,8 +442,8 @@ function NewEngine(hub) {
 					if (a !== -1 && b != -1) {
 						let optname = line.slice(a + 6, b).trim().toLowerCase();
 						this.known_options[optname] = line.slice(b + 1);
-						if (optname === "uci_chess960") {
-							this.setoption("UCI_Chess960", true);		// As a special thing, always set UCI_Chess960 where possible.
+						if (optname === "uci_chess960") {					// As a special thing, always set UCI_Chess960 where possible.
+							this.setoption("UCI_Chess960", true);			// (Why is this not just done in globals.js? I forget...)
 						}
 					}
 				}

@@ -81,6 +81,7 @@ if (images.validate_folder(config.override_piece_directory)) {
 
 const standard_lc0_options = {
 	"LogLiveStats": true,
+	"MoveOverheadMs": 0,
 	"MultiPV": 500,
 	"ScoreType": "centipawn",
 	"SmartPruningFactor": 0,
@@ -90,6 +91,7 @@ const standard_lc0_options = {
 
 const standard_ab_options = {
 	"Contempt": 0,
+	"Move Overhead": 0,
 	"UCI_ShowWDL": true,
 };
 

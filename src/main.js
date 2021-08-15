@@ -150,11 +150,15 @@ function startup() {
 	});
 
 	electron.ipcMain.on("ack_node_limit", (event, msg) => {
-		set_checks("Engine", "Node limit - normal", msg);
+		set_checks("Engine", "Limit - normal", msg);
 	});
 
 	electron.ipcMain.on("ack_special_node_limit", (event, msg) => {
-		set_checks("Engine", "Node limit - auto-eval / play", msg);
+		set_checks("Engine", "Limit - auto-eval / play", msg);
+	});
+
+	electron.ipcMain.on("ack_limit_by_time", (event, msg) => {
+		set_one_check(msg ? true : false, "Engine", "Limit by time instead of nodes");
 	});
 
 	electron.ipcMain.on("ack_setoption", (event, msg) => {
@@ -533,8 +537,9 @@ function menu_build() {
 					type: "separator"
 				},
 				{
-					label: "Quit",
-					role: "quit"
+					label: "Quit",							// Presumably calls electron.app.quit(), which tries to
+					accelerator: "CommandOrControl+Q",		// close all windows, and quits iff it succeeds (which
+					role: "quit"							// it won't, because we prevent the initial close...)
 				},
 			]
 		},
@@ -2593,7 +2598,7 @@ function menu_build() {
 					type: "separator"
 				},
 				{
-					label: "Node limit - normal",
+					label: "Limit - normal",
 					submenu: [
 						{
 							label: "Unlimited",
@@ -2769,7 +2774,7 @@ function menu_build() {
 					]
 				},
 				{
-					label: "Node limit - auto-eval / play",
+					label: "Limit - auto-eval / play",
 					submenu: [
 						{
 							label: "100,000,000",
@@ -2939,6 +2944,14 @@ function menu_build() {
 							}
 						},
 					]
+				},
+				{
+					label: "Limit by time instead of nodes",
+					type: "checkbox",
+					checked: false,
+					click: () => {
+						win.webContents.send("call", "toggle_limit_by_time");
+					}
 				},
 				{
 					type: "separator"
@@ -4060,12 +4073,6 @@ function menu_build() {
 							key: "save_enabled",			// config file.
 							value: true,
 						});
-					}
-				},
-				{
-					label: `Resave ${config_io.filename}`,
-					click: () => {
-						win.webContents.send("call", "save_config");
 					}
 				},
 				{
