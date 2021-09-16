@@ -88,6 +88,8 @@ exports.defaults = {
 	"hover_method": 2,
 	"hide_lines": false,
 
+	"looker_api": null,
+
 	"pv_click_event": 1,		// 0: nothing, 1: goto, 2: tree
 
 	"pgn_ev": true,

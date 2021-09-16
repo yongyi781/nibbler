@@ -7,6 +7,7 @@ function NewHub() {
 	hub.engine = NewEngine(hub);						// Just a dummy object with no exe. Fixed by start.js later.
 	hub.tree = NewTreeHandler();
 	hub.grapher = NewGrapher();
+	hub.looker = NewLooker();
 	hub.info_handler = NewInfoHandler();
 	hub.status_handler = NewStatusHandler();
 
@@ -28,6 +29,7 @@ function NewHub() {
 	hub.node_to_clean = hub.tree.node;					// The next node to be cleaned up (done when exiting it).
 	hub.leela_lock_node = null;							// Non-null only when in "analysis_locked" mode.
 
+	hub.looker.add_to_queue(hub.tree.node.board);		// Maybe make initial call to API such as ChessDN.cn...
 	Object.assign(hub, hub_props);
 	return hub;
 }
@@ -163,6 +165,8 @@ let hub_props = {
 
 		this.node_exit_cleanup();						// This feels like the right time to do this.
 		this.node_to_clean = this.tree.node;
+
+		this.looker.add_to_queue(this.tree.node.board);
 	},
 
 	set_behaviour: async function (s) {
@@ -874,7 +878,8 @@ let hub_props = {
 			this.active_square,
 			this.tree.node.board.active,
 			this.hoverdraw_div,
-			config.behaviour === "halt" || config.never_suppress_searchmoves);
+			config.behaviour === "halt" || config.never_suppress_searchmoves,
+			config.looker_api ? this.looker.lookup(config.looker_api, this.tree.node.board) : null);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
@@ -2152,7 +2157,22 @@ let hub_props = {
 		this.draw();
 	},
 
-	invert_searchmoves: function () {
+	set_looker_api: function(value) {
+
+		if (config.looker_api === value) {
+			return;
+		}
+
+		config.looker_api = value;
+
+		this.looker.clear_queue();
+
+		if (value) {
+			this.looker.add_to_queue(this.tree.node.board);
+		}
+	},
+
+	invert_searchmoves: function() {
 
 		if (!config.searchmoves_buttons || Array.isArray(this.tree.node.searchmoves) === false) {
 			return;
