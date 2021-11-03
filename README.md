@@ -1,5 +1,13 @@
 # Nibbler
 
+This is my fork of Nibbler, optimized for use with Stockfish. The main changes are:
+* Streamlined shortcuts for many commands by removing or changing modifiers
+* Removed percentage-based evaluation in favor of centipawn evaluation.
+* Changed fonts and colors.
+* Added the ability to use the Lichess opening book for auto-play.
+* Added an eval bar to the right of the chessboard.
+* Added the ability to hide lines and evaluations (toggled by S)
+
 "By far the best ICCF analysis tool for Leela." &mdash; *jhorthos*
 
 Nibbler is a real-time analysis GUI for [Leela Chess Zero](http://lczero.org/play/quickstart/) (Lc0), which runs Leela in the background and constantly displays opinions about the current position. You can also compel the engine to evaluate one or more specific moves. Nibbler is loosely inspired by [Lizzie](https://github.com/featurecat/lizzie) and [Sabaki](https://github.com/SabakiHQ/Sabaki).
@@ -8,7 +16,7 @@ These days, Nibbler more-or-less works with traditional engines like [Stockfish]
 
 For prebuilt binary releases, see the [Releases](https://github.com/rooklift/nibbler/releases) section. For help, the [Discord](https://discordapp.com/invite/pKujYxD) may be your best bet, or open an issue here.
 
-![Screenshot](https://user-images.githubusercontent.com/16438795/80602436-088c6e00-8a27-11ea-8163-d26b176f17af.png)
+![Screenshot](https://user-images.githubusercontent.com/4749325/140233758-31b73f81-34e5-45c2-8ffc-f41bb32b6389.png)
 
 # Features
 
