@@ -2007,14 +2007,14 @@ function menu_build() {
 					label: "Graph",
 					submenu: [
 						{
-							label: "192",
+							label: "384",
 							type: "checkbox",
-							checked: config.graph_height === 192,
+							checked: config.graph_height === 384,
 							click: () => {
-								set_checks("Sizes", "Graph", "192");
+								set_checks("Sizes", "Graph", "384");
 								win.webContents.send("call", {
 									fn: "set_graph_height",
-									args: [192],
+									args: [384],
 								});
 							}
 						},
