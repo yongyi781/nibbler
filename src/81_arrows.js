@@ -147,7 +147,7 @@ let arrow_props = {
 			// If it wasn't already set, then we have good info for this move.
 
 			if (mode === "ab") {
-				if (loss >= config.ab_filter_threshold) {
+				if (loss > config.ab_filter_threshold) {
 					ok = false;
 				}
 			}
