@@ -59,6 +59,7 @@ let hub_props = {
 
 			case "analysis_free":
 			case "auto_analysis":
+			case "back_analysis":
 
 				// Note that the 2nd part of the condition is needed because changing behaviour can change what node_limit()
 				// returns, therefore we might already be running a search for the right node but with the wrong limit.
@@ -153,7 +154,7 @@ let hub_props = {
 		// Caller can tell us the change would cause user confusion for some modes...
 
 		if (avoid_confusion) {
-			if (["play_white", "play_black", "self_play", "auto_analysis"].includes(config.behaviour)) {
+			if (["play_white", "play_black", "self_play", "auto_analysis", "back_analysis"].includes(config.behaviour)) {
 				this.set_behaviour("halt");
 			}
 		}
@@ -905,6 +906,8 @@ let hub_props = {
 
 		this.update_graph_eval(relevant_node);		// Now's the last chance to update our graph eval for this node.
 
+		let ok;		// Used by 2 different parts of the switch.
+
 		switch (config.behaviour) {
 
 			case "self_play":
@@ -918,7 +921,7 @@ let hub_props = {
 				}
 
 				let tokens = s.split(" ").filter(z => z !== "");
-				let ok = this.move(tokens[1]);
+				ok = this.move(tokens[1]);
 
 				if (!ok) {
 					LogBoth(`BAD BESTMOVE (${tokens[1]}) IN POSITION ${this.tree.node.board.fen(true)}`);
@@ -932,6 +935,7 @@ let hub_props = {
 				break;
 
 			case "auto_analysis":
+			case "back_analysis":
 
 				if (relevant_node !== this.tree.node) {
 					LogBoth(`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`);
@@ -939,7 +943,13 @@ let hub_props = {
 					break;
 				}
 
-				if (this.tree.next()) {
+				if (config.behaviour === "auto_analysis") {
+					ok = this.tree.next();
+				} else if (config.behaviour === "back_analysis") {
+					ok = this.tree.prev();
+				}
+
+				if (ok) {
 					this.position_changed(false, false);
 				} else {
 					this.set_behaviour("halt");
@@ -1074,6 +1084,7 @@ let hub_props = {
 			case "play_black":
 			case "self_play":
 			case "auto_analysis":
+			case "back_analysis":
 
 				cfg_value = engineconfig[this.engine.filepath].search_nodes_special;
 				break;
@@ -1190,13 +1201,13 @@ let hub_props = {
 		}
 	},
 
-	toggle_limit_by_time: function() {
+	toggle_limit_by_time: function () {
 		engineconfig[this.engine.filepath].limit_by_time = !engineconfig[this.engine.filepath].limit_by_time;
 		this.send_ack_limit_by_time();
 		this.handle_search_params_change();
 	},
 
-	send_ack_limit_by_time: function() {
+	send_ack_limit_by_time: function () {
 		ipcRenderer.send("ack_limit_by_time", engineconfig[this.engine.filepath].limit_by_time);
 	},
 
@@ -1353,7 +1364,7 @@ let hub_props = {
 		return true;
 	},
 
-	engine_send_all_options: function() {
+	engine_send_all_options: function () {
 
 		// The engine should never have been given a "go" before this.
 
@@ -2157,7 +2168,7 @@ let hub_props = {
 		this.draw();
 	},
 
-	set_looker_api: function(value) {
+	set_looker_api: function (value) {
 
 		if (config.looker_api === value) {
 			return;
@@ -2172,7 +2183,7 @@ let hub_props = {
 		}
 	},
 
-	invert_searchmoves: function() {
+	invert_searchmoves: function () {
 
 		if (!config.searchmoves_buttons || Array.isArray(this.tree.node.searchmoves) === false) {
 			return;
@@ -2296,7 +2307,7 @@ let hub_props = {
 		this.draw();
 	},
 
-	save_window_size: function() {
+	save_window_size: function () {
 		let zoomfactor = parseFloat(querystring.parse(global.location.search)["zoomfactor"]);
 		config.width = Math.floor(window.innerWidth * zoomfactor);
 		config.height = Math.floor(window.innerHeight * zoomfactor);
@@ -2328,14 +2339,14 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Misc...
 
-	quit: function() {
+	quit: function () {
 		this.engine.shutdown();
 		this.save_config();
 		this.save_engineconfig();
 		ipcRenderer.send("terminate");
 	},
 
-	set_special_message: function(s, css_class, duration) {
+	set_special_message: function (s, css_class, duration) {
 		this.status_handler.set_special_message(s, css_class, duration);
 		this.draw_statusbox();
 	},
