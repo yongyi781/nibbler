@@ -233,14 +233,11 @@ let hub_props = {
 		const url = new URL("https://explorer.lichess.ovh/lichess");
 		const params = new URLSearchParams();
 		params.append("variant", "standard");
-		for (let s of config.lichess_book_speeds) {
-			params.append("speeds[]", s);
-		}
-		for (let n of config.lichess_book_ratings) {
-			params.append("ratings[]", n);
-		}
+		params.append("speeds", config.lichess_book_speeds);
+		params.append("ratings", config.lichess_book_ratings);
 		params.append("fen", this.tree.node.board.fen(true));
 		url.search = params.toString();
+		console.log(url.search);
 
 		let json;
 
