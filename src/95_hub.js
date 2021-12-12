@@ -237,7 +237,6 @@ let hub_props = {
 		params.append("ratings", config.lichess_book_ratings);
 		params.append("fen", this.tree.node.board.fen(true));
 		url.search = params.toString();
-		console.log(url.search);
 
 		let json;
 
