@@ -179,7 +179,6 @@ let hub_props = {
 	},
 
 	set_behaviour: async function (s) {
-
 		if (!this.engine.ever_received_uciok || !this.engine.ever_received_readyok) {
 			s = "halt";
 		}
@@ -250,6 +249,7 @@ let hub_props = {
 		if (ok) {
 			this.position_changed(false, false);
 		} else {
+			console.log("Not ok");
 			this.set_behaviour("halt");
 		}
 	},
@@ -952,23 +952,16 @@ let hub_props = {
 					}
 				}
 
+				break;
+
+			case "auto_analysis":
+			case "back_analysis":
+
 				if (relevant_node !== this.tree.node) {
 					LogBoth(`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`);
 					this.set_behaviour("halt");
 				} else {
 					this.continue_auto_analysis();
-				}
-
-				if (config.behaviour === "auto_analysis") {
-					ok = this.tree.next();
-				} else if (config.behaviour === "back_analysis") {
-					ok = this.tree.prev();
-				}
-
-				if (ok) {
-					this.position_changed(false, false);
-				} else {
-					this.set_behaviour("halt");
 				}
 
 				break;
