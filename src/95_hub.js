@@ -50,6 +50,10 @@ let hub_props = {
 		//		Call __halt() to ensure the engine isn't running
 		//		Nothing, iff the correct search is already running
 
+		if (reason !== "position" && reason !== "behaviour") {
+			throw "behave(): bad call";
+		}
+
 		switch (config.behaviour) {
 
 			case "halt":
