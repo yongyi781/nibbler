@@ -58,14 +58,22 @@ let hub_props = {
 				break;
 
 			case "analysis_free":
-			case "auto_analysis":
-			case "back_analysis":
 
 				// Note that the 2nd part of the condition is needed because changing behaviour can change what node_limit()
 				// returns, therefore we might already be running a search for the right node but with the wrong limit.
 				// THIS IS TRUE THROUGHOUT THIS FUNCTION.
 
 				if (this.engine.search_desired.node !== this.tree.node || this.engine.search_desired.limit !== this.node_limit()) {
+					this.__go(this.tree.node);
+				}
+				break;
+
+			case "auto_analysis":
+			case "back_analysis":
+
+				if (this.tree.node.terminal_reason()) {
+					this.continue_auto_analysis();				// This can get a bit recursive, do we care?
+				} else if (this.engine.search_desired.node !== this.tree.node || this.engine.search_desired.limit !== this.node_limit()) {
 					this.__go(this.tree.node);
 				}
 				break;
@@ -229,6 +237,23 @@ let hub_props = {
 		// another (unless config.allow_stopped_analysis is set).
 	},
 
+	continue_auto_analysis: function () {
+
+		let ok;
+
+		if (config.behaviour === "auto_analysis") {
+			ok = this.tree.next();
+		} else if (config.behaviour === "back_analysis") {
+			ok = this.tree.prev();
+		}
+
+		if (ok) {
+			this.position_changed(false, false);
+		} else {
+			this.set_behaviour("halt");
+		}
+	},
+
 	lichess_book_move: async function () {
 		const url = new URL("https://explorer.lichess.ovh/lichess");
 		const params = new URLSearchParams();
@@ -237,7 +262,6 @@ let hub_props = {
 		params.append("ratings", config.lichess_book_ratings);
 		params.append("fen", this.tree.node.board.fen(true));
 		url.search = params.toString();
-
 		let json;
 
 		try {
@@ -902,7 +926,7 @@ let hub_props = {
 
 		this.update_graph_eval(relevant_node);		// Now's the last chance to update our graph eval for this node.
 
-		let ok;		// Used by 2 different parts of the switch.
+		let ok;		// Could be used by 2 different parts of the switch (but not at time of writing...)
 
 		switch (config.behaviour) {
 
@@ -928,15 +952,11 @@ let hub_props = {
 					}
 				}
 
-				break;
-
-			case "auto_analysis":
-			case "back_analysis":
-
 				if (relevant_node !== this.tree.node) {
 					LogBoth(`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`);
 					this.set_behaviour("halt");
-					break;
+				} else {
+					this.continue_auto_analysis();
 				}
 
 				if (config.behaviour === "auto_analysis") {
