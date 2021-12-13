@@ -31,7 +31,7 @@ const table_prototype = {
 		} else {
 			let info = SortedMoveInfoFromTable(this)[0];
 			if (info && !info.__ghost && info.__touched && (this.nodes > 1 || this.limit === 1)) {
-				this.eval = info.board.active === "w" ? info.value() : 1 - info.value();
+				this.eval = info.board.active === "w" ? info.cp / 100 : -info.cp / 100;
 			} else {
 				this.eval = null;
 			}

@@ -363,16 +363,16 @@ const node_prototype = {
 
 		if (board.no_moves()) {
 			if (board.king_in_check()) {
-				this.table.set_terminal_info("Checkmate", board.active === "w" ? 0 : 1);	// The PGN writer checks for this exact string! (Lame...)
+				this.table.set_terminal_info("Checkmate", board.active === "w" ? -320 : 320);	// The PGN writer checks for this exact string! (Lame...)
 			} else {
-				this.table.set_terminal_info("Stalemate", 0.5);
+				this.table.set_terminal_info("Stalemate", 0);
 			}
 		} else if (board.insufficient_material()) {
-			this.table.set_terminal_info("Insufficient Material", 0.5);
+			this.table.set_terminal_info("Insufficient Material", 0);
 		} else if (board.halfmove >= 100) {
-			this.table.set_terminal_info("50 Move Rule", 0.5);
+			this.table.set_terminal_info("50 Move Rule", 0);
 		} else if (this.is_triple_rep()) {
-			this.table.set_terminal_info("Triple Repetition", 0.5);
+			this.table.set_terminal_info("Triple Repetition", 0);
 		} else {
 			this.table.set_terminal_info("", null);
 		}
