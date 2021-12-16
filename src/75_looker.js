@@ -34,20 +34,21 @@ let looker_props = {
 			return;
 		}
 
-		let query = {
+		let query = {							// Since queries are objects, different queries can always be told apart.
 			board: board,
 			db_name: config.looker_api
 		};
 
-		if (!this.running) {
-			this.running = query;				// Since queries are objects, different queries can always be told apart.
-			this.send_query(this.running);		// And send that object we just stored, not a new one.
+		if (!this.running) {							
+			this.send_query(query);
 		} else {
-			this.pending = query;				// As above.
+			this.pending = query;
 		}
 	},
 
 	send_query: function(query) {
+
+		this.running = query;
 
 		// It is ESSENTIAL that every call to send_query() eventually generates a call to query_complete()
 		// so that the item gets removed from the queue. While we don't really need to use promises, doing
@@ -62,15 +63,17 @@ let looker_props = {
 
 	query_complete: function(query) {
 
-		if (this.running !== query) {
+		if (this.running !== query) {			// Possible if clear_queue() was called.
 			return;
 		}
 
-		this.running = this.pending;
+		let next_query = this.pending;
+
+		this.running = null;
 		this.pending = null;
 
-		if (this.running) {
-			this.send_query(this.running);
+		if (next_query) {
+			this.send_query(next_query);
 		}
 	},
 
@@ -89,11 +92,12 @@ let looker_props = {
 
 	new_entry: function(db_name, board) {		// Creates a new (empty) entry in the database (to be populated elsewhere) and returns it.
 
-		let db = this.get_db(db_name);
 		let entry = {
 			type: db_name,
 			moves: {},
 		};
+
+		let db = this.get_db(db_name);
 		db[board.fen()] = entry;
 		return entry;
 	},
@@ -140,9 +144,7 @@ let looker_props = {
 			url = `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`;
 		} else if (query.db_name === "lichess_plebs") {
 			url = `http://explorer.lichess.ovh/lichess?variant=standard&topGames=0&recentGames=0&fen=${fen_for_web}`;
-		}
-
-		if (!url) {
+		} else {
 			return Promise.reject(new Error("Bad db_name"));
 		}
 
