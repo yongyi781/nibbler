@@ -74,7 +74,7 @@ let looker_props = {
 		}
 	},
 
-	get_db: function(db_name) {			// Creates it if needed.
+	get_db: function(db_name) {					// Creates it if needed.
 
 		if (typeof db_name !== "string") {
 			return null;
@@ -87,26 +87,37 @@ let looker_props = {
 		return this.all_dbs[db_name];
 	},
 
+	new_entry: function(db_name, board) {		// Creates a new (empty) entry in the database (to be populated elsewhere) and returns it.
+
+		let db = this.get_db(db_name);
+		let entry = {
+			type: db_name,
+			moves: {},
+		};
+		db[board.fen()] = entry;
+		return entry;
+	},
+
 	lookup: function(db_name, board) {
 
 		// When repeatedly called with the same params, this should
 		// return the same object (unless it changes of course).
 
 		let db = this.get_db(db_name);
-		if (db) {						// Remember get_db() can return null.
+		if (db) {								// Remember get_db() can return null.
 			let ret = db[board.fen()];
 			if (ret) {
 				return ret;
 			}
 		}
-		return null;					// I guess we tend to like null over undefined. (Bad habit?)
+		return null;							// I guess we tend to like null over undefined. (Bad habit?)
 	},
 
 	set_ban: function(db_name) {
 		this.bans[db_name] = performance.now();
 	},
 
-	query_api(query) {					// Returns a promise, which is solely used by the caller to attach some cleanup catch/finally()
+	query_api(query) {		// Returns a promise, which is solely used by the caller to attach some cleanup catch/finally()
 
 		if (this.lookup(query.db_name, query.board)) {							// We already have a result for this board.
 			return Promise.resolve();											// Consider this case a satisfactory result.
@@ -128,11 +139,11 @@ let looker_props = {
 		} else if (query.db_name === "lichess_masters") {
 			url = `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`;
 		} else if (query.db_name === "lichess_plebs") {
-			url = `http://explorer.lichess.ovh/lichess?variant=standard&topGames=0&fen=${fen_for_web}`;
+			url = `http://explorer.lichess.ovh/lichess?variant=standard&topGames=0&recentGames=0&fen=${fen_for_web}`;
 		}
 
 		if (!url) {
-			return Promise.reject(new Error("Bad db_name"));					// static Promise class method
+			return Promise.reject(new Error("Bad db_name"));
 		}
 
 		return fetch(url).then(response => {
@@ -140,7 +151,7 @@ let looker_props = {
 				this.set_ban(query.db_name);
 				throw new Error("rate limited");
 			}
-			if (!response.ok) {													// true iff status in range 200-299
+			if (!response.ok) {													// ok means status in range 200-299
 				throw new Error("response.ok was false");
 			}
 			return response.json();
@@ -152,17 +163,7 @@ let looker_props = {
 	handle_response_object: function(query, raw_object) {
 
 		let board = query.board;
-		let fen = board.fen();
-
-		// Get the correct DB, creating it if needed...
-
-		let db = this.get_db(query.db_name);
-
-		// Create or recreate the info object. Recreation ensures that the infobox drawer can
-		// tell that it's a new object if it changes (and a redraw is needed).
-
-		let o = {type: query.db_name, moves: {}};
-		db[fen] = o;
+		let o = this.new_entry(query.db_name, board);
 
 		// If the raw_object is invalid, now's the time to return - after the empty object
 		// has been stored in the database, so we don't do this lookup again.
@@ -171,29 +172,17 @@ let looker_props = {
 			return;			// This can happen e.g. if the position is checkmate.
 		}
 
-		// Now add moves to the object...
+		// Now add moves to the entry...
 
-		for (let item of raw_object.moves) {
+		for (let raw_item of raw_object.moves) {
 
-			let move = item.uci;
+			let move = raw_item.uci;
 			move = board.c960_castling_converter(move);
 
 			if (query.db_name === "chessdbcn") {
-
-				let move_object = Object.create(chessdbcn_move_props);
-				move_object.active = board.active;
-				move_object.score = item.score / 100;
-				o.moves[move] = move_object;
-
+				o.moves[move] = new_chessdbcn_move(board, raw_item);
 			} else if (query.db_name === "lichess_masters" || query.db_name === "lichess_plebs") {
-
-				let move_object = Object.create(lichess_move_props);
-				move_object.active = board.active;
-				move_object.white = item.white;
-				move_object.black = item.black;
-				move_object.draws = item.draws;
-				move_object.total = item.white + item.draws + item.black;
-				o.moves[move] = move_object;
+				o.moves[move] = new_lichess_move(board, raw_item);
 			}
 		}
 
@@ -203,10 +192,20 @@ let looker_props = {
 };
 
 
+// Below are some functions which use the info a server sends about a single move to create our
+// own object containing just what we need (and with a prototype containing some useful methods).
 
-let chessdbcn_move_props = {	// The props for a single move in a chessdbcn object.
 
-	text: function(pov) {		// pov can be null for current
+function new_chessdbcn_move(board, raw_item) {			// The object with info about a single move in a chessdbcn object.
+	let ret = Object.create(chessdbcn_move_props);
+	ret.active = board.active;
+	ret.score = raw_item.score / 100;
+	return ret;
+}
+
+let chessdbcn_move_props = {
+
+	text: function(pov) {								// pov can be null for current
 
 		let score = this.score;
 
@@ -221,17 +220,35 @@ let chessdbcn_move_props = {	// The props for a single move in a chessdbcn objec
 
 		return `API: ${s}`;
 	},
+
+	sort_score: function() {
+		return this.score;
+	},
 };
 
-let lichess_move_props = {		// The props for a single move in a lichess object.
+function new_lichess_move(board, raw_item) {			// The object with info about a single move in a lichess object.
+	let ret = Object.create(lichess_move_props);
+	ret.active = board.active;
+	ret.white = raw_item.white;
+	ret.black = raw_item.black;
+	ret.draws = raw_item.draws;
+	ret.total = raw_item.white + raw_item.draws + raw_item.black;
+	return ret;
+}
 
-	text: function(pov) {		// pov can be null for current
+let lichess_move_props = {
+
+	text: function(pov) {								// pov can be null for current
 
 		let actual_pov = pov ? pov : this.active;
 		let wins = actual_pov === "w" ? this.white : this.black;
 		let ev = (wins + (this.draws / 2)) / this.total;
 
 		return `API: ${(ev * 100).toFixed(1)}% [${NString(this.total)}]`;
+	},
+
+	sort_score: function() {
+		return this.total;
 	},
 };
 

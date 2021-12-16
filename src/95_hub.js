@@ -1454,10 +1454,22 @@ let hub_props = {
 	},
 
 	play_info_index: function(n) {
-		let info_list = SortedMoveInfo(this.tree.node);
-		if (typeof n === "number" && n >= 0 && n < info_list.length) {
-			if (info_list[n].__touched) {
-				this.move(info_list[n].move);
+
+		let line_starts = this.info_handler.info_clickers.filter(o => o.is_start);
+
+		if (n < line_starts.length) {
+
+			let move = line_starts[n].move;
+
+			let table_move = this.tree.node.table.moveinfo[move];
+
+			if (table_move && table_move.__touched) {		// Allow this to happen if the move is touched
+				this.move(move);
+			} else if (config.looker_api) {					// Allow this to happen if the move is in the selected API database
+				let db_entry = this.looker.lookup(config.looker_api, this.tree.node.board);
+				if (db_entry && db_entry.moves[move]) {
+					this.move(move);
+				}
 			}
 		}
 	},
