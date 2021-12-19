@@ -1593,7 +1593,7 @@ function menu_build() {
 					type: "separator"
 				},
 				{
-					label: "Book weights mode",
+					label: "Book frequency arrows",
 					accelerator: "E",
 					type: "checkbox",
 					checked: config.book_explorer,			// But this is never saved in the config file.
@@ -1602,19 +1602,20 @@ function menu_build() {
 							fn: "toggle",
 							args: ["book_explorer"]			// The hub will automatically turn off lichess weights mode.
 						});
-						set_one_check(false, "Display", "Lichess weights mode");
+						set_one_check(false, "Display", "Lichess frequency arrows");
 					}
 				},
 				{
-					label: "Lichess weights mode",
+					label: "Lichess frequency arrows",
 					type: "checkbox",
+					accelerator: "CommandOrControl+E",
 					checked: config.lichess_explorer,		// But this is never saved in the config file.
 					click: () => {
 						win.webContents.send("call", {
 							fn: "toggle",
 							args: ["lichess_explorer"]		// The hub will automatically turn off book weights mode.
 						});
-						set_one_check(false, "Display", "Book weights mode");
+						set_one_check(false, "Display", "Book frequency arrows");
 					}
 				},
 			]
