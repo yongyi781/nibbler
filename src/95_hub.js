@@ -259,15 +259,9 @@ let hub_props = {
 	},
 
 	lichess_book_move: async function() {
-		const url = new URL("https://explorer.lichess.ovh/lichess");
-		const params = new URLSearchParams();
-		params.append("variant", "standard");
-		params.append("speeds", config.lichess_book_speeds);
-		params.append("ratings", config.lichess_book_ratings);
-		params.append("fen", this.tree.node.board.fen(true));
-		url.search = params.toString();
-		let json;
+		const url = MakeLichessUrl(this.tree.node.board.fen(true));
 
+		let json;
 		try {
 			const response = await fetch(url);
 			json = await response.json();

@@ -39,7 +39,7 @@ let looker_props = {
 			db_name: config.looker_api
 		};
 
-		if (!this.running) {							
+		if (!this.running) {
 			this.send_query(query);
 		} else {
 			this.pending = query;
@@ -143,7 +143,7 @@ let looker_props = {
 		} else if (query.db_name === "lichess_masters") {
 			url = `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`;
 		} else if (query.db_name === "lichess_plebs") {
-			url = `http://explorer.lichess.ovh/lichess?variant=standard&topGames=0&recentGames=0&fen=${fen_for_web}`;
+			url = MakeLichessUrl(friendly_fen);
 		} else {
 			return Promise.reject(new Error("Bad db_name"));
 		}
@@ -269,4 +269,3 @@ let lichess_move_props = {
 		return this.total;
 	},
 };
-

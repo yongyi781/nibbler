@@ -682,3 +682,16 @@ function MoveQuality(best_info, info) {
 	}
 	return "unknown";
 }
+
+function MakeLichessUrl(fen) {
+	const url = new URL("https://explorer.lichess.ovh/lichess");
+	const params = new URLSearchParams();
+	params.append("variant", "standard");
+	params.append("topGames", 0);
+	params.append("recentGames", 0);
+	params.append("speeds", config.lichess_book_speeds);
+	params.append("ratings", config.lichess_book_ratings);
+	params.append("fen", fen);
+	url.search = params.toString();
+	return url;
+}
