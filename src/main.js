@@ -1962,14 +1962,14 @@ function menu_build() {
 					label: "Graph",
 					submenu: [
 						{
-							label: "384",
+							label: "320",
 							type: "checkbox",
-							checked: config.graph_height === 384,
+							checked: config.graph_height === 320,
 							click: () => {
-								set_checks("Sizes", "Graph", "384");
+								set_checks("Sizes", "Graph", "320");
 								win.webContents.send("call", {
 									fn: "set_graph_height",
-									args: [384],
+									args: [320],
 								});
 							}
 						},
