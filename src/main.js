@@ -1466,6 +1466,17 @@ function menu_build() {
 					]
 				},
 				{
+					label: "Allow API after move 25",
+					type: "checkbox",
+					checked: config.look_past_25,
+					click: () => {
+						win.webContents.send("call", {
+							fn: "toggle",
+							args: ["look_past_25"],
+						});
+					}
+				},
+				{
 					type: "separator"
 				},
 				{

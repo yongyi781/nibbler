@@ -89,6 +89,7 @@ exports.defaults = {
 	"hide_lines": false,
 
 	"looker_api": null,
+	"look_past_25": false,
 
 	"pv_click_event": 1,		// 0: nothing, 1: goto, 2: tree
 
