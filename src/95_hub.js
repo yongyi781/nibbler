@@ -2378,7 +2378,7 @@ let hub_props = {
 	},
 
 	save_window_size: function() {
-		let zoomfactor = parseFloat(querystring.parse(global.location.search)["zoomfactor"]);
+		let zoomfactor = parseFloat(querystring.parse(global.location.search.slice(1))["zoomfactor"]);
 		config.width = Math.floor(window.innerWidth * zoomfactor);
 		config.height = Math.floor(window.innerHeight * zoomfactor);
 	},

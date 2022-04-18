@@ -10,8 +10,8 @@ exports.filename = "config.json";
 // To avoid using "remote", we rely on the main process passing userData location in the query...
 
 exports.filepath = electron.app ?
-		path.join(electron.app.getPath("userData"), exports.filename) :									// in Main process
-		path.join(querystring.parse(global.location.search)["?user_data_path"], exports.filename);		// in Renderer process
+		path.join(electron.app.getPath("userData"), exports.filename) :											// in Main process
+		path.join(querystring.parse(global.location.search.slice(1))["user_data_path"], exports.filename);		// in Renderer process
 
 function Config() {}			// This exists solely to make instanceof work.
 Config.prototype = {};
@@ -23,6 +23,8 @@ exports.defaults = {
 
 	"args_unused": null,
 	"options_unused": null,
+
+	"disable_hw_accel": false,
 
 	"width": 1280,
 	"height": 835,
