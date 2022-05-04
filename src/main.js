@@ -4223,9 +4223,6 @@ function menu_build() {
 							}
 						},
 						{
-							type: "separator"
-						},
-						{
 							label: "Allow stopped analysis",
 							type: "checkbox",
 							checked: config.allow_stopped_analysis,
@@ -4255,6 +4252,17 @@ function menu_build() {
 								win.webContents.send("call", {
 									fn: "toggle",
 									args: ["never_grayout_infolines"],
+								});
+							}
+						},
+						{
+							label: "Use lowerbound / upperbound info",
+							type: "checkbox",
+							checked: config.accept_bounds,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "toggle",
+									args: ["accept_bounds"],
 								});
 							}
 						},

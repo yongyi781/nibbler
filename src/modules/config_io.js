@@ -53,6 +53,7 @@ exports.defaults = {
 	"focus_on_text": "focused:",
 	"focus_off_text": "focus?",
 
+	"accept_bounds": false,
 	"max_info_lines": null,						// Hidden option
 
 	"bad_move_threshold": 0.02,
