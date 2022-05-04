@@ -90,11 +90,11 @@ function startup() {
 	});
 
 	win.once("ready-to-show", () => {
-		try {
-			win.webContents.setZoomFactor(desired_zoomfactor);	// This seems to work, note issue 10572 above.
-		} catch (err) {
-			win.webContents.zoomFactor = desired_zoomfactor;	// The method above "will be removed" in future.
-		}
+		// try {
+		// 	win.webContents.setZoomFactor(desired_zoomfactor);	// This seems to work, note issue 10572 above.
+		// } catch (err) {
+		// 	win.webContents.zoomFactor = desired_zoomfactor;	// The method above "will be removed" in future.
+		// }
 		win.show();
 		win.focus();
 	});
@@ -258,7 +258,7 @@ function startup() {
 
 	let query = {};
 	query.user_data_path = electron.app.getPath("userData");
-	query.zoomfactor = desired_zoomfactor;
+	// query.zoomfactor = desired_zoomfactor;
 
 	win.loadFile(
 		path.join(__dirname, "nibbler.html"),
