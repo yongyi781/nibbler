@@ -3232,6 +3232,30 @@ function menu_build() {
 					label: "Hash",
 					submenu: [
 						{
+							label: "120 GB",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["Hash", 120 * 1024]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "56 GB",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["Hash", 56 * 1024]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
 							label: "24 GB",
 							type: "checkbox",
 							checked: false,
@@ -3239,30 +3263,6 @@ function menu_build() {
 								win.webContents.send("call", {
 									fn: "set_uci_option_permanent",
 									args: ["Hash", 24 * 1024]
-								});
-								// Will receive an ack IPC which sets menu checks.
-							}
-						},
-						{
-							label: "20 GB",
-							type: "checkbox",
-							checked: false,
-							click: () => {
-								win.webContents.send("call", {
-									fn: "set_uci_option_permanent",
-									args: ["Hash", 20 * 1024]
-								});
-								// Will receive an ack IPC which sets menu checks.
-							}
-						},
-						{
-							label: "16 GB",
-							type: "checkbox",
-							checked: false,
-							click: () => {
-								win.webContents.send("call", {
-									fn: "set_uci_option_permanent",
-									args: ["Hash", 16 * 1024]
 								});
 								// Will receive an ack IPC which sets menu checks.
 							}
@@ -4198,7 +4198,7 @@ function menu_build() {
 					type: "separator"
 				},
 				{
-					label: "Non-recommended options",
+					label: "Hacks and kludges",
 					submenu: [
 						{
 							label: "Allow arbitrary scripts",
@@ -4314,6 +4314,20 @@ function menu_build() {
 									args: [null]
 								});
 								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							type: "separator"
+						},
+						{
+							label: "Clear log when opening",
+							type: "checkbox",
+							checked: config.clear_log,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "toggle",
+									args: ["clear_log"],
+								});
 							}
 						},
 						{
