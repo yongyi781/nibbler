@@ -176,7 +176,7 @@ let infobox_props = {
 			}
 
 			// The depth ...
-			if (config.show_depth && info.depth > 0) {
+			if (config.show_depth) {
 				substrings.push(`<span class="infobox-depth">${info.depth}/${info.seldepth}</span> `);
 			}
 

@@ -192,7 +192,7 @@ const info_prototype = {
 	cp_string: function(pov, dp=2) {
 		let cp = this.cp_with_pov(pov);
 		if (isNaN(cp)) {
-			return "";
+			return "?";
 		}
 		let ret = cp.toFixed(dp);
 		if (cp > 0) {
