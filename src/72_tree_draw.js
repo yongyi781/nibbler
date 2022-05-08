@@ -94,6 +94,17 @@ let tree_draw_props = {
 				classes.push("white");		// Otherwise, inherits gray colour from movelist CSS
 			}
 
+			if (node.table.eval && node.parent.table.eval) {
+				let d = node.table.eval - node.parent.table.eval;
+				if (node.board.active === "b")
+					d *= -1;
+				if (d > config.colors.mistake.threshold) {
+					classes.push("infobox-blunder");
+				} else if (d > config.colors.good.threshold) {
+					classes.push("infobox-mistake");
+				}
+			}
+
 			pseudoelements.push({
 				opener: `<span class="${classes.join(" ")}" id="node_${node.id}">`,
 				text: node.token(false, false, true),
@@ -120,7 +131,7 @@ let tree_draw_props = {
 		// Undo the damage to our tree from the start...
 
 		foo = line_end;
-		while(foo) {
+		while (foo) {
 			delete foo.current_line;
 			foo = foo.parent;
 		}
