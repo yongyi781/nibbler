@@ -143,20 +143,19 @@ input[type=text]:focus {
 	grid-area: g;
 	margin: 1em 1em 1em 1em;
 	display: block;
-	color: #808080;
 	font-family: "Noto Sans", sans-serif;
 	font-weight: bold;
 	overflow-x: hidden;
 	overflow-y: auto;
-	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
+	padding: 3px;	/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
 	white-space: pre-wrap;
 }
 
 #movelist > span {
 	cursor: pointer;
-	padding-left: 3px;
-	border-radius: 2px;
+	padding: 2px 0px 3px 2px;
+	border-radius: 3px;
 }
 
 #movelist > span:hover {
@@ -213,6 +212,22 @@ ul {
 	color: #eeeeee;
 }
 
+.infobox-best {
+	color: #6cccee;
+}
+
+.infobox-good {
+	color: #5dcc5d;
+}
+
+.infobox-mistake {
+	color: #aaaa68;
+}
+
+.infobox-blunder {
+	color: #cc7c7c;
+}
+
 .gray {
 	color: #999999;
 }
@@ -235,22 +250,6 @@ ul {
 
 .blue {
 	color: #6cccee;
-}
-
-.infobox-best {
-	color: #6cccee;
-}
-
-.infobox-good {
-	color: #5dcc5d;
-}
-
-.infobox-mistake {
-	color: #aaaa68;
-}
-
-.infobox-blunder {
-	color: #cc7c7c;
 }
 
 .bold {
@@ -310,12 +309,14 @@ ul {
 
 span.movelist_highlight_blue {
 	background-color: #333355;
-	color: #6cccee;
+	/* color: #6cccee; */
+	outline: 1px solid #6cccee;
 }
 
 span.movelist_highlight_yellow {
 	background-color: #555533;
-	color: #ffff00;
+	/* color: #ffff00; */
+	outline: 1px solid #ffff00;
 }
 
 span.nobr {
