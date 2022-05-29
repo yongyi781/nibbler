@@ -177,7 +177,7 @@ let infobox_props = {
 
 			// The depth ...
 			if (config.show_depth) {
-				substrings.push(`<span class="infobox-depth">${info.depth}/${info.seldepth}</span> `);
+				substrings.push(`<span class="infobox-depth">${info.depth}</span> `);
 			}
 
 			// The PV...

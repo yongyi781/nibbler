@@ -274,8 +274,9 @@ ul {
 
 .infobox-depth {
 	display: inline-block;
-	min-width: 35px;
+	min-width: 25px;
 	font-size: smaller;
+	color: #ccc;
 }
 
 .pv {
