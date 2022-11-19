@@ -18,7 +18,7 @@ For prebuilt binary releases, see the [Releases](https://github.com/rooklift/nib
 
 ![Screenshot](https://user-images.githubusercontent.com/4749325/140233758-31b73f81-34e5-45c2-8ffc-f41bb32b6389.png)
 
-# Features
+## Features
 
 * Display Leela's top choices graphically.
 * Winrate graph.
@@ -32,7 +32,7 @@ For prebuilt binary releases, see the [Releases](https://github.com/rooklift/nib
 * FEN loading.
 * Chess 960.
 
-# Installation - Windows / Linux
+## Installation - Windows / Linux
 
 Some Windows and Linux standalone releases are uploaded to the [Releases](https://github.com/rooklift/nibbler/releases) section from time to time.
 
@@ -40,18 +40,26 @@ Some Windows and Linux standalone releases are uploaded to the [Releases](https:
 
 You could also build a standalone app. See comments inside the Python script `builder.py` for info.
 
-# Installation - Mac
+## Linux install script
+
+Linux users can make use of the following *one-liner* to install the latest version of Nibbler:
+
+```bash
+bash -c "$(wget -O- https://raw.githubusercontent.com/rooklift/nibbler/master/src/install.sh)"
+```
+
+## Installation - Mac
 
 Mac builds have been made by [twoplan](https://github.com/twoplan/Nibbler-for-macOS) and [Jac-Zac](https://github.com/Jac-Zac/Nibbler_MacOS) - the latter is probably more up-to-date.
 
-# Advanced engine options
+## Advanced engine options
 
 Most people won't need them, but all of Leela's engine options can be set in two ways:
 
 * Leela automatically loads options from a file called `lc0.config` at startup - see [here](https://lczero.org/play/configuration/flags/#config-file).
 * Nibbler will send UCI options specified in Nibbler's own `engines.json` file (which you can find via the Dev menu).
 
-# Hints and tips
+## Hints and tips
 
 An option to enable the UCI `searchmoves` feature is available in the Analysis menu. Once enabled, one or more moves can be specified as moves to focus on; Leela will ignore other moves. This is useful when you think Leela isn't giving a certain move enough attention.
 
@@ -59,7 +67,7 @@ Leela forgets much of the evaluation if the position changes. To mitigate this, 
 
 Leela running out of RAM can be a problem if searches go on too long. You might like to set a reasonable node limit (in the Engine menu), perhaps 10 million or so.
 
-# Thanks
+## Thanks
 
 Thanks to everyone in Discord and GitHub who's offered advice and suggestions; and thanks to all Lc0 devs and GPU-hours contributors!
 

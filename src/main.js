@@ -2513,6 +2513,18 @@ function menu_build() {
 							}
 						},
 						{
+							label: "metal",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["Backend", "metal"]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
 							type: "separator"
 						},
 						{
