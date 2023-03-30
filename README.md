@@ -45,7 +45,7 @@ You could also build a standalone app. See comments inside the Python script `bu
 Linux users can make use of the following *one-liner* to install the latest version of Nibbler:
 
 ```bash
-bash -c "$(wget -O- https://raw.githubusercontent.com/rooklift/nibbler/master/src/install.sh)"
+curl -L https://raw.githubusercontent.com/rooklift/nibbler/master/files/scripts/install.sh | bash
 ```
 
 ## Installation - Mac
@@ -72,3 +72,5 @@ Leela running out of RAM can be a problem if searches go on too long. You might 
 Thanks to everyone in Discord and GitHub who's offered advice and suggestions; and thanks to all Lc0 devs and GPU-hours contributors!
 
 The pieces are from [Lichess](https://lichess.org/).
+
+Icon design by [ciriousjoker](https://github.com/ciriousjoker) based on [this](https://www.svgrepo.com/svg/155301/chess).
