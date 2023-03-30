@@ -259,7 +259,9 @@ let hub_props = {
 	},
 
 	lichess_book_move: async function() {
-		const url = MakeLichessUrl(this.tree.node.board.fen(true));
+		let friendly_fen = this.tree.node.board.fen(true);
+		let fen_for_web = ReplaceAll(friendly_fen, " ", "%20");
+		const url = config.looker_api === "lichess_masters" ? `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}` : MakeLichessUrl(this.tree.node.board.fen(true));
 
 		let json;
 		try {
