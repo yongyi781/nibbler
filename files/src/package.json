@@ -8,8 +8,5 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/rooklift/nibbler"
-	},
-	"dependencies": {
-		"node-fetch": "^2.6.6"
 	}
 }
