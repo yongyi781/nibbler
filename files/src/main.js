@@ -83,6 +83,7 @@ function startup() {
 		resizable: true,
 		show: false,
 		useContentSize: true,
+		icon: path.join(__dirname, "/../res/nibbler.ico"),
 		webPreferences: {
 			backgroundThrottling: false,
 			contextIsolation: false,
