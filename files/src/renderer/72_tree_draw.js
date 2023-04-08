@@ -35,30 +35,31 @@ let tree_draw_props = {
 		this.fix_scrollbar_position();
 	},
 
-	update_eval_dom: function(node) {
-		let dom_node = document.getElementById(`node_${node.id}`);
+	// update_eval_dom: function(node) {
+	// 	let dom_node = document.getElementById(`node_${node.id}`);
 
-		if (dom_node) {
-			dom_node.classList.remove("infobox-blunder", "infobox-mistake");
+	// 	if (dom_node) {
+	// 		dom_node.classList.remove("infobox-blunder", "infobox-mistake");
 
-			let classes = [];
-			this.update_eval_helper(node, classes);
-			classes.forEach(c => dom_node.classList.add(c));
-		}
-	},
+	// 		let classes = [];
+	// 		// this.update_eval_helper(node, classes);
+	// 		classes.forEach(c => dom_node.classList.add(c));
+	// 	}
+	// },
 
-	update_eval_helper: function(node, classList) {
-		if (node.table.eval != null && node.parent.table.eval != null) {
-			let d = node.table.eval - node.parent.table.eval;
-			if (node.board.active === "b")
-				d *= -1;
-			if (d > config.colors.mistake.threshold) {
-				classList.push("infobox-blunder");
-			} else if (d > config.colors.good.threshold) {
-				classList.push("infobox-mistake");
-			}
-		}
-	},
+	/// Updates class list with blunder or mistake color for the movelist.
+	// update_eval_helper: function(node, classList) {
+	// 	if (node.table.eval != null && node.parent.table.eval != null) {
+	// 		let d = node.table.eval - node.parent.table.eval;
+	// 		if (node.board.active === "b")
+	// 			d *= -1;
+	// 		if (d > config.colors.mistake.threshold) {
+	// 			classList.push("movelist-blunder");
+	// 		} else if (d > config.colors.good.threshold) {
+	// 			classList.push("movelist-mistake");
+	// 		}
+	// 	}
+	// },
 
 	dom_from_scratch: function() {
 
@@ -121,7 +122,7 @@ let tree_draw_props = {
 				classes.push("darkgray");	// Override blunder/mistake color if inactive.
 			}
 
-			this.update_eval_helper(node, classes);
+			// this.update_eval_helper(node, classes);
 
 			pseudoelements.push({
 				opener: `<span class="${classes.join(" ")}" id="node_${node.id}">`,

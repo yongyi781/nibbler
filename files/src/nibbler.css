@@ -229,6 +229,14 @@ ul {
 	color: #cc7c7c;
 }
 
+.movelist-mistake {
+	color: #cccc99;
+}
+
+.movelist-blunder {
+	color: #eeaeae;
+}
+
 .gray {
 	color: #999999;
 }
