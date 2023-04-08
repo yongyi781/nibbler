@@ -46,6 +46,7 @@ const open_dialog = electron.dialog.showOpenDialogSync || electron.dialog.showOp
 // Note that as the user adjusts menu items, our copy of the config will become
 // out of date. The renderer is responsible for having an up-to-date copy.
 
+/** @type electron.BrowserWindow */
 let win;
 let menu = menu_build();
 let menu_is_set = false;
@@ -73,35 +74,30 @@ if (electron.app.isReady()) {
 // ----------------------------------------------------------------------------------
 
 function startup() {
-
-	let desired_zoomfactor = 1 / electron.screen.getPrimaryDisplay().scaleFactor;
-
 	win = new electron.BrowserWindow({
+		x: config.x,
+		y: config.y,
 		width: config.width,
 		height: config.height,
-		backgroundColor: "#000000",
-		resizable: true,
-		show: false,
-		useContentSize: true,
+		backgroundColor: "#000",
 		icon: path.join(__dirname, "/../res/nibbler.ico"),
 		webPreferences: {
 			backgroundThrottling: false,
 			contextIsolation: false,
 			nodeIntegration: true,
-			spellcheck: false,
-			zoomFactor: desired_zoomfactor		// Unreliable, see https://github.com/electron/electron/issues/10572
+			spellcheck: false
 		}
 	});
 
-	win.once("ready-to-show", () => {
-		// try {
-		// 	win.webContents.setZoomFactor(desired_zoomfactor);	// This seems to work, note issue 10572 above.
-		// } catch (err) {
-		// 	win.webContents.zoomFactor = desired_zoomfactor;	// The method above "will be removed" in future.
-		// }
-		win.show();
-		win.focus();
-	});
+	// win.once("ready-to-show", () => {
+	// 	// try {
+	// 	// 	win.webContents.setZoomFactor(desired_zoomfactor);	// This seems to work, note issue 10572 above.
+	// 	// } catch (err) {
+	// 	// 	win.webContents.zoomFactor = desired_zoomfactor;	// The method above "will be removed" in future.
+	// 	// }
+	// 	win.show();
+	// 	win.focus();
+	// });
 
 	win.webContents.once("crashed", () => {
 		alert(win, messages.renderer_crash);
@@ -112,9 +108,16 @@ function startup() {
 	});
 
 	win.on("close", (event) => {						// We used to use .once() but I suppose there's a race condition if two events happen rapidly.
+		const bounds = win.getNormalBounds();
+		const nearestDisplay = electron.screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
+		const primaryDisplay = electron.screen.getPrimaryDisplay();
+		config.x = bounds.x;
+		config.y = bounds.y;
+		config.width = Math.floor(bounds.width * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor);
+		config.height = Math.floor(bounds.height * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor);
+		config_io.save(config);
 
 		if (!have_received_terminate) {
-
 			event.preventDefault();						// Only a "terminate" message from the Renderer should close the app.
 
 			if (!have_sent_quit) {

@@ -25,9 +25,10 @@ exports.defaults = {
 	"options_unused": null,
 
 	"disable_hw_accel": false,
-
-	"width": 1280,
-	"height": 835,
+	"x": null,
+	"y": null,
+	"width": 1024,
+	"height": 800,
 	"board_size": 640,
 	"info_font_size": 16,
 	"pgn_font_size": 16,
@@ -146,12 +147,11 @@ exports.defaults = {
 	"log_positions": true,
 	"use_lichess_book": true,
 	"lichess_top_moves_only": false,
-	"lichess_book_speeds": ["blitz", "rapid", "classical"],
-	"lichess_book_ratings": [1600, 1800, 2000, 2200, 2500]
+	"lichess_book_speeds": ["blitz", "rapid", "classical", "correspondence"],
+	"lichess_book_ratings": [1800, 2000, 2200, 2500]
 };
 
 function fix(cfg) {
-
 	// We want to create a few temporary things (not saved to file)...
 
 	cfg.flip = false;

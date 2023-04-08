@@ -471,7 +471,6 @@ let hub_props = {
 		this.tick++;
 		this.draw();
 		this.purge_finished_loaders();
-		// this.maybe_save_window_size();
 		setTimeout(this.spin.bind(this), config.update_delay);
 	},
 
@@ -485,13 +484,6 @@ let hub_props = {
 		if (e != null) {
 			let f = Math.max(0, Math.min(1, (1 - e * factor) / 2));
 			evalbarBlack.style = `height: ${f * 100}%`;
-		}
-	},
-
-	maybe_save_window_size: function() {
-		if (this.window_resize_time && performance.now() - this.window_resize_time > 1000) {
-			this.window_resize_time = null;
-			this.save_window_size();
 		}
 	},
 
@@ -690,7 +682,7 @@ let hub_props = {
 		}
 
 		let overlist = document.querySelectorAll(":hover");
-		
+
 		// Find what div we are over by looking for infoline_n
 
 		let div = null;
@@ -922,7 +914,7 @@ let hub_props = {
 			for (let move of Object.keys(entry.moves)) {
 				if (!this.tree.node.board.illegal(move)) {
 					if (tmp[move] === undefined) {
-						tmp[move] = {move: move, weight: entry.moves[move].total / total_weight};
+						tmp[move] = { move: move, weight: entry.moves[move].total / total_weight };
 					}
 				}
 			}
@@ -2404,12 +2396,6 @@ let hub_props = {
 		this.draw();
 	},
 
-	save_window_size: function() {
-		let zoomfactor = parseFloat(querystring.parse(global.location.search.slice(1))["zoomfactor"]);
-		config.width = Math.floor(window.innerWidth * zoomfactor);
-		config.height = Math.floor(window.innerHeight * zoomfactor);
-	},
-
 	set_logfile: function(filename) {				// Arg can be null to stop logging.
 		config.logfile = null;
 		Log("Stopping log.");						// This will do nothing, but calling Log() forces it to close any open file.
@@ -2438,7 +2424,6 @@ let hub_props = {
 
 	quit: function() {
 		this.engine.shutdown();
-		this.save_config();
 		this.save_engineconfig();
 		ipcRenderer.send("terminate");
 	},
