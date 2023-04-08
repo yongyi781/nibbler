@@ -7,15 +7,12 @@ function NewGrapher() {
 	grapher.dragging = false;			// Used by the event handlers in start.js
 
 	grapher.clear_graph = function() {
+		const graphContainer = document.getElementById("graphcontainer");
+		const style = getComputedStyle(graphContainer);
 
-		let boundingrect = graph.getBoundingClientRect();
-		let width = window.innerWidth - boundingrect.left - 16;
-		let height = boundingrect.bottom - boundingrect.top;
-
-		// This clears the canvas...
-
-		graph.width = width;
-		graph.height = height;
+		// This clears the canvas too
+		graph.width = graphContainer.offsetWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth) - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+		graph.height = graphContainer.offsetHeight - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth) - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
 	};
 
 	grapher.draw = function(node, force) {
@@ -50,7 +47,10 @@ function NewGrapher() {
 			graphctx.beginPath();
 			graphctx.moveTo(run[0].x1, run[0].y1);
 			for (let edge of run) {
+				if (edge.bold)
+					graphctx.strokeWidth = 5;
 				graphctx.lineTo(edge.x2, edge.y2);
+				graphctx.lineWidth = config.graph_line_width;
 			}
 			graphctx.stroke();
 		}
@@ -102,6 +102,7 @@ function NewGrapher() {
 						x2: x,
 						y2: y,
 						dashed: n - last_n !== 1,
+						bold: isMate
 					});
 				}
 
@@ -187,11 +188,12 @@ function NewGrapher() {
 		}
 
 		let mousex = event.offsetX;
+		console.dir(event);
 		if (typeof mousex !== "number") {
 			return null;
 		}
 
-		let width = graph.width;
+		let width = graph.offsetWidth;
 		if (typeof width !== "number" || width < 1) {
 			return null;
 		}

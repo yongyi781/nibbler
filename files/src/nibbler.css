@@ -27,6 +27,7 @@ body {
 
 #gridder {
 	display: grid;
+	height: 100vh;
 	grid-template-columns: min-content min-content 1fr;
 	grid-template-rows: min-content min-content 1fr;
 	grid-template-areas:
@@ -59,7 +60,6 @@ body {
 #canvas {
 	grid-area: a;
 	margin: 12px 6px 12px 12px;
-	display: block;
 	outline-offset: 6px;
 	z-index: 2;
 }
@@ -94,8 +94,6 @@ body {
 
 #infobox {
 	grid-area: d;
-	display: block;
-	font-family: "Noto Sans", sans-serif;
 	/* so the text doesn't get so near the scroll bar */
 	color: #cccccc;
 	/* only used for Lc0 stderr output at startup */
@@ -107,12 +105,15 @@ body {
 	white-space: nowrap;
 }
 
-#graph {
+#graphcontainer {
 	grid-area: e;
 	background-color: #111;
-	font-family: "Noto Sans", sans-serif;
-	font-size: 100%;
+	border: 1px solid #333;
 	margin: 12px;
+	overflow: hidden;
+}
+
+#graph {
 	pointer-events: auto;
 }
 

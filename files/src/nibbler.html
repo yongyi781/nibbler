@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<!-- https://content-security-policy.com/ -->
-	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src http://www.chessdb.cn http://explorer.lichess.ovh">
+	<meta http-equiv="Content-Security-Policy"
+		content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src http://www.chessdb.cn http://explorer.lichess.ovh">
 	<title>Nibbler</title>
 	<link rel="stylesheet" type="text/css" href="nibbler.css">
 </head>
 
 <body>
-
 	<!-- note to self, only use id for things the JS needs to see, they pollute the namespace -->
-
 	<div id="gridder">
 
 		<table id="boardsquares"></table>
@@ -25,27 +25,26 @@
 		</div>
 
 		<div id="rightgridder">
-
 			<div id="statusbox">Starting up...</div>
 			<div id="infobox"></div>
 			<div id="movelist"></div>
-
 		</div>
 
 		<div id="fenbox"><label>FEN</label> <input type="text"></div>
 
-		<canvas id="graph"></canvas>
-
+		<div id="graphcontainer"><canvas id="graph"></canvas></div>
 	</div>
 
 	<!-- Special hidden items that show up when needed -->
 
-	<div id="fullbox"><div id="fullbox_content"></div></div>
+	<div id="fullbox">
+		<div id="fullbox_content"></div>
+	</div>
 
 	<table id="promotiontable">
 		<tr>
-			<td class="promotion_q"></td>		<!-- Each promotion TD has a unique class to locate it with -->
-			<td class="promotion_r"></td>		<!-- because the actual move will be stored in the id.      -->
+			<td class="promotion_q"></td> <!-- Each promotion TD has a unique class to locate it with -->
+			<td class="promotion_r"></td> <!-- because the actual move will be stored in the id.      -->
 			<td class="promotion_b"></td>
 			<td class="promotion_n"></td>
 		</tr>
@@ -83,4 +82,5 @@
 	<script src="renderer/99_start.js"></script>
 
 </body>
+
 </html>

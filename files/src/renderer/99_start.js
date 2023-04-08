@@ -79,7 +79,6 @@ fenbox.style["font-size"] = config.fen_font_size.toString() + "px";
 if (config.graph_height <= 0) {
 	graph.style.display = "none";
 } else {
-	graph.style.height = config.graph_height.toString() + "px";
 	graph.style.display = "";
 }
 

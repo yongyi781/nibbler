@@ -2346,12 +2346,6 @@ let hub_props = {
 		this.rebuild_sizes();
 	},
 
-	set_graph_height: function(sz) {
-		config.graph_height = sz;
-		this.rebuild_sizes();
-		this.grapher.draw(this.tree.node, true);
-	},
-
 	set_board_size: function(sz) {
 		config.square_size = Math.floor(sz / 8);
 		config.board_size = config.square_size * 8;
@@ -2388,14 +2382,11 @@ let hub_props = {
 	},
 
 	rebuild_sizes: function() {
-
 		// This assumes everything already exists.
 		// Derived from the longer version in start.js, which it does not replace.
 
 		boardfriends.width = canvas.width = boardsquares.width = config.board_size;
 		boardfriends.height = canvas.height = boardsquares.height = config.board_size;
-
-		rightgridder.style["height"] = `${canvas.height}px`;
 
 		for (let y = 0; y < 8; y++) {
 			for (let x = 0; x < 8; x++) {
@@ -2404,13 +2395,6 @@ let hub_props = {
 				td1.width = td2.width = config.square_size;
 				td1.height = td2.height = config.square_size;
 			}
-		}
-
-		if (config.graph_height <= 0) {
-			graph.style.display = "none";
-		} else {
-			graph.style.height = config.graph_height.toString() + "px";
-			graph.style.display = "";
 		}
 
 		promotiontable.style.left = (boardsquares.offsetLeft + config.square_size * 2).toString() + "px";
