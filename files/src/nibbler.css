@@ -4,14 +4,15 @@ html {
 
 body {
 	background-color: #080808;
-	border: 0;
+	font-family: "Noto Sans", sans-serif;
 	color: #eeeeee;
-	cursor: default;
 	margin: 0;
-	overflow: hidden;
 	padding: 0;
-	pointer-events: none;		/* These must be overriden for things that need pointer / select */
-	user-select: none;			/* These must be overriden for things that need pointer / select */
+	overflow: hidden;
+	pointer-events: none;
+	/* These must be overriden for things that need pointer / select */
+	user-select: none;
+	/* These must be overriden for things that need pointer / select */
 }
 
 ::-webkit-scrollbar {
@@ -26,26 +27,24 @@ body {
 
 #gridder {
 	display: grid;
-	height: 100vh;
-	grid-template-columns: min-content min-content auto;
-	grid-template-rows: min-content min-content auto;
+	grid-template-columns: min-content min-content 1fr;
+	grid-template-rows: min-content min-content 1fr;
 	grid-template-areas:
 		"a h b"
 		"f f f"
-		"g g g";
+		"e e e";
 }
 
 #rightgridder {
 	grid-area: b;
 	display: grid;
-	margin: 1em 0 0 0;
-	height: 0;							/* js needs to keep this equal to the boardsize */
+	/* js needs to keep this equal to the boardsize */
 	grid-template-columns: none;
 	grid-template-rows: min-content 1fr min-content;
 	grid-template-areas:
 		"c"
 		"d"
-		"e";
+		"g";
 }
 
 #boardsquares {
@@ -85,10 +84,8 @@ body {
 
 #statusbox {
 	grid-area: c;
-	margin: 0 0 0 12px;
-	padding: 5px 0px;
-	border: none;
-	display: block;
+	margin-top: 12px;
+	padding: 12px;
 	font-family: "Noto Sans", sans-serif;
 	pointer-events: auto;
 	overflow: hidden;
@@ -97,70 +94,83 @@ body {
 
 #infobox {
 	grid-area: d;
-	margin: 12px 12px 0 12px;
 	display: block;
 	font-family: "Noto Sans", sans-serif;
-	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
-	color: #cccccc;						/* only used for Lc0 stderr output at startup */
+	/* so the text doesn't get so near the scroll bar */
+	color: #cccccc;
+	/* only used for Lc0 stderr output at startup */
 	overflow-x: scroll;
 	overflow-y: scroll;
-	padding-right: 10px;				/* so the text doesn't get so near the scroll bar */
+	padding: 12px;
+	/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
 	white-space: nowrap;
 }
 
 #graph {
 	grid-area: e;
-	align-self: end;
-	display: block;
-	float: bottom;
+	background-color: #111;
 	font-family: "Noto Sans", sans-serif;
 	font-size: 100%;
-	margin: 10px 0 0 1em;
+	margin: 12px;
 	pointer-events: auto;
-}
-
-input[type=text]:focus {
-	outline: 2px dashed gray;
-	outline-offset: 4px;
 }
 
 #fenbox {
 	grid-area: f;
-	margin: 1em 1em 0 1em;
+	display: grid;
+	grid-template-columns: min-content 1fr;
+	grid-template-areas: "fa fb";
+	margin: 12px;
+}
+
+#fenbox>label {
+	grid-area: "fa";
+	padding: 8px;
+}
+
+#fenbox>input {
+	grid-area: "fb";
 	background-color: #080808;
-	border: none;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	font-family: inherit;
 	caret-color: white;
-	color: #6cccee;
-	display: block;
-	font-family: "Noto Sans", sans-serif;
-	font-size: 100%;
+	color: #aaa;
+	padding: 8px;
 	pointer-events: auto;
 	user-select: auto;
+	outline: none;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#fenbox>input:focus {
+	border-color: #9ecaed;
+	box-shadow: 0 0 10px #9ecaed;
 }
 
 #movelist {
 	grid-area: g;
-	margin: 1em 1em 1em 1em;
 	color: #808080;
-	display: block;
-	font-family: "Noto Sans", sans-serif;
 	font-weight: bold;
 	overflow-x: hidden;
 	overflow-y: auto;
-	padding: 3px;	/* so the text doesn't get so near the scroll bar */
+	padding: 12px;
+	/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
 	white-space: pre-wrap;
+	max-height: 200px;
 }
 
-#movelist > span {
+#movelist>span {
 	cursor: pointer;
 	padding: 2px 0px 3px 2px;
 	border-radius: 3px;
 }
 
-#movelist > span:hover {
+#movelist>span:hover {
 	background-color: #555577;
+	transition: background-color 0.2s;
 }
 
 #graphbox {
@@ -170,8 +180,8 @@ input[type=text]:focus {
 
 #fullbox {
 	background-color: #080808;
-	display: none;						/* better than visibility: hidden - never intercepts inputs */
-	font-family: "Noto Sans", sans-serif;
+	display: none;
+	/* better than visibility: hidden - never intercepts inputs */
 	font-size: 100%;
 	height: 100%;
 	left: 0;
@@ -197,7 +207,12 @@ td {
 	padding: 0;
 }
 
-a, a:link, a:visited, a:hover, a:active {	/* I think this is now only used for the "Nibbler in normal browser" message. */
+a,
+a:link,
+a:visited,
+a:hover,
+a:active {
+	/* I think this is now only used for the "Nibbler in normal browser" message. */
 	color: #6cccee;
 }
 
@@ -290,6 +305,7 @@ ul {
 .pv {
 	cursor: pointer;
 	padding-left: 3px;
+	transition: background-color 0.2s;
 }
 
 .pv:hover {
@@ -299,6 +315,7 @@ ul {
 
 .enginechooser {
 	margin-bottom: 1em;
+	transition: color 0.2s;
 }
 
 .enginechooser:hover {
@@ -330,14 +347,15 @@ span.movelist_highlight_yellow {
 }
 
 span.nobr {
-	white-space: nowrap;				/* Used for O-O and O-O-O moves */
+	white-space: nowrap;
+	/* Used for O-O and O-O-O moves */
 }
 
 .btn {
 	cursor: pointer;
 	background-color: #333333;
 	border-radius: 4px;
-	padding: 6px;
+	padding: 8px;
 }
 
 .btn:hover {
@@ -352,6 +370,7 @@ span.nobr {
 	grid-area: h;
 	margin: 12px 0;
 	width: 25px;
+	max-width: 25px;
 	background-color: white;
 }
 
@@ -362,7 +381,7 @@ span.nobr {
 }
 
 #evalbar.reverse {
-    transform: rotateX(180deg);
+	transform: rotateX(180deg);
 }
 
 #evalbar .black {
