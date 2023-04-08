@@ -491,7 +491,6 @@ let hub_props = {
 	// Drawing properties...
 
 	draw: function() {
-
 		// We do the :hover reaction first. This way, we are detecting hover based on the previous cycle's state.
 		// This should prevent the sort of flicker that can occur if we try to detect hover based on changes we
 		// just made (i.e. if we drew then detected hover instantly).
@@ -514,10 +513,6 @@ let hub_props = {
 		this.draw_infobox();
 
 		this.grapher.draw(this.tree.node);
-		// this.tree.update_eval_dom(this.tree.node);
-		// for (let c of this.tree.node.children) {
-		// 	this.tree.update_eval_dom(c);
-		// }
 	},
 
 	draw_friendlies_in_table: function(board) {

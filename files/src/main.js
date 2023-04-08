@@ -46,7 +46,7 @@ const open_dialog = electron.dialog.showOpenDialogSync || electron.dialog.showOp
 // Note that as the user adjusts menu items, our copy of the config will become
 // out of date. The renderer is responsible for having an up-to-date copy.
 
-/** @type electron.BrowserWindow */
+/** @type {electron.BrowserWindow} */
 let win;
 let menu = menu_build();
 let menu_is_set = false;

@@ -1,9 +1,11 @@
 "use strict";
 
+/// <reference path="./10_globals.js" />
+
 function NewGrapher() {
 
 	let grapher = Object.create(null);
-	
+
 	grapher.dragging = false;			// Used by the event handlers in start.js
 
 	grapher.clear_graph = function() {
@@ -15,15 +17,11 @@ function NewGrapher() {
 		graph.height = graphContainer.offsetHeight - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth) - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
 	};
 
-	grapher.draw = function(node, force) {
-		if (config.graph_height <= 0) {
-			return;
-		}
+	grapher.draw = function(node) {
 		this.draw_everything(node);
 	};
 
 	grapher.draw_everything = function(node) {
-
 		this.clear_graph();
 		let width = graph.width;		// After the above.
 		let height = graph.height;
@@ -36,6 +34,7 @@ function NewGrapher() {
 		// We make lists of contiguous edges that can be drawn at once...
 
 		let runs = this.make_runs(eval_list, width, height, node.graph_length_knower.val);
+		let mates = [];
 
 		// Draw our normal runs...
 
@@ -47,12 +46,19 @@ function NewGrapher() {
 			graphctx.beginPath();
 			graphctx.moveTo(run[0].x1, run[0].y1);
 			for (let edge of run) {
-				if (edge.bold)
-					graphctx.strokeWidth = 5;
 				graphctx.lineTo(edge.x2, edge.y2);
-				graphctx.lineWidth = config.graph_line_width;
+				if (edge.isMate)
+					mates.push(edge);
 			}
 			graphctx.stroke();
+		}
+
+		graphctx.fillStyle = "lime";
+
+		for (let edge of mates) {
+			graphctx.beginPath();
+			graphctx.arc(edge.x2, edge.y2, 5, 0, 2 * Math.PI, true);
+			graphctx.fill();
 		}
 
 		// Draw our dashed runs...
@@ -102,7 +108,7 @@ function NewGrapher() {
 						x2: x,
 						y2: y,
 						dashed: n - last_n !== 1,
-						bold: isMate
+						isMate: isMate
 					});
 				}
 
@@ -134,7 +140,7 @@ function NewGrapher() {
 			current_meta_list.push(run);
 		}
 
-		return {normal_runs, dashed_runs};
+		return { normal_runs, dashed_runs };
 	};
 
 	grapher.draw_50_percent_line = function(width, height) {

@@ -264,7 +264,7 @@ window.addEventListener("drop", (event) => {
 });
 
 window.addEventListener("resize", (event) => {
-	hub.window_resize_time = performance.now();
+	hub.grapher.draw(hub.tree.node);
 });
 
 window.addEventListener("error", (event) => {
