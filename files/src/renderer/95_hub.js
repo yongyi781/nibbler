@@ -2417,10 +2417,20 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Misc...
 
-	quit: function() {
+	quit: async function() {
 		this.engine.shutdown();
+		await this.store_window_position();
+		this.save_config();
 		this.save_engineconfig();
 		ipcRenderer.send("terminate");
+	},
+
+	store_window_position: async function() {
+		const { x, y, width, height } = await ipcRenderer.invoke("get_window_position");
+		config.x = x;
+		config.y = y;
+		config.width = width;
+		config.height = height;
 	},
 
 	set_special_message: function(s, css_class, duration) {

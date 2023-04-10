@@ -108,15 +108,6 @@ function startup() {
 	});
 
 	win.on("close", (event) => {						// We used to use .once() but I suppose there's a race condition if two events happen rapidly.
-		const bounds = win.getNormalBounds();
-		const nearestDisplay = electron.screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
-		const primaryDisplay = electron.screen.getPrimaryDisplay();
-		config.x = bounds.x;
-		config.y = bounds.y;
-		config.width = Math.floor(bounds.width * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor);
-		config.height = Math.floor(bounds.height * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor);
-		config_io.save(config);
-
 		if (!have_received_terminate) {
 			event.preventDefault();						// Only a "terminate" message from the Renderer should close the app.
 
@@ -272,6 +263,18 @@ function startup() {
 				set_checks("Play", "TempDecayMoves", msg.val === "0" ? "Infinite" : msg.val);
 				break;
 		}
+	});
+
+	electron.ipcMain.handle("get_window_position", async () => {
+		const bounds = win.getNormalBounds();
+		const nearestDisplay = electron.screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
+		const primaryDisplay = electron.screen.getPrimaryDisplay();
+		return {
+			x: bounds.x,
+			y: bounds.y,
+			width: Math.floor(bounds.width * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor),
+			height: Math.floor(bounds.height * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor)
+		};
 	});
 
 	electron.Menu.setApplicationMenu(menu);
@@ -1248,12 +1251,12 @@ function menu_build() {
 					label: "Arrow filter (others)",
 					submenu: [
 						{
-							label: "Diff ≤ 1.0",
+							label: "All moves",
 							type: "checkbox",
-							checked: config.ab_filter_threshold === 1,
+							checked: config.ab_filter_threshold === 999,
 							click: () => {
-								set_checks("Display", "Arrow filter (others)", "Diff ≤ 1.0");
-								win.webContents.send("set", { ab_filter_threshold: 1 });
+								set_checks("Display", "Arrow filter (others)", "All moves");
+								win.webContents.send("set", { ab_filter_threshold: 999 });
 							}
 						},
 						{
@@ -1270,7 +1273,7 @@ function menu_build() {
 							type: "checkbox",
 							checked: config.ab_filter_threshold === 0.15,
 							click: () => {
-								set_checks("Display", "Arrow filter (others)", "Diff ≤ 0.3");
+								set_checks("Display", "Arrow filter (others)", "Diff ≤ 0.15");
 								win.webContents.send("set", { ab_filter_threshold: 0.3 });
 							}
 						},

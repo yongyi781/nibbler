@@ -34,15 +34,14 @@ try {
 
 // Requires.........................................................
 
+const { clipboard, ipcRenderer } = require("electron");
 const background = require("./modules/background");
 const child_process = require("child_process");
-const clipboard = require("electron").clipboard;
 const config_io = require("./modules/config_io");
 const custom_uci = require("./modules/custom_uci");
 const engineconfig_io = require("./modules/engineconfig_io");
 const fs = require("fs");
 const images = require("./modules/images");
-const ipcRenderer = require("electron").ipcRenderer;
 const messages = require("./modules/messages");
 const path = require("path");
 const querystring = require("querystring");
