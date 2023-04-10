@@ -34,7 +34,7 @@ function NewGrapher() {
 		// We make lists of contiguous edges that can be drawn at once...
 
 		let runs = this.make_runs(eval_list, width, height, node.graph_length_knower.val);
-		let mates = [];
+		let dots = [];
 
 		// Draw our normal runs...
 
@@ -47,17 +47,19 @@ function NewGrapher() {
 			graphctx.moveTo(run[0].x1, run[0].y1);
 			for (let edge of run) {
 				graphctx.lineTo(edge.x2, edge.y2);
-				if (edge.isMate)
-					mates.push(edge);
+				if (edge.is_mate)
+					dots.push({ x: edge.x2, y: edge.y2, color: "cyan" });
+				else if (edge.dot_color != null)
+					dots.push({ x: edge.x2, y: edge.y2, color: edge.dot_color });
 			}
 			graphctx.stroke();
 		}
 
-		graphctx.fillStyle = "lime";
 
-		for (let edge of mates) {
+		for (let { x, y, color } of dots) {
+			graphctx.fillStyle = color;
 			graphctx.beginPath();
-			graphctx.arc(edge.x2, edge.y2, 5, 0, 2 * Math.PI, true);
+			graphctx.arc(x, y, 5, 0, 2 * Math.PI, true);
 			graphctx.fill();
 		}
 
@@ -94,21 +96,31 @@ function NewGrapher() {
 
 		for (let n = 0; n < eval_list.length; n++) {
 
-			let e = eval_list[n];
+			const e = eval_list[n];
 
 			if (e !== null) {
 				let isMate = Math.abs(e) >= 80;
 				let x = width * n / graph_length;
 				let y = Math.min(isMate ? height - 2 : height - 8, Math.max(isMate ? 1 : 7, (1 - e * factor) * height / 2));
+				let dot_color = null;
 
-				if (last_x !== null) {
+				if (last_n != null && n - last_n === 1) {
+					// Mark as mistake, blunder, etc.
+					const quality = ClassifyMove(e, eval_list[last_n], n % 2);
+					if (quality === "blunder" || quality === "mistake") {
+						dot_color = config.colors[quality].color.substring(0, 7);
+					}
+				}
+
+				if (last_x != null) {
 					all_edges.push({
 						x1: last_x,
 						y1: last_y,
 						x2: x,
 						y2: y,
 						dashed: n - last_n !== 1,
-						isMate: isMate
+						dot_color,
+						is_mate: isMate
 					});
 				}
 

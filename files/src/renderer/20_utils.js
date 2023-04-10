@@ -250,11 +250,11 @@ function SafeStringHTML(s) {
 	if (typeof s !== "string") {
 		return undefined;
 	}
-	s = ReplaceAll(s,  `&`  ,  `&amp;`   );		// This needs to be first of course.
-	s = ReplaceAll(s,  `<`  ,  `&lt;`    );
-	s = ReplaceAll(s,  `>`  ,  `&gt;`    );
-	s = ReplaceAll(s,  `'`  ,  `&apos;`  );
-	s = ReplaceAll(s,  `"`  ,  `&quot;`  );
+	s = ReplaceAll(s, `&`, `&amp;`);		// This needs to be first of course.
+	s = ReplaceAll(s, `<`, `&lt;`);
+	s = ReplaceAll(s, `>`, `&gt;`);
+	s = ReplaceAll(s, `'`, `&apos;`);
+	s = ReplaceAll(s, `"`, `&quot;`);
 	return s;
 }
 
@@ -262,11 +262,11 @@ function UnsafeStringHTML(s) {
 	if (typeof s !== "string") {
 		return undefined;
 	}
-	s = ReplaceAll(s,  `&quot;`  ,  `"`  );
-	s = ReplaceAll(s,  `&apos;`  ,  `'`  );
-	s = ReplaceAll(s,  `&gt;`    ,  `>`  );
-	s = ReplaceAll(s,  `&lt;`    ,  `<`  );
-	s = ReplaceAll(s,  `&amp;`   ,  `&`  );		// So I guess do this last.
+	s = ReplaceAll(s, `&quot;`, `"`);
+	s = ReplaceAll(s, `&apos;`, `'`);
+	s = ReplaceAll(s, `&gt;`, `>`);
+	s = ReplaceAll(s, `&lt;`, `<`);
+	s = ReplaceAll(s, `&amp;`, `&`);		// So I guess do this last.
 	return s;
 }
 
@@ -274,8 +274,8 @@ function SafeStringPGN(s) {
 	if (typeof s !== "string") {
 		return undefined;
 	}
-	s = ReplaceAll(s,  `\\`  ,  `\\\\`  );		// Must be first.
-	s = ReplaceAll(s,  `"`   ,  `\\"`   );
+	s = ReplaceAll(s, `\\`, `\\\\`);		// Must be first.
+	s = ReplaceAll(s, `"`, `\\"`);
 	return s;
 }
 
@@ -283,8 +283,8 @@ function UnsafeStringPGN(s) {
 	if (typeof s !== "string") {
 		return undefined;
 	}
-	s = ReplaceAll(s,  `\\"`   ,  `"`   );
-	s = ReplaceAll(s,  `\\\\`  ,  `\\`  );		// So this ought to be last.
+	s = ReplaceAll(s, `\\"`, `"`);
+	s = ReplaceAll(s, `\\\\`, `\\`);		// So this ought to be last.
 	return s;
 }
 
@@ -315,7 +315,7 @@ function Log(s) {
 		}
 		console.log(`Logging to ${config.logfile}`);
 		let flags = (config.clear_log) ? "w" : "a";
-		let stream = fs.createWriteStream(config.logfile, {flags: flags});		// Want var "stream" available via closure for the below...
+		let stream = fs.createWriteStream(config.logfile, { flags: flags });		// Want var "stream" available via closure for the below...
 
 		stream.on("error", (err) => {
 			console.log(err);
@@ -326,9 +326,9 @@ function Log(s) {
 				config.logfile = null;
 				ipcRenderer.send("ack_logfile", config.logfile);
 			}
-  		});
+		});
 
-  		Log.stream = stream;
+		Log.stream = stream;
 		Log.logfilename = config.logfile;
 	}
 
@@ -380,7 +380,7 @@ function CanvasCoords(x, y) {
 	let cx = x1 + css / 2;
 	let cy = y1 + css / 2;
 
-	return {x1, y1, x2, y2, cx, cy};
+	return { x1, y1, x2, y2, cx, cy };
 }
 
 function EventPathString(event, prefix) {
@@ -606,9 +606,9 @@ function NumbersBetween(a, b) {
 }
 
 function RandInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min)) + min;
 }
 
 function RandChoice(arr) {
@@ -697,6 +697,24 @@ function MoveQuality(best_info, info) {
 		}
 	}
 	return "unknown";
+}
+
+// side = 0: white, 1: black
+function ClassifyMove(ev, prev_ev, side) {
+	let diff = Value(QfromPawns(ev)) - Value(QfromPawns(prev_ev));
+	if (side === 0)
+		diff = -diff;
+	if (diff >= 0)
+		return "best";
+	if (diff >= -0.02)
+		return "excellent";
+	if (diff >= -0.05)
+		return "good";
+	if (diff >= -0.1)
+		return "inaccuracy";
+	if (diff >= -0.20)
+		return "mistake";
+	return "blunder";
 }
 
 function MakeLichessUrl(fen) {
