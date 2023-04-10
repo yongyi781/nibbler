@@ -8,7 +8,8 @@
 const boardfriends = document.getElementById("boardfriends");
 const boardsquares = document.getElementById("boardsquares");
 const canvas = document.getElementById("canvas");
-const fenbox = document.querySelector("#fenbox > input");
+const fenbox = document.querySelector("#fen");
+const openingbox = document.querySelector("#openingname");
 /** @type {HTMLCanvasElement} */
 const graph = document.getElementById("graph");
 const rightgridder = document.getElementById("rightgridder");

@@ -41,10 +41,11 @@ body {
 	display: grid;
 	/* js needs to keep this equal to the boardsize */
 	grid-template-columns: none;
-	grid-template-rows: min-content 1fr min-content;
+	grid-template-rows: min-content 1fr min-content min-content;
 	grid-template-areas:
 		"c"
 		"d"
+		"i"
 		"g";
 }
 
@@ -160,7 +161,7 @@ body {
 	/* so the text doesn't get so near the scroll bar */
 	pointer-events: auto;
 	white-space: pre-wrap;
-	max-height: 200px;
+	height: 150px;
 }
 
 #movelist>span {
@@ -172,6 +173,12 @@ body {
 #movelist>span:hover {
 	background-color: #555577;
 	transition: background-color 0.2s;
+}
+
+#openingname{
+	grid-area: "i";
+	text-align: center;
+	padding: 12px;
 }
 
 #graphbox {
@@ -283,7 +290,7 @@ ul {
 
 .movenumber {
 	font-size: 13px;
-	color: #7777bb;
+	color: #888;
 }
 
 .infoline {

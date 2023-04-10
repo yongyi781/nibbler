@@ -180,6 +180,32 @@ let hub_props = {
 		this.node_to_clean = this.tree.node;
 
 		this.looker.add_to_queue(this.tree.node.board);
+		this.update_opening();
+	},
+
+	update_opening: function() {
+		if (this.tree.node.parent == null) {
+			openingbox.innerHTML = "";
+			return;
+		}
+
+		let ok = true;
+
+		if (config.looker_api !== "lichess_masters" && config.looker_api !== "lichess_plebs") {
+			ok = false;
+		}
+
+		let current_node = this.tree.node;
+		let current_entry = this.looker.lookup(config.looker_api, current_node.board);
+
+		if (current_entry != null) {
+			while (current_entry?.opening == null && current_node.parent != null) {
+				current_node = current_node.parent;
+				current_entry = this.looker.lookup(config.looker_api, current_node.board);
+			}
+
+			openingbox.innerHTML = current_entry?.opening ?? "";
+		}
 	},
 
 	set_behaviour: async function(s) {

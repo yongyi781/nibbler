@@ -97,11 +97,12 @@ let looker_props = {
 		return this.all_dbs[db_name];
 	},
 
-	new_entry: function(db_name, board) {		// Creates a new (empty) entry in the database (to be populated elsewhere) and returns it.
+	new_entry: function(db_name, board, opening_name) {		// Creates a new (empty) entry in the database (to be populated elsewhere) and returns it.
 
 		let entry = {
 			type: db_name,
 			moves: {},
+			opening: opening_name,
 		};
 
 		let db = this.get_db(db_name);
@@ -173,14 +174,20 @@ let looker_props = {
 	handle_response_object: function(query, raw_object) {
 
 		let board = query.board;
-		let o = this.new_entry(query.db_name, board);
-
+		
 		// If the raw_object is invalid, now's the time to return - after the empty object
 		// has been stored in the database, so we don't do this lookup again.
-
+		
 		if (typeof raw_object !== "object" || raw_object === null || Array.isArray(raw_object.moves) === false) {
 			return;			// This can happen e.g. if the position is checkmate.
 		}
+
+		let opening_name = null;
+		if (raw_object.opening != null)
+			opening_name = raw_object.opening.eco + ": " + raw_object.opening.name;
+
+		let o = this.new_entry(query.db_name, board, opening_name);
+		console.log(raw_object);
 
 		// Our Lichess moves need to know the total number of games so they can return valid stats.
 		// While the total is available as raw_object.white + raw_object.black + raw_object.draws,
@@ -210,6 +217,7 @@ let looker_props = {
 
 		// Note that even if we get no info, we still leave the empty object o in the database,
 		// and this allows us to know that we've done this search already.
+		hub.update_opening();
 	},
 };
 
