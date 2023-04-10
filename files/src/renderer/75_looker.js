@@ -187,7 +187,6 @@ let looker_props = {
 			opening_name = raw_object.opening.eco + ": " + raw_object.opening.name;
 
 		let o = this.new_entry(query.db_name, board, opening_name);
-		console.log(raw_object);
 
 		// Our Lichess moves need to know the total number of games so they can return valid stats.
 		// While the total is available as raw_object.white + raw_object.black + raw_object.draws,
