@@ -107,7 +107,7 @@ function NewGrapher() {
 				if (last_n != null && n - last_n === 1) {
 					// Mark as mistake, blunder, etc.
 					const quality = ClassifyMove(e, eval_list[last_n], n % 2);
-					if (quality === "blunder" || quality === "mistake") {
+					if (quality === "blunder") {
 						dot_color = config.colors[quality].color.substring(0, 7);
 					}
 				}

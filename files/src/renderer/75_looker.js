@@ -145,11 +145,12 @@ let looker_props = {
 		let fen_for_web = ReplaceAll(friendly_fen, " ", "%20");
 
 		let url;
-
-		if (query.db_name === "chessdbcn") {
-			url = `http://www.chessdb.cn/cdb.php?action=queryall&json=1&board=${fen_for_web}`;
+		if (query.board.count_pieces() <= 7) {
+			url = `https://tablebase.lichess.ovh/standard?fen=${fen_for_web}`;
+		} else if (query.db_name === "chessdbcn") {
+			url = `https://www.chessdb.cn/cdb.php?action=queryall&json=1&board=${fen_for_web}`;
 		} else if (query.db_name === "lichess_masters") {
-			url = `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`;
+			url = `https://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`;
 		} else if (query.db_name === "lichess_plebs") {
 			url = MakeLichessUrl(friendly_fen);
 		} else {
@@ -174,10 +175,10 @@ let looker_props = {
 	handle_response_object: function(query, raw_object) {
 
 		let board = query.board;
-		
+
 		// If the raw_object is invalid, now's the time to return - after the empty object
 		// has been stored in the database, so we don't do this lookup again.
-		
+
 		if (typeof raw_object !== "object" || raw_object === null || Array.isArray(raw_object.moves) === false) {
 			return;			// This can happen e.g. if the position is checkmate.
 		}
@@ -256,20 +257,27 @@ let chessdbcn_move_props = {
 };
 
 function new_lichess_move(board, raw_item, position_total) {		// The object with info about a single move in a lichess object.
-	let ret = Object.create(lichess_move_props);
+	let ret;
+	if (raw_item.checkmate != null) {
+		// Tablebase item.
+		ret = Object.create(lichess_tablebase_props);
+		ret.dtm = raw_item.dtm;
+		ret.category = raw_item.category;
+		console.log(raw_item);
+	} else {
+		ret = Object.create(lichess_move_props);
+		ret.white = raw_item.white;
+		ret.black = raw_item.black;
+		ret.draws = raw_item.draws;
+		ret.total = raw_item.white + raw_item.draws + raw_item.black;
+		ret.position_total = position_total;
+	}
 	ret.active = board.active;
-	ret.white = raw_item.white;
-	ret.black = raw_item.black;
-	ret.draws = raw_item.draws;
-	ret.total = raw_item.white + raw_item.draws + raw_item.black;
-	ret.position_total = position_total;
 	return ret;
 }
 
 let lichess_move_props = {
-
 	text: function(pov) {								// pov can be null for current
-
 		let actual_pov = pov ? pov : this.active;
 		let wins = actual_pov === "w" ? this.white : this.black;
 		let ev = (wins + (this.draws / 2)) / this.total;
@@ -284,3 +292,23 @@ let lichess_move_props = {
 		return this.total;
 	},
 };
+
+let lichess_tablebase_props = {
+	text: function(pov) {
+		let dtm = Math.sign(this.dtm) * Math.floor((Math.abs(this.dtm) + 2) / 2);
+		if (this.active === "b")
+			dtm = -dtm;
+		let dtmStr = this.dtm === 0 ? "checkmate" : `${dtm <= 0 ? "#" + -dtm : "-#" + dtm}`
+		return `API: <span class="blue">${this.category === "draw" ? "draw" : dtmStr}</span>`;
+	},
+
+	sort_score: function() {
+		// If white: -small > -large > draw > +large > +small
+		// If black: +small > +large > draw > -large > -small
+		if (this.category === "draw")
+			return 0;
+		if (this.dtm === 0)
+			return 196883;
+		return -1.0 / this.dtm;
+	},
+}

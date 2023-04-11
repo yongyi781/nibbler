@@ -1296,6 +1296,10 @@ const position_prototype = {
 		return true;
 	},
 
+	count_pieces: function() {
+		return this.state.flat().map(x => x !== "").reduce((x, y) => x + y);
+	},
+
 	graphic: function() {
 		let units = [];
 		for (let y = 0; y < 8; y++) {
