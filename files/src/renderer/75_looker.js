@@ -261,7 +261,9 @@ function new_lichess_move(board, raw_item, position_total) {		// The object with
 	if (raw_item.checkmate != null) {
 		// Tablebase item.
 		ret = Object.create(lichess_tablebase_props);
+		ret.checkmate = raw_item.checkmate;
 		ret.dtm = raw_item.dtm;
+		ret.dtz = raw_item.dtz;
 		ret.category = raw_item.category;
 		console.log(raw_item);
 	} else {
@@ -295,11 +297,25 @@ let lichess_move_props = {
 
 let lichess_tablebase_props = {
 	text: function(pov) {
-		let dtm = Math.sign(this.dtm) * Math.floor((Math.abs(this.dtm) + 2) / 2);
-		if (this.active === "b")
-			dtm = -dtm;
-		let dtmStr = this.dtm === 0 ? "checkmate" : `${dtm <= 0 ? "#" + -dtm : "-#" + dtm}`
-		return `API: <span class="blue">${this.category === "draw" ? "draw" : dtmStr}</span>`;
+		let str = "";
+		if (this.category === "draw")
+			str = "draw";
+		else if (this.checkmate)
+			str = "checkmate";
+		else if (this.dtm != null) {
+			let dtm = Math.sign(this.dtm) * Math.floor((Math.abs(this.dtm) + 2) / 2);
+			if (this.active === "b")
+				dtm = -dtm;
+			str = `${dtm <= 0 ? "#" + -dtm : "-#" + dtm}`;
+		} else if (this.dtz != null) {
+			let dtz = Math.sign(this.dtz) * Math.floor((Math.abs(this.dtz) + 2) / 2);
+			if (this.active === "b")
+				dtz = -dtz;
+			str = `${dtz <= 0 ? "DTZ " + -dtz : "-DTZ " + dtz}`;
+		} else {
+			str = "Unexpected result";
+		}
+		return `API: <span class="blue">${str}</span>`;
 	},
 
 	sort_score: function() {
@@ -307,8 +323,10 @@ let lichess_tablebase_props = {
 		// If black: +small > +large > draw > -large > -small
 		if (this.category === "draw")
 			return 0;
-		if (this.dtm === 0)
+		if (this.checkmate)
 			return 196883;
-		return -1.0 / this.dtm;
+		if (this.dtm == null)
+			return this.dtz === 0 ? 3264 : -1.0 / this.dtz;
+		return -100.0 / this.dtm;
 	},
 }
