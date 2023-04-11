@@ -248,6 +248,10 @@ fenbox.addEventListener("keydown", (event) => {
 	}
 });
 
+fenbox.addEventListener("focus", () => {
+	fenbox.select();
+});
+
 // Setup drag-and-drop...
 
 window.addEventListener("dragenter", (event) => {		// Necessary to prevent brief flashes of "not allowed" icon.
@@ -263,13 +267,13 @@ window.addEventListener("drop", (event) => {
 	hub.handle_drop(event);
 });
 
-window.addEventListener("resize", (event) => {
+window.addEventListener("resize", () => {
 	hub.grapher.draw(hub.tree.node);
 });
 
-window.addEventListener("error", (event) => {
+window.addEventListener("error", () => {
 	alert(messages.uncaught_exception);
-}, {once: true});
+}, { once: true });
 
 // Forced garbage collection. For reasons I can't begin to fathom, Node isn't
 // garbage collecting everything, and the heaps seems to grow and grow. It's
