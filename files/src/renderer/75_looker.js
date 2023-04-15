@@ -34,7 +34,7 @@ let looker_props = {
 			return;
 		}
 
-		if (!config.look_past_25 && board.fullmove > 25) {
+		if (!config.look_past_25 && board.fullmove > 25 && board.count_pieces() > 7) {
 			return;
 		}
 
@@ -130,7 +130,6 @@ let looker_props = {
 	},
 
 	query_api(query) {		// Returns a promise, which is solely used by the caller to attach some cleanup catch/finally()
-
 		if (this.lookup(query.db_name, query.board)) {							// We already have a result for this board.
 			return Promise.resolve();											// Consider this case a satisfactory result.
 		}
@@ -265,7 +264,6 @@ function new_lichess_move(board, raw_item, position_total) {		// The object with
 		ret.dtm = raw_item.dtm;
 		ret.dtz = raw_item.dtz;
 		ret.category = raw_item.category;
-		console.log(raw_item);
 	} else {
 		ret = Object.create(lichess_move_props);
 		ret.white = raw_item.white;

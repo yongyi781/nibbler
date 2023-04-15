@@ -206,7 +206,6 @@ function NewGrapher() {
 		}
 
 		let mousex = event.offsetX;
-		console.dir(event);
 		if (typeof mousex !== "number") {
 			return null;
 		}
