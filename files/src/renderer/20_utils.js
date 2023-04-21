@@ -487,7 +487,6 @@ function DateString(dt) {
 }
 
 function QfromPawns(pawns) {
-
 	// Note carefully: the arg is pawns not centipawns.
 
 	if (typeof pawns !== "number") {
@@ -504,7 +503,6 @@ function QfromPawns(pawns) {
 }
 
 function QfromWDL(wdl) {
-
 	if (Array.isArray(wdl) === false || wdl.length !== 3) {
 		return 0;
 	}
@@ -529,6 +527,10 @@ function Value(q) {					// Rescale Q to 0..1 range.
 		return 1;
 	}
 	return (q + 1) / 2;
+}
+
+function WinProbFromPawns(pawns) {
+	return Value(QfromPawns(pawns));
 }
 
 function SmoothStep(x) {
@@ -677,44 +679,30 @@ function FileExceedsGigabyte(filename, multiplier = 1) {
 	}
 }
 
-function MoveQuality(best_info, info) {
-	if (info.__touched === false) {
-		return "unknown";
-	} else if (best_info.mate !== 0) {
-		if (info.mate === best_info.mate) {
-			return "best";
-		} else if (Math.sign(info.mate) === Math.sign(best_info.mate)) {
-			return "good";
-		} else {
-			return "blunder";
-		}
-	} else {
-		const loss = (best_info.cp - info.cp) / 100;
-		for (let [k, v] of Object.entries(config.colors)) {
-			if (loss <= v.threshold) {
-				return k;
-			}
-		}
-	}
-	return "unknown";
-}
-
 // side = 0: white, 1: black
 function ClassifyMove(ev, prev_ev, side) {
-	let diff = Value(QfromPawns(ev)) - Value(QfromPawns(prev_ev));
-	if (side === 0)
-		diff = -diff;
-	if (diff >= 0)
-		return "best";
-	if (diff >= -0.02)
-		return "excellent";
-	if (diff >= -0.05)
-		return "good";
-	if (diff >= -0.1)
-		return "inaccuracy";
-	if (diff >= -0.20)
-		return "mistake";
-	return "blunder";
+	let loss = WinProbFromPawns(ev) - WinProbFromPawns(prev_ev);
+	if (side === 1)
+		loss = -loss;
+	for (let [k, v] of Object.entries(config.colors)) {
+		if (loss <= v.threshold) {
+			return k;
+		}
+	}
+}
+
+function MoveQuality(best_info, info) {
+	if (info.__touched === false)
+		return "unknown";
+	if (best_info.mate !== 0) {
+		if (info.mate === best_info.mate)
+			return "best";
+		if (Math.sign(info.mate) === Math.sign(best_info.mate))
+			return "good";
+		const result = ClassifyMove(320, info.cp / 100, 0);
+		return result === "good" ? "inaccuracy" : result;
+	}
+	return ClassifyMove(best_info.cp / 100, info.cp / 100, 0);
 }
 
 function MakeLichessUrl(fen) {

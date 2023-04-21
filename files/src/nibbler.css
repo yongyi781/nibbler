@@ -237,19 +237,23 @@ ul {
 }
 
 .infobox-best {
-	color: #6cccee;
+	color: hsl(190, 100%, 70%);
 }
 
 .infobox-good {
-	color: #5dcc5d;
+	color: hsl(120, 90%, 70%);
+}
+
+.infobox-inaccuracy {
+	color: hsl(60, 90%, 70%);
 }
 
 .infobox-mistake {
-	color: #aaaa68;
+	color: hsl(30, 90%, 70%);
 }
 
 .infobox-blunder {
-	color: #cc7c7c;
+	color: hsl(0, 90%, 70%);
 }
 
 .movelist-mistake {
