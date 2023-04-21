@@ -48,7 +48,7 @@ function NewGrapher() {
 			for (let edge of run) {
 				graphctx.lineTo(edge.x2, edge.y2);
 				if (edge.is_mate)
-					dots.push({ x: edge.x2, y: edge.y2, color: "cyan" });
+					dots.push({ x: edge.x2, y: edge.y2, color: "hsl(270,100%,70%)" });
 				else if (edge.dot_color != null)
 					dots.push({ x: edge.x2, y: edge.y2, color: edge.dot_color });
 			}
@@ -107,9 +107,8 @@ function NewGrapher() {
 				if (last_n != null && n - last_n === 1) {
 					// Mark as mistake, blunder, etc.
 					const quality = ClassifyMove(e, eval_list[last_n], n % 2);
-					if (quality === "blunder") {
+					if (quality === "inaccuracy" || quality === "mistake" || quality === "blunder")
 						dot_color = config.colors[quality].color.substring(0, 7);
-					}
 				}
 
 				if (last_x != null) {
