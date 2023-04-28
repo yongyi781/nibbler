@@ -165,6 +165,7 @@ exports.defaults = {
 
 	"logfile": null,
 	"clear_log": true,
+	"logfile_timestamp": false,
 	"log_info_lines": true,
 	"log_useless_info": false,
 	"log_illegal_moves": true,
