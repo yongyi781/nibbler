@@ -10,10 +10,10 @@ exports.filename = "config.json";
 // To avoid using "remote", we rely on the main process passing userData location in the query...
 
 exports.filepath = electron.app ?
-		path.join(electron.app.getPath("userData"), exports.filename) :											// in Main process
-		path.join(querystring.parse(global.location.search.slice(1))["user_data_path"], exports.filename);		// in Renderer process
+	path.join(electron.app.getPath("userData"), exports.filename) :											// in Main process
+	path.join(querystring.parse(global.location.search.slice(1))["user_data_path"], exports.filename);		// in Renderer process
 
-function Config() {}			// This exists solely to make instanceof work.
+function Config() { }			// This exists solely to make instanceof work.
 Config.prototype = {};
 
 exports.defaults = {
@@ -33,24 +33,48 @@ exports.defaults = {
 	"info_font_size": 16,
 	"pgn_font_size": 16,
 	"fen_font_size": 16,
-	"arrow_width": 8,
-	"arrowhead_radius": 12,
-	"board_font": "18px Arial",
+	"arrow_width": 12,
+	"arrowhead_radius": 18,
+	"board_font": "bold 14px 'Noto Sans', Arial",
 
-	"graph_height": 96,
 	"graph_line_width": 2,
 	"graph_minimum_length": 41,					// Desired depth + 1
-	"graph_max": 7,
+	"graph_max": 6,
 
 	"light_square": "#dadada",
 	"dark_square": "#b4b4b4",
-	"active_square": "#66aaaa",
-	"move_squares_with_alpha": "#ffff0026",
+	"active_square": "#5151cc",
+	"move_squares_with_alpha": "#3287ff80",
 
-	"colors": {},
-	"actual_move_colour": "#cc9966",
+	"colors": {
+		"best": {
+			"color": "#6bc4d6ee",
+			"threshold": 0
+		},
+		"good": {
+			"color": "#66cc66cc",
+			"threshold": 0.05
+		},
+		"inaccuracy": {
+			"color": "#cccc66cc",
+			"threshold": 0.1
+		},
+		"mistake": {
+			"color": "#cc9966cc",
+			"threshold": 0.2
+		},
+		"blunder": {
+			"color": "#cc6666cc",
+			"threshold": 1
+		},
+		"unknown": {
+			"color": "#557744dd",
+			"threshold": 9001
+		}
+	},
+	"actual_move_colour": "#3355ff",
 
-	"searchmoves_buttons": true,
+	"searchmoves_buttons": false,
 	"focus_on_text": "focused:",
 	"focus_off_text": "focus?",
 
@@ -59,46 +83,46 @@ exports.defaults = {
 
 	"bad_move_threshold": 0.02,
 	"terrible_move_threshold": 0.04,
-	"ab_filter_threshold": 0.1,
+	"ab_filter_threshold": 999,
 
 	"arrow_filter_type": "N",
-	"arrow_filter_value": 0.01,
+	"arrow_filter_value": 0.05,
 
 	"arrows_enabled": true,
 	"click_spotlight": true,
-	"next_move_arrow": false,
-	"next_move_outline": false,
+	"next_move_arrow": true,
+	"next_move_outline": true,
 	"next_move_unique_colour": false,
 	"arrowhead_type": 0,
 
-	"ev_pov": null,
-	"cp_pov": null,
-	"wdl_pov": null,
+	"ev_pov": "w",
+	"cp_pov": "w",
+	"wdl_pov": "w",
 
-	"show_cp": false,
-	"show_n": true,
-	"show_n_abs": true,
+	"show_cp": true,
+	"show_n": false,
+	"show_n_abs": false,
 	"show_depth": true,
-	"show_p": true,
+	"show_p": false,
 	"show_v": false,
 	"show_q": false,
 	"show_u": false,
 	"show_s": false,
 	"show_m": false,
-	"show_wdl": true,
-	"infobox_stats_newline": false,
+	"show_wdl": false,
+	"infobox_stats_newline": true,
 	"infobox_pv_move_numbers": false,
-	"hover_draw": false,
-	"hover_method": 2,
+	"hover_draw": true,
+	"hover_method": 0,
 	"hide_lines": false,
 
-	"looker_api": null,
+	"looker_api": "lichess_plebs",
 	"look_past_25": false,
 
 	"pv_click_event": 1,		// 0: nothing, 1: goto, 2: tree
 
-	"pgn_ev": true,
-	"pgn_cp": false,
+	"pgn_ev": false,
+	"pgn_cp": true,
 	"pgn_n": true,
 	"pgn_n_abs": false,
 	"pgn_of_n": true,
@@ -120,7 +144,7 @@ exports.defaults = {
 	"background_dialog_folder": "",
 	"book_dialog_folder": "",
 
-	"update_delay": 170,
+	"update_delay": 125,
 	"animate_delay_multiplier": 4,
 
 	"allow_arbitrary_scripts": false,
@@ -131,9 +155,9 @@ exports.defaults = {
 
 	"show_engine_state": false,
 
-	"book_depth": 10,
+	"book_depth": null,
 
-	"save_enabled": false,
+	"save_enabled": true,
 	"override_piece_directory": null,
 	"override_board": null,
 
@@ -141,7 +165,7 @@ exports.defaults = {
 
 	"logfile": null,
 	"clear_log": true,
-	"log_info_lines": false,
+	"log_info_lines": true,
 	"log_useless_info": false,
 	"log_illegal_moves": true,
 	"log_positions": true,

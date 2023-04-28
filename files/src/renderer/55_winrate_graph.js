@@ -107,7 +107,7 @@ function NewGrapher() {
 				if (last_n != null && n - last_n === 1) {
 					// Mark as mistake, blunder, etc.
 					const quality = ClassifyMove(e, eval_list[last_n], n % 2);
-					if (quality === "inaccuracy" || quality === "mistake" || quality === "blunder")
+					if (quality === "mistake" || quality === "blunder")
 						dot_color = config.colors[quality].color.substring(0, 7);
 				}
 
@@ -199,10 +199,6 @@ function NewGrapher() {
 	};
 
 	grapher.node_from_click = function(node, event) {
-
-		if (!event || config.graph_height <= 0) {
-			return null;
-		}
 
 		let mousex = event.offsetX;
 		if (typeof mousex !== "number") {

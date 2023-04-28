@@ -76,12 +76,6 @@ fullbox.style["font-size"] = config.info_font_size.toString() + "px";
 movelist.style["font-size"] = config.pgn_font_size.toString() + "px";
 fenbox.style["font-size"] = config.fen_font_size.toString() + "px";
 
-if (config.graph_height <= 0) {
-	graph.style.display = "none";
-} else {
-	graph.style.display = "";
-}
-
 // The promotion table pops up when needed...
 
 promotiontable.style.left = (boardsquares.offsetLeft + config.square_size * 2).toString() + "px";
