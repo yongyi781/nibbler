@@ -27,8 +27,6 @@ if (load_err1) {
 	hub.save_config();				// Ensure the options object is deleted from the file.
 }
 
-fenbox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 // We have 3 main things that get drawn to:
 //
 //		- boardsquares, lowest z-level table with enemy pieces and coloured squares.
@@ -296,4 +294,5 @@ function enter_loop() {
 	}
 }
 
-enter_loop();
+// Without this timeout, the board takes a while to render on startup.
+setTimeout(enter_loop, 100);
