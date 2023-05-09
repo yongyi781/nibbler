@@ -1045,33 +1045,11 @@ function menu_build() {
 				{
 					label: "Always show actual move (if known)",
 					type: "checkbox",
-					checked: config.next_move_arrow,
+					checked: config.show_next_move,
 					click: () => {
 						win.webContents.send("call", {
 							fn: "toggle",
-							args: ["next_move_arrow"],
-						});
-					}
-				},
-				{
-					label: "...with unique colour",
-					type: "checkbox",
-					checked: config.next_move_unique_colour,
-					click: () => {
-						win.webContents.send("call", {
-							fn: "toggle",
-							args: ["next_move_unique_colour"],
-						});
-					}
-				},
-				{
-					label: "...with outline",
-					type: "checkbox",
-					checked: config.next_move_outline,
-					click: () => {
-						win.webContents.send("call", {
-							fn: "toggle",
-							args: ["next_move_outline"],
+							args: ["show_next_move"],
 						});
 					}
 				},

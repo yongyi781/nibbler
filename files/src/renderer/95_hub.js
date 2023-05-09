@@ -857,7 +857,7 @@ let hub_props = {
 			this.draw_lichess_arrows();
 		} else {
 			let arrow_spotlight_square = config.click_spotlight ? this.active_square : null;
-			let next_move = (config.next_move_arrow && this.tree.node.children.length > 0) ? this.tree.node.children[0].move : null;
+			let next_move = (config.show_next_move && this.tree.node.children.length > 0) ? this.tree.node.children[0].move : null;
 			this.info_handler.draw_arrows(this.tree.node, arrow_spotlight_square, next_move);
 		}
 	},
