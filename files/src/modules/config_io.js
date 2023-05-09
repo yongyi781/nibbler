@@ -90,9 +90,7 @@ exports.defaults = {
 
 	"arrows_enabled": true,
 	"click_spotlight": true,
-	"next_move_arrow": true,
-	"next_move_outline": true,
-	"next_move_unique_colour": false,
+	"show_next_move": true,
 	"arrowhead_type": 0,
 
 	"ev_pov": "w",
