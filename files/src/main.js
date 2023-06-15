@@ -1043,8 +1043,9 @@ function menu_build() {
 					}
 				},
 				{
-					label: "Always show actual move (if known)",
+					label: "Show actual move",
 					type: "checkbox",
+					accelerator: "A",
 					checked: config.show_next_move,
 					click: () => {
 						win.webContents.send("call", {
