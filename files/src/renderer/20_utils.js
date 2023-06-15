@@ -758,3 +758,9 @@ function MakeLichessUrl(fen) {
 	url.search = params.toString();
 	return url;
 }
+
+// Opaquifies a hsla color, removing the alpha.
+function OpaquifyHSL(color) {
+	let arr = color.split(/[()\s]/);
+	return `hsl(${arr[1]} ${arr[2]} ${arr[3]})`;
+}

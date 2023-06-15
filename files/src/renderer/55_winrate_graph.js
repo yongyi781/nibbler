@@ -108,7 +108,7 @@ function NewGrapher() {
 					// Mark as mistake, blunder, etc.
 					const quality = ClassifyMove(e, eval_list[last_n], n % 2);
 					if (quality === "mistake" || quality === "blunder")
-						dot_color = config.colors[quality].color.substring(0, 7);
+						dot_color = OpaquifyHSL(config.colors[quality].color);
 				}
 
 				if (last_x != null) {

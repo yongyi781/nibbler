@@ -41,38 +41,37 @@ exports.defaults = {
 	"graph_minimum_length": 41,					// Desired depth + 1
 	"graph_max": 6,
 
-	"light_square": "#dadada",
-	"dark_square": "#b4b4b4",
-	"active_square": "#5151cc",
-	"move_squares_with_alpha": "#3287ff80",
-
+	"light_square": "hsl(0 0% 85%)",
+	"dark_square": "hsl(0 0% 71%)",
+	"active_square": "hsl(240 55% 56%)",
+	"move_squares_with_alpha": "hsl(73 100% 42% / 0.5)",
 	"colors": {
 		"best": {
-			"color": "#6bc4d6ee",
+			"color": "hsl(190 50% 60% / 0.8)",
 			"threshold": 0
 		},
 		"good": {
-			"color": "#66cc66cc",
+			"color": "hsl(120 50% 60% / 0.8)",
 			"threshold": 0.05
 		},
 		"inaccuracy": {
-			"color": "#cccc66cc",
+			"color": "hsl(60 50% 60% / 0.8)",
 			"threshold": 0.1
 		},
 		"mistake": {
-			"color": "#cc9966cc",
+			"color": "hsl(30 50% 60% / 0.8)",
 			"threshold": 0.2
 		},
 		"blunder": {
-			"color": "#cc6666cc",
+			"color": "hsl(0 50% 60% / 0.8)",
 			"threshold": 1
 		},
 		"unknown": {
-			"color": "#557744dd",
+			"color": "hsl(100 50% 30% / 0.8)",
 			"threshold": 9001
 		}
 	},
-	"actual_move_colour": "#3355ff",
+	"actual_move_colour": "hsl(230 100% 60%)",
 
 	"searchmoves_buttons": false,
 	"focus_on_text": "focused:",
