@@ -10,6 +10,9 @@ zips = {
 # Obtain the appropriate Electron asset named above, from https://github.com/electron/electron/releases
 # Create a folder at scripts/electron_zipped and place the Electron asset in it
 # Run ./builder.py
+#
+# Note: later Electron versions work also, but with a couple minor glitches:
+# https://github.com/rooklift/nibbler/issues/140
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))		# Ensure we're in builder.py's directory.
 os.chdir("..")												# Then come up one level.
@@ -18,10 +21,10 @@ with open("src/package.json") as f:
 	version = json.load(f)["version"]
 
 for key, value in zips.items():
-	
+
 	# check if electron archives exist
 	if not os.path.exists(value):
-		print("{} not present!".format(value))
+		print("Skipping {} build: {} not present.".format(key, value))
 		continue
 
 	# make build directory
@@ -32,7 +35,7 @@ for key, value in zips.items():
 	build_res_dir = os.path.join(build_dir, "resources")
 	shutil.copytree("res", build_res_dir)
 	shutil.copytree("src", os.path.join(build_res_dir, "app"))
-	
+
 	# extract electron
 	print("Extracting for {}...".format(key))
 	z = zipfile.ZipFile(value, "r")
