@@ -34,12 +34,12 @@ const table_prototype = {
 		} else {
 			let info = SortedMoveInfoFromTable(this)[0];
 			if (info && !info.__ghost && info.__touched && (this.nodes > 1 || this.limit === 1)) {
-				// this.eval = info.board.active === "w" ? info.cp / 100 : -info.cp / 100;
-				let cp = info.cp;
-				if (info.board.active === "b") {
-					cp *= -1;
-				}
-				this.graph_y = 1 / (1 + Math.pow(0.5, cp / 100));
+				this.graph_y = info.board.active === "w" ? info.cp / 100 : -info.cp / 100;
+				// let cp = info.cp;
+				// if (info.board.active === "b") {
+				// 	cp *= -1;
+				// }
+				// this.graph_y = 1 / (1 + Math.pow(0.5, cp / 100));
 			} else {
 				this.graph_y = null;
 			}
