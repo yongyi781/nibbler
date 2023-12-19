@@ -305,17 +305,6 @@ function menu_build() {
 			label: "File",
 			submenu: [
 				{
-					label: "About",
-					click: () => {
-						let s = `Nibbler ${electron.app.getVersion()} in Electron ${process.versions.electron}\n\n`;
-						s += `Engine: ${loaded_engine}\nWeights: ${loaded_weights || loaded_evalfile || "<auto>"}`;
-						alert(win, s);
-					}
-				},
-				{
-					type: "separator"
-				},
-				{
 					label: "New game",
 					accelerator: "CommandOrControl+N",
 					click: () => {
@@ -354,22 +343,6 @@ function menu_build() {
 					}
 				},
 				{
-					type: "separator"
-				},
-				{
-					label: "Load FEN / PGN from clipboard",
-					accelerator: "CommandOrControl+Shift+V",
-					click: () => {
-						win.webContents.send("call", {
-							fn: "load_fen_or_pgn_from_string",
-							args: [electron.clipboard.readText()]
-						});
-					}
-				},
-				{
-					type: "separator"
-				},
-				{
 					label: "Save this game...",
 					accelerator: "CommandOrControl+S",
 					click: () => {
@@ -396,10 +369,47 @@ function menu_build() {
 					}
 				},
 				{
+					type: "separator"
+				},
+				{
+					label: "Exit",							// Presumably calls electron.app.quit(), which tries to
+					role: "quit"							// it won't, because we prevent the initial close...)
+				},
+			]
+		},
+		{
+			label: "Edit",
+			submenu: [
+				{
+					label: "Cut",
+					role: "cut",
+				},
+				{
+					label: "Copy",
+					role: "copy",
+				},
+				{
+					label: "Paste",
+					role: "paste",
+				},
+				{
+					type: "separator"
+				},
+				{
 					label: "Write PGN to clipboard",
 					accelerator: "CommandOrControl+Shift+C",
 					click: () => {
 						win.webContents.send("call", "pgn_to_clipboard");
+					}
+				},
+				{
+					label: "Load FEN / PGN from clipboard",
+					accelerator: "CommandOrControl+Shift+V",
+					click: () => {
+						win.webContents.send("call", {
+							fn: "load_fen_or_pgn_from_string",
+							args: [electron.clipboard.readText()]
+						});
 					}
 				},
 				{
@@ -561,29 +571,6 @@ function menu_build() {
 							}
 						},
 					]
-				},
-				{
-					type: "separator"
-				},
-				{
-					label: "Cut",
-					role: "cut",
-				},
-				{
-					label: "Copy",
-					role: "copy",
-				},
-				{
-					label: "Paste",
-					role: "paste",
-				},
-				{
-					type: "separator"
-				},
-				{
-					label: "Quit",							// Presumably calls electron.app.quit(), which tries to
-					accelerator: "CommandOrControl+Q",		// close all windows, and quits iff it succeeds (which
-					role: "quit"							// it won't, because we prevent the initial close...)
 				},
 			]
 		},
@@ -3947,6 +3934,19 @@ function menu_build() {
 					label: "About play modes",
 					click: () => {
 						alert(win, messages.about_versus_mode);
+					}
+				}
+			]
+		},
+		{
+			label: "Help",
+			submenu: [
+				{
+					label: "About",
+					click: () => {
+						let s = `Nibbler ${electron.app.getVersion()} in Electron ${process.versions.electron}\n\n`;
+						s += `Engine: ${loaded_engine}\nWeights: ${loaded_weights || loaded_evalfile || "<auto>"}`;
+						alert(win, s);
 					}
 				}
 			]
