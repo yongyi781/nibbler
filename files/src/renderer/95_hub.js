@@ -40,7 +40,6 @@ let hub_props = {
 	// Core methods wrt our main state...
 
 	behave: async function(reason) {			// reason should be "position" or "behaviour"
-
 		// Called when position changes.
 		// Called when behaviour changes.
 		//
@@ -189,11 +188,11 @@ let hub_props = {
 			return;
 		}
 
-		let ok = true;
+		// let ok = true;
 
-		if (config.looker_api !== "lichess_masters" && config.looker_api !== "lichess_plebs") {
-			ok = false;
-		}
+		// if (config.looker_api !== "lichess_masters" && config.looker_api !== "lichess_plebs") {
+		// 	ok = false;
+		// }
 
 		let current_node = this.tree.node;
 		let current_entry = this.looker.lookup(config.looker_api, current_node.board);
@@ -505,7 +504,9 @@ let hub_props = {
 	},
 
 	update_evalbar: function(node) {
-		let e = node.table.eval;
+		let e = node.table.graph_y;
+		// console.log(`e = ${e}`);
+		console.dir(node);
 		const factor = 1 / 7;
 		if (e != null) {
 			let f = Math.max(0, Math.min(1, (1 - e * factor) / 2));
@@ -539,6 +540,7 @@ let hub_props = {
 		this.draw_infobox();
 
 		this.grapher.draw(this.tree.node);
+		this.update_evalbar(this.tree.node);
 	},
 
 	draw_friendlies_in_table: function(board) {

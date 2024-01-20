@@ -77,8 +77,7 @@ function startup() {
 	win = new electron.BrowserWindow({
 		x: config.x,
 		y: config.y,
-		width: config.width,
-		height: config.height,
+		show: false,
 		backgroundColor: "#000",
 		icon: path.join(__dirname, "/../res/nibbler.ico"),
 		webPreferences: {
@@ -267,13 +266,11 @@ function startup() {
 
 	electron.ipcMain.handle("get_window_position", async () => {
 		const bounds = win.getNormalBounds();
-		const nearestDisplay = electron.screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
-		const primaryDisplay = electron.screen.getPrimaryDisplay();
 		return {
 			x: bounds.x,
 			y: bounds.y,
-			width: Math.floor(bounds.width * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor),
-			height: Math.floor(bounds.height * primaryDisplay.scaleFactor / nearestDisplay.scaleFactor)
+			width: Math.floor(bounds.width),
+			height: Math.floor(bounds.height)
 		};
 	});
 
@@ -291,6 +288,8 @@ function startup() {
 		path.join(__dirname, "nibbler.html"),
 		{ query: query }
 	);
+	win.setBounds({ width: config.width, height: config.height });
+	win.show();
 }
 
 function menu_build() {

@@ -254,7 +254,7 @@ const arrow_props = {
 			if (specific_source || (!config.hide_lines && o.info.__touched && o.info.subcycle >= best_info.subcycle)) {
 				boardctx.fillStyle = o.colour;
 				boardctx.beginPath();
-				boardctx.arc(cc2.cx, cc2.cy, s === "" ? 12 : config.arrowhead_radius, 0, 2 * Math.PI);
+				boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
 				boardctx.fill();
 			}
 			// Text color: winning, losing, drawn

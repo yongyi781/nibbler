@@ -72,8 +72,6 @@ body {
 	pointer-events: auto;
 	table-layout: fixed;
 	z-index: 3;
-	width: 640px;
-	height: 640px;
 }
 
 #promotiontable {
