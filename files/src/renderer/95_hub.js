@@ -508,7 +508,6 @@ let hub_props = {
 	update_evalbar: function(node) {
 		let e = node.table.graph_y;
 		// console.log(`e = ${e}`);
-		console.dir(node);
 		const factor = 1 / 7;
 		if (e != null) {
 			let f = Math.max(0, Math.min(1, (1 - e * factor) / 2));

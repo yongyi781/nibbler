@@ -27,7 +27,7 @@ function NewGrapher() {
 		let height = graph.height;
 
 		let eval_list = node.all_graph_values();
-		this.draw_horizontal_lines(width, height, [1/3, 2/3]);
+		this.draw_horizontal_lines(width, height, [1 / 2 - 1 / config.graph_max, 1 / 2, 1 /2 + 1 / config.graph_max]);
 		this.draw_position_line(eval_list.length, node);
 
 		// We make lists of contiguous edges that can be drawn at once...
@@ -157,16 +157,16 @@ function NewGrapher() {
 	grapher.draw_horizontal_lines = function(width, height, y_fractions = [0.5]) {
 
 		// Avoid anti-aliasing... (FIXME: we assumed graph size was even)
-		let pixel_y_adjustment = config.graph_line_width % 2 === 0 ? 0 : -0.5;
+		// let pixel_y_adjustment = config.graph_line_width % 2 === 0 ? 0 : -0.5;
 
-		graphctx.strokeStyle = "#666666";
 		graphctx.lineWidth = config.graph_line_width;
 		graphctx.setLineDash([config.graph_line_width, config.graph_line_width]);
 
 		for (let y_fraction of y_fractions) {
+			graphctx.strokeStyle = y_fraction === 1 / 2 ? "#666666" : "#444444";
 			graphctx.beginPath();
-			graphctx.moveTo(0, height * y_fraction + pixel_y_adjustment);
-			graphctx.lineTo(width, height * y_fraction + pixel_y_adjustment);
+			graphctx.moveTo(0, height * y_fraction);
+			graphctx.lineTo(width, height * y_fraction);
 			graphctx.stroke();
 		}
 	};

@@ -1,13 +1,19 @@
+:root {
+	--bg: #080808;
+}
+
 html {
 	height: 100%;
 }
 
 body {
-	background-color: #080808;
-	font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	background-color: var(--bg);
+	font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont,
+		"Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+		"Helvetica Neue", sans-serif;
 	color: #eeeeee;
 	margin: 0;
-	padding: 0;
+	padding: 5;
 	overflow: hidden;
 	pointer-events: none;
 	/* These must be overriden for things that need pointer / select */
@@ -47,6 +53,7 @@ body {
 		"d"
 		"i"
 		"g";
+	margin-right: 10px;
 }
 
 #boardsquares {
@@ -126,12 +133,12 @@ body {
 	margin: 12px;
 }
 
-#fenbox>label {
+#fenbox > label {
 	grid-area: "fa";
 	padding: 8px;
 }
 
-#fenbox>input {
+#fenbox > input {
 	grid-area: "fb";
 	background-color: #080808;
 	border: 1px solid transparent;
@@ -146,7 +153,7 @@ body {
 	transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-#fenbox>input:focus {
+#fenbox > input:focus {
 	border-color: #9ecaed;
 	box-shadow: 0 0 10px #9ecaed;
 }
@@ -164,13 +171,13 @@ body {
 	height: 150px;
 }
 
-#movelist>span {
+#movelist > span {
 	cursor: pointer;
 	padding: 2px 0px 3px 2px;
 	border-radius: 3px;
 }
 
-#movelist>span:hover {
+#movelist > span:hover {
 	background-color: #555577;
 	transition: background-color 0.2s;
 }
