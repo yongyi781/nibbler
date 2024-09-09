@@ -144,7 +144,9 @@ let hub_props = {
 			this.node_to_clean = null;
 			this.leela_lock_node = null;
 			this.set_behaviour("halt");					// Will cause "stop" to be sent.
-			this.engine.send_ucinewgame();				// Must happen after "stop" is sent.
+			if (!config.suppress_ucinewgame) {
+				this.engine.send_ucinewgame();			// Must happen after "stop" is sent.
+			}
 			this.send_title();
 			if (this.engine.ever_received_uciok && !this.engine.in_960_mode() && this.tree.node.board.normalchess === false) {
 				alert(messages.c960_warning);
@@ -1337,7 +1339,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// UCI options...
 
-	set_uci_option: function(name, val, save_to_cfg) {
+	set_uci_option: function(name, val, save_to_cfg = false, blue_text = true) {
 
 		// Note that all early returns from this function need to send an ack
 		// of the prevailing value to fix checkmarks in the main process.
@@ -1374,11 +1376,20 @@ let hub_props = {
 
 		this.set_behaviour("halt");
 		let sent = this.engine.setoption(name, val);							// Will ack the new value.
-		this.set_special_message(sent, "blue");
+		if (blue_text) {
+			this.set_special_message(sent, "blue");
+		}
 	},
 
 	set_uci_option_permanent: function(name, val) {
 		this.set_uci_option(name, val, true);
+	},
+
+	set_uci_option_permanent_and_cleartree: function(name, val) {
+		this.set_uci_option(name, val, true);
+		if (this.engine.leelaish) {
+			this.set_uci_option("ClearTree", true, false, false);
+		}
 	},
 
 	disable_syzygy: function() {
@@ -1397,6 +1408,9 @@ let hub_props = {
 
 	reload_engineconfig: function() {
 		[load_err2, engineconfig] = engineconfig_io.load();
+		if (load_err2) {
+			alert(load_err2);
+		}
 		this.restart_engine();
 	},
 
@@ -1465,24 +1479,25 @@ let hub_props = {
 		return true;
 	},
 
-	engine_send_all_options: function() {
+	engine_send_all_options: function() {			// The engine should never have been given a "go" before this.
 
-		// The engine should never have been given a "go" before this.
+		// Options that are sent regardless of whether the engine seems to know about them...
+
+		let forced_engine_options = this.engine.leelaish ? forced_lc0_options : forced_ab_options;
+		for (let [key, value] of Object.entries(forced_engine_options)) {
+			this.engine.setoption(key, value);
+		}
+
+		// Standard options... only sent if the engine has said it knows them...
 
 		let standard_engine_options = this.engine.leelaish ? standard_lc0_options : standard_ab_options;
-
-		// Note: for each key, we could check if the option is known, but that
-		// would be sketchy because we use secret stuff like "LogLiveStats".
-		// But we can do it for non-Leelaish engines...
-
-		for (let key of Object.keys(standard_engine_options)) {
-			if (this.engine.leelaish || this.engine.known(key)) {
-				this.engine.setoption(key, standard_engine_options[key]);
+		for (let [key, value] of Object.entries(standard_engine_options)) {
+			if (this.engine.known(key)) {
+				this.engine.setoption(key, value);
 			}
 		}
 
-		// Now send user-selected options. One might argue we should do this first,
-		// so that our standard options prevail in the event of a conflict. Hmm.
+		// Now send user-selected options. Thus, the user can override anything above.
 
 		let options = engineconfig[this.engine.filepath].options;
 		let keys = Object.keys(options);

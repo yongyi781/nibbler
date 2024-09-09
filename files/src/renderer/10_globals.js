@@ -79,15 +79,24 @@ if (images.validate_folder(config.override_piece_directory)) {
 // Standard options, for either type of engine......................
 // Note that UCI_Chess960 is handled specially by engine.js
 
-const standard_lc0_options = {
-	"LogLiveStats": true,
+const forced_lc0_options = {		// These are sent without checking if they are known by the engine, so it doesn't matter
+	"LogLiveStats": true,			// if Leela is hiding them. Nevertheless, the user can still override them in engines.json.
 	"MoveOverheadMs": 0,
 	"MultiPV": 500,
-	"ScoreType": "centipawn",
+	"ScoreType": "WDL_mu",
 	"SmartPruningFactor": 0,
 	"UCI_ShowWDL": true,
 	"VerboseMoveStats": true,
 };
+
+const standard_lc0_options = {		// These are only sent if known by the engine.
+	"ContemptMode": "white_side_analysis",
+	"Contempt": 0,
+	"WDLCalibrationElo": 0,
+	"WDLEvalObjectivity": 0,
+};
+
+const forced_ab_options = {};
 
 const standard_ab_options = {
 	"Contempt": 0,

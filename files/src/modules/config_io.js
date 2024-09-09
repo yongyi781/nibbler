@@ -5,6 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const querystring = require("querystring");
 
+const debork_json = require("./debork_json");
+
 exports.filename = "config.json";
 
 // To avoid using "remote", we rely on the main process passing userData location in the query...
@@ -149,6 +151,7 @@ exports.defaults = {
 	"allow_stopped_analysis": false,
 	"never_suppress_searchmoves": true,
 	"never_grayout_infolines": false,
+	"suppress_ucinewgame": false,
 
 	"show_engine_state": false,
 
@@ -255,18 +258,10 @@ function fix(cfg) {
 	if (cfg.wdl_white_pov) {
 		cfg.wdl_pov = "w";
 	}
-}
 
-function debork_json(s) {
+	// Too many people are setting this...
 
-	// We used to fix JSON containing single \ characters in paths, but now all
-	// that really needs to be done is to convert totally blank files into {}
-
-	if (s.length < 50 && s.trim() === "") {
-		return "{}";
-	}
-
-	return s;
+	cfg.show_engine_state = exports.defaults.show_engine_state;
 }
 
 exports.load = () => {
@@ -277,7 +272,13 @@ exports.load = () => {
 
 	try {
 		if (fs.existsSync(exports.filepath)) {
-			Object.assign(cfg, JSON.parse(debork_json(fs.readFileSync(exports.filepath, "utf8"))));
+			let raw = fs.readFileSync(exports.filepath, "utf8");
+			try {
+				Object.assign(cfg, JSON.parse(raw));
+			} catch (err) {
+				console.log(exports.filename, err.toString(), "...trying to debork...");
+				Object.assign(cfg, JSON.parse(debork_json(raw)));
+			}
 		}
 	} catch (err) {
 		console.log(err.toString());							// alert() might not be available.

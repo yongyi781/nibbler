@@ -210,6 +210,8 @@ function startup() {
 		// Expect msg.key to be a lowercase string
 		// Expect msg.val to be a string, possibly "" (can use the fact that "" is false-ish)
 
+		// REMEMBER TO UPDATE engine.js GUI_WANTS_TO_KNOW const WHEN THINGS ARE ADDED...
+
 		switch (msg.key) {
 
 			case "weightsfile":
@@ -258,10 +260,46 @@ function startup() {
 				}
 				break;
 
-			case "tempdecaymoves":		// Not so sketchy because it should be a string of an integer.
-				set_checks("Play", "TempDecayMoves", msg.val === "0" ? "Infinite" : msg.val);
-				break;
+		case "tempdecaymoves":		// Not so sketchy because it should be a string of an integer.
+			set_checks("Play", "Temp Decay Moves", msg.val === "0" ? "Infinite" : msg.val);
+			break;
+
+		case "contemptmode":		// All the menu items are different from the UCI values...
+			if (msg.val === "white_side_analysis") {
+				set_checks("Engine", "Contempt Mode", "White analysis");
+			} else if (msg.val === "black_side_analysis") {
+				set_checks("Engine", "Contempt Mode", "Black analysis");
+			} else {
+				set_checks("Engine", "Contempt Mode", msg.val);
+			}
+			break;
+
+		case "contempt":
+			set_checks("Engine", "Contempt", msg.val);
+			break;
+
+		case "wdlcalibrationelo":
+			set_checks("Engine", "WDL Calibration Elo", msg.val === "0" ? "Use default WDL" : msg.val);
+			break;
+
+		case "wdlevalobjectivity":
+			if (msg.val === "1") {
+				set_checks("Engine", "WDL Eval Objectivity", "Yes");
+			} else if (msg.val === "0") {
+				set_checks("Engine", "WDL Eval Objectivity", "No");
+			} else {
+				set_checks("Engine", "WDL Eval Objectivity", msg.val);
+			}
+			break;
+
+		case "scoretype":
+			set_checks("Engine", "Score Type", msg.val);
+			break;
+
+		// REMEMBER TO UPDATE engine.js GUI_WANTS_TO_KNOW const WHEN THINGS ARE ADDED...
+
 		}
+
 	});
 
 	electron.ipcMain.handle("get_window_position", async () => {
@@ -3411,6 +3449,361 @@ function menu_build() {
 					type: "separator"
 				},
 				{
+					label: "Contempt Mode",				// Other valid options are "play" (which messes with normal analysis) and "disable"
+					submenu: [
+						{
+							label: "White analysis",	// Note string searched when ack'd.
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["ContemptMode", "white_side_analysis"]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "Black analysis",	// Note string searched when ack'd.
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["ContemptMode", "black_side_analysis"]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+					]
+				},
+				{
+					label: "Contempt",
+					submenu: [
+						{
+							label: "250",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 250]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "200",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 200]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "150",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 150]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "100",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 100]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "50",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 50]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "0",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", 0]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "-50",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", -50]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "-100",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", -100]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "-150",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", -150]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "-200",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", -200]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "-250",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["Contempt", -250]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+					]
+				},
+				{
+					label: "WDL Calibration Elo",
+					submenu: [
+						{
+							label: "3600",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 3600]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "3400",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 3400]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "3200",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 3200]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "3000",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 3000]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "2800",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 2800]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "2600",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 2600]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "2400",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 2400]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "2200",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 2200]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "2000",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 2000]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							type: "separator"
+						},
+						{
+							label: "Use default WDL",	// This string is searched for when receiving ack 0, don't edit this alone.
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent_and_cleartree",
+									args: ["WDLCalibrationElo", 0]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+					]
+				},
+				{
+					label: "WDL Eval Objectivity",
+					submenu: [
+						{
+							label: "Yes",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["WDLEvalObjectivity", 1]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "No",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["WDLEvalObjectivity", 0]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						}
+					]
+				},
+				{
+					label: "Score Type",
+					submenu: [
+						{
+							label: "WDL_mu",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["ScoreType", "WDL_mu"]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						},
+						{
+							label: "centipawn",
+							type: "checkbox",
+							checked: false,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "set_uci_option_permanent",
+									args: ["ScoreType", "centipawn"]
+								});
+								// Will receive an ack IPC which sets menu checks.
+							}
+						}
+					]
+				},
+				{
+					type: "separator"
+				},
+				{
 					label: "Custom scripts",
 					submenu: scriptlist_in_menu			// Will be filled at the end, see below.
 				},
@@ -3790,7 +4183,7 @@ function menu_build() {
 					]
 				},
 				{
-					label: "TempDecayMoves",
+					label: "Temp Decay Moves",
 					submenu: [
 						{
 							label: "Infinite",
@@ -4169,6 +4562,17 @@ function menu_build() {
 								win.webContents.send("call", {
 									fn: "toggle",
 									args: ["accept_bounds"],
+								});
+							}
+						},
+						{
+							label: "Suppress ucinewgame",
+							type: "checkbox",
+							checked: config.suppress_ucinewgame,
+							click: () => {
+								win.webContents.send("call", {
+									fn: "toggle",
+									args: ["suppress_ucinewgame"],
 								});
 							}
 						},
