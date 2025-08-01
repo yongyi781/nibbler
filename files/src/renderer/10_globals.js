@@ -27,7 +27,8 @@ const evalbarBlack = document.querySelector("#evalbar .black");
 try {
 	require("./modules/empty");
 } catch (err) {
-	statusbox.innerHTML = `Running Nibbler in a normal browser doesn't work. For the full app, see the
+	statusbox.innerHTML = `
+	Running Nibbler in a normal browser doesn't work. For the full app, see the
 	<a href="https://github.com/rooklift/nibbler/releases">Releases section</a> of the repo.<br><br>
 
 	It has also been observed not to work if your path contains a % character.`;
@@ -48,7 +49,14 @@ const path = require("path");
 const querystring = require("querystring");
 const readline = require("readline");
 const stringify = require("./modules/stringify");
+const translate = require("./modules/translate");
 const util = require("util");
+
+// Prior to v32, given a file object from an event (e.g. from dragging the file onto the window)
+// we could simply access its path, but afterwards we need to use a helper function...
+
+let webUtils = require("electron").webUtils;
+const get_path_for_file = (webUtils && webUtils.getPathForFile) ? webUtils.getPathForFile : file => file.path;
 
 // Globals..........................................................
 
@@ -58,6 +66,8 @@ const decoder = new util.TextDecoder("utf8");	// https://github.com/electron/ele
 
 let [load_err1, config]       = config_io.load();
 let [load_err2, engineconfig] = engineconfig_io.load();
+
+translate.register_startup_language(config.language);
 
 let next_node_id = 1;
 let live_nodes = Object.create(null);

@@ -1,20 +1,21 @@
 "use strict";
 
-const arrow_props = {
-	draw_arrows: function(node, specific_source, next_move) {		// specific_source is a Point(), show_move is a string
+let arrow_props = {
+	draw_arrows: function (node, specific_source, next_move) {
+		// If not nullish, specific_source is a Point() and show_move is a string
+
 		// Function is responsible for updating the one_click_moves array.
 		for (let x = 0; x < 8; x++)
-			for (let y = 0; y < 8; y++)
-				this.one_click_moves[x][y] = null;
+			for (let y = 0; y < 8; y++) this.one_click_moves[x][y] = null;
 
-		if (!config.arrows_enabled || node == null || node.destroyed)
-			return;
+		if (!config.arrows_enabled || node == null || node.destroyed) return;
 
 		const full_list = SortedMoveInfo(node);
-		if (full_list.length === 0)		// Keep this test early so we can assume best_info exists later.
+		if (full_list.length === 0)
+			// Keep this test early so we can assume best_info exists later.
 			return;
 
-		const best_info = full_list[0];		// Note that, since we may filter the list, it might not contain best_info later.
+		const best_info = full_list[0]; // Note that, since we may filter the list, it might not contain best_info later.
 
 		const arrows = [];
 		const heads = [];
@@ -34,11 +35,10 @@ const arrow_props = {
 			mode = "normal";
 		}
 
-		const info_list = full_list.filter(info => {
+		const info_list = full_list.filter((info) => {
 			if (specific_source)
 				return info.move.slice(0, 2) === specific_source.s;
-			if (info.move === next_move)
-				return true;
+			if (info.move === next_move) return true;
 			if (!info.__touched || info.subcycle < best_info.subcycle)
 				return false;
 			let loss = info.depth > 0 ? (best_info.cp - info.cp) / 100 : 1000;
@@ -62,7 +62,11 @@ const arrow_props = {
 				}
 
 				// Moves proven to lose...
-				if (typeof info.u === "number" && info.u === 0 && info.value() === 0) {
+				if (
+					typeof info.u === "number" &&
+					info.u === 0 &&
+					info.value() === 0
+				) {
 					if (config.arrow_filter_type !== "all") {
 						return false;
 					}
@@ -85,17 +89,25 @@ const arrow_props = {
 			let [x1, y1] = XY(info.move.slice(0, 2));
 			let [x2, y2] = XY(info.move.slice(2, 4));
 
-			let colour = !config.hide_lines && info.__touched && info.subcycle >= best_info.subcycle ? config.colors[MoveQuality(best_info, info)].color : config.colors.unknown.color;
+			let colour =
+				!config.hide_lines &&
+				info.__touched &&
+				info.subcycle >= best_info.subcycle
+					? config.colors[MoveQuality(best_info, info)].color
+					: config.colors.unknown.color;
 
-			let x_head_adjustment = 0;				// Adjust head of arrow for castling moves...
+			let x_head_adjustment = 0; // Adjust head of arrow for castling moves...
 			let normal_castling_flag = false;
 
-			if (node.board && node.board.colour(Point(x1, y1)) === node.board.colour(Point(x2, y2))) {
-
+			if (
+				node.board &&
+				node.board.colour(Point(x1, y1)) ===
+					node.board.colour(Point(x2, y2))
+			) {
 				// So the move is a castling move (reminder: as of 1.1.6 castling format is king-onto-rook).
 
 				if (node.board.normalchess) {
-					normal_castling_flag = true;	// ...and we are playing normal Chess (not 960).
+					normal_castling_flag = true; // ...and we are playing normal Chess (not 960).
 				}
 
 				if (x2 > x1) {
@@ -107,36 +119,70 @@ const arrow_props = {
 
 			if (info.move === next_move || !config.hide_lines) {
 				let width = 0;
-				if (!config.hide_lines && info.__touched && info.subcycle >= best_info.subcycle)
-					width = Math.min(config.arrow_width, Math.max(1, config.arrow_width * (1 - (best_info.cp - info.cp) / 100)));
-				if (!config.hide_lines && info.mate !== best_info.mate && Math.sign(info.mate) === Math.sign(best_info.mate)) {
+				if (
+					!config.hide_lines &&
+					info.__touched &&
+					info.subcycle >= best_info.subcycle
+				)
+					width = Math.min(
+						config.arrow_width,
+						Math.max(
+							1,
+							config.arrow_width *
+								(1 - (best_info.cp - info.cp) / 100)
+						)
+					);
+				if (
+					!config.hide_lines &&
+					info.mate !== best_info.mate &&
+					Math.sign(info.mate) === Math.sign(best_info.mate)
+				) {
 					width = config.arrow_width / 2;
 				}
-				arrows.push({ colour, x1, y1, x2: x2 + x_head_adjustment, y2, info, width });
+				arrows.push({
+					colour,
+					x1,
+					y1,
+					x2: x2 + x_head_adjustment,
+					y2,
+					info,
+					width,
+				});
 			}
 			// If there is no one_click_move set for the target square, then set it
 			// and also set an arrowhead to be drawn later.
 
 			if (normal_castling_flag) {
-				if (!this.one_click_moves[x2 + x_head_adjustment][y2] && (specific_source || !config.hide_lines || info.move === next_move)) {
+				if (
+					!this.one_click_moves[x2 + x_head_adjustment][y2] &&
+					(specific_source ||
+						!config.hide_lines ||
+						info.move === next_move)
+				) {
 					heads.push({
 						colour: colour,
 						x2: x2 + x_head_adjustment,
 						y2: y2,
-						info: info
+						info: info,
 					});
-					this.one_click_moves[x2 + x_head_adjustment][y2] = info.move;
+					this.one_click_moves[x2 + x_head_adjustment][y2] =
+						info.move;
 					if (info.move === next_move) {
 						next_move_head = heads[heads.length - 1];
 					}
 				}
 			} else {
-				if (!this.one_click_moves[x2][y2] && (specific_source || !config.hide_lines || info.move === next_move)) {
+				if (
+					!this.one_click_moves[x2][y2] &&
+					(specific_source ||
+						!config.hide_lines ||
+						info.move === next_move)
+				) {
 					heads.push({
 						colour: colour,
 						x2: x2 + x_head_adjustment,
 						y2: y2,
-						info: info
+						info: info,
 					});
 					this.one_click_moves[x2][y2] = info.move;
 					if (info.move === next_move) {
@@ -152,10 +198,16 @@ const arrow_props = {
 		// the heads, merely the colour of the lines, so it's not a huge problem I think.]
 
 		arrows.sort((a, b) => {
-			if (Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) < Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)) {
+			if (
+				Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) <
+				Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)
+			) {
 				return 1;
 			}
-			if (Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) > Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)) {
+			if (
+				Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) >
+				Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)
+			) {
 				return -1;
 			}
 			if (a.info.n < b.info.n) {
@@ -176,14 +228,13 @@ const arrow_props = {
 			if (o.info.move === next_move && config.show_next_move)
 				next_move_arrow = o;
 			// Draw the outline at the layer just below the actual arrow.
-			if (o.width <= 0)
-				continue;
+			if (o.width <= 0) continue;
 			let cc1 = CanvasCoords(o.x1, o.y1);
 			let cc2 = CanvasCoords(o.x2, o.y2);
 			// Compute the amount to subtract so the line doesn't cross the circle.
 			let dist = Math.hypot(cc2.cx - cc1.cx, cc2.cy - cc1.cy);
-			let dx = (config.arrowhead_radius - 1) * (cc2.cx - cc1.cx) / dist;
-			let dy = (config.arrowhead_radius - 1) * (cc2.cy - cc1.cy) / dist;
+			let dx = ((config.arrowhead_radius - 1) * (cc2.cx - cc1.cx)) / dist;
+			let dy = ((config.arrowhead_radius - 1) * (cc2.cy - cc1.cy)) / dist;
 
 			boardctx.lineWidth = o.width;
 			boardctx.strokeStyle = o.colour;
@@ -195,13 +246,14 @@ const arrow_props = {
 		}
 
 		// Draw the next move head now.
-		if (next_move_arrow != null && config.show_next_move) {		// Draw the outline at the layer just below the actual arrow.
+		if (next_move_arrow != null && config.show_next_move) {
+			// Draw the outline at the layer just below the actual arrow.
 			let cc1 = CanvasCoords(next_move_arrow.x1, next_move_arrow.y1);
 			let cc2 = CanvasCoords(next_move_arrow.x2, next_move_arrow.y2);
 			// Compute the amount to subtract so the line doesn't cross the circle.
 			let dist = Math.hypot(cc2.cx - cc1.cx, cc2.cy - cc1.cy);
-			let dx = config.arrowhead_radius * (cc2.cx - cc1.cx) / dist;
-			let dy = config.arrowhead_radius * (cc2.cy - cc1.cy) / dist;
+			let dx = (config.arrowhead_radius * (cc2.cx - cc1.cx)) / dist;
+			let dy = (config.arrowhead_radius * (cc2.cy - cc1.cy)) / dist;
 
 			boardctx.strokeStyle = config.actual_move_colour;
 			boardctx.lineWidth = 4;
@@ -210,9 +262,16 @@ const arrow_props = {
 			boardctx.lineTo(cc2.cx - dx, cc2.cy - dy);
 			boardctx.stroke();
 
-			if (next_move_head) {			// This is the best layer to draw the head outline.
+			if (next_move_head) {
+				// This is the best layer to draw the head outline.
 				boardctx.beginPath();
-				boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius + 1, 0, 2 * Math.PI);
+				boardctx.arc(
+					cc2.cx,
+					cc2.cy,
+					config.arrowhead_radius + 1,
+					0,
+					2 * Math.PI
+				);
 				boardctx.stroke();
 			}
 		}
@@ -222,14 +281,20 @@ const arrow_props = {
 
 			let s = "";
 
-			if (!config.hide_lines && o.info.__touched && o.info.subcycle >= best_info.subcycle) {
+			if (
+				!config.hide_lines &&
+				o.info.__touched &&
+				o.info.subcycle >= best_info.subcycle
+			) {
 				switch (config.arrowhead_type) {
 					case 0:
 						s = o.info.value_string(1, config.ev_pov);
 						break;
 					case 1:
 						if (node.table.nodes > 0) {
-							s = (100 * o.info.n / node.table.nodes).toFixed(0);
+							s = ((100 * o.info.n) / node.table.nodes).toFixed(
+								0
+							);
 						}
 						break;
 					case 2:
@@ -251,15 +316,31 @@ const arrow_props = {
 				}
 			}
 
-			if (specific_source || (!config.hide_lines && o.info.__touched && o.info.subcycle >= best_info.subcycle)) {
+			if (
+				specific_source ||
+				(!config.hide_lines &&
+					o.info.__touched &&
+					o.info.subcycle >= best_info.subcycle)
+			) {
 				boardctx.fillStyle = o.colour;
 				boardctx.beginPath();
-				boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
+				boardctx.arc(
+					cc2.cx,
+					cc2.cy,
+					config.arrowhead_radius,
+					0,
+					2 * Math.PI
+				);
 				boardctx.fill();
 			}
 			// Text color: winning, losing, drawn
 			let cp = o.info.cp_with_pov(config.ev_pov);
-			boardctx.fillStyle = s === "" || cp < 0 || isNaN(cp) || config.hide_lines ? "#000000" : cp > 0 ? "#ffffaa" : "#555555";
+			boardctx.fillStyle =
+				s === "" || cp < 0 || isNaN(cp) || config.hide_lines
+					? "#000000"
+					: cp > 0
+					? "#ffffaa"
+					: "#555555";
 
 			boardctx.fillText(s, cc2.cx, cc2.cy + 1);
 		}
@@ -270,9 +351,10 @@ const arrow_props = {
 	// of the app. The info_list here is just a list of objects each containing only "move" and "weight" - where
 	// the weights have been normalised to the 0-1 scale and the list has been sorted.
 	//
-	// Note that info_list here should not be modified.
+	// Note that info_list here MUST NOT BE MODIFIED.
 
-	draw_explorer_arrows: function(node, info_list) {
+	draw_explorer_arrows: function (node, info_list, specific_source) {
+		// If not nullish, specific_source is a Point()
 
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
@@ -288,18 +370,29 @@ const arrow_props = {
 		let heads = [];
 
 		for (let i = 0; i < info_list.length; i++) {
+			if (
+				specific_source &&
+				specific_source.s !== info_list[i].move.slice(0, 2)
+			) {
+				continue;
+			}
+
 			let [x1, y1] = XY(info_list[i].move.slice(0, 2));
 			let [x2, y2] = XY(info_list[i].move.slice(2, 4));
 
-			let colour = i === 0 ? config.colors.best.color : config.colors.good.color;
+			let colour =
+				i === 0 ? config.colors.best.color : config.colors.good.color;
 
-			let x_head_adjustment = 0;				// Adjust head of arrow for castling moves...
+			let x_head_adjustment = 0; // Adjust head of arrow for castling moves...
 			let normal_castling_flag = false;
 
-			if (node.board && node.board.colour(Point(x1, y1)) === node.board.colour(Point(x2, y2))) {
-
+			if (
+				node.board &&
+				node.board.colour(Point(x1, y1)) ===
+					node.board.colour(Point(x2, y2))
+			) {
 				if (node.board.normalchess) {
-					normal_castling_flag = true;	// ...and we are playing normal Chess (not 960).
+					normal_castling_flag = true; // ...and we are playing normal Chess (not 960).
 				}
 
 				if (x2 > x1) {
@@ -315,7 +408,7 @@ const arrow_props = {
 				y1: y1,
 				x2: x2 + x_head_adjustment,
 				y2: y2,
-				info: info_list[i]
+				info: info_list[i],
 			});
 
 			// If there is no one_click_move set for the target square, then set it
@@ -327,9 +420,10 @@ const arrow_props = {
 						colour: colour,
 						x2: x2 + x_head_adjustment,
 						y2: y2,
-						info: info_list[i]
+						info: info_list[i],
 					});
-					this.one_click_moves[x2 + x_head_adjustment][y2] = info_list[i].move;
+					this.one_click_moves[x2 + x_head_adjustment][y2] =
+						info_list[i].move;
 				}
 			} else {
 				if (!this.one_click_moves[x2][y2]) {
@@ -337,7 +431,7 @@ const arrow_props = {
 						colour: colour,
 						x2: x2 + x_head_adjustment,
 						y2: y2,
-						info: info_list[i]
+						info: info_list[i],
 					});
 					this.one_click_moves[x2][y2] = info_list[i].move;
 				}
@@ -345,10 +439,16 @@ const arrow_props = {
 		}
 
 		arrows.sort((a, b) => {
-			if (Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) < Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)) {
+			if (
+				Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) <
+				Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)
+			) {
 				return 1;
 			}
-			if (Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) > Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)) {
+			if (
+				Math.abs(a.x2 - a.x1) + Math.abs(a.y2 - a.y1) >
+				Math.abs(b.x2 - b.x1) + Math.abs(b.y2 - b.y1)
+			) {
 				return -1;
 			}
 			return 0;
@@ -376,7 +476,13 @@ const arrow_props = {
 
 			boardctx.fillStyle = o.colour;
 			boardctx.beginPath();
-			boardctx.arc(cc2.cx, cc2.cy, config.arrowhead_radius, 0, 2 * Math.PI);
+			boardctx.arc(
+				cc2.cx,
+				cc2.cy,
+				config.arrowhead_radius,
+				0,
+				2 * Math.PI
+			);
 			boardctx.fill();
 			boardctx.fillStyle = "black";
 
@@ -388,5 +494,5 @@ const arrow_props = {
 
 			boardctx.fillText(s, cc2.cx, cc2.cy + 1);
 		}
-	}
+	},
 };
