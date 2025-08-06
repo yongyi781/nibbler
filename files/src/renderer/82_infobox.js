@@ -1,9 +1,15 @@
 "use strict";
 
 let infobox_props = {
-
-	draw_infobox: function(node, mouse_point, active_square, active_colour, hoverdraw_div, allow_inactive_focus, lookup_object) {
-
+	draw_infobox: function (
+		node,
+		mouse_point,
+		active_square,
+		active_colour,
+		hoverdraw_div,
+		allow_inactive_focus,
+		lookup_object
+	) {
 		let searchmoves = node.searchmoves;
 
 		if (this.displaying_error_log()) {
@@ -26,14 +32,17 @@ let infobox_props = {
 
 		// A lookup_object should always have type (string) and moves (object).
 
-		let ltype        = lookup_object ? lookup_object.type  : null;
+		let ltype = lookup_object ? lookup_object.type : null;
 		let lookup_moves = lookup_object ? lookup_object.moves : null;
 
 		// If we are using an online API, and the list has some "untouched" info, we
 		// may be able to sort them using the API info.
 
-		if (ltype === "chessdbcn" || ltype === "lichess_masters" || ltype === "lichess_plebs") {
-
+		if (
+			ltype === "chessdbcn" ||
+			ltype === "lichess_masters" ||
+			ltype === "lichess_plebs"
+		) {
 			let touched_list = [];
 			let untouched_list = [];
 
@@ -49,21 +58,31 @@ let infobox_props = {
 			const b_is_best = 1;
 
 			untouched_list.sort((a, b) => {
-				if (lookup_moves[a.move] && !lookup_moves[b.move]) return a_is_best;
-				if (!lookup_moves[a.move] && lookup_moves[b.move]) return b_is_best;
+				if (lookup_moves[a.move] && !lookup_moves[b.move])
+					return a_is_best;
+				if (!lookup_moves[a.move] && lookup_moves[b.move])
+					return b_is_best;
 				if (!lookup_moves[a.move] && !lookup_moves[b.move]) return 0;
-				return lookup_moves[b.move].sort_score() - lookup_moves[a.move].sort_score();
+				return (
+					lookup_moves[b.move].sort_score() -
+					lookup_moves[a.move].sort_score()
+				);
 			});
 
 			info_list = touched_list.concat(untouched_list);
 		}
 
 		let best_subcycle = info_list.length > 0 ? info_list[0].subcycle : 0;
-		if (best_subcycle === 0) {		// Because all info was autopopulated
-			best_subcycle = -1;			// Causes all info to be gray
+		if (best_subcycle === 0) {
+			// Because all info was autopopulated
+			best_subcycle = -1; // Causes all info to be gray
 		}
 
-		if (typeof config.max_info_lines === "number" && config.max_info_lines > 0) {		// Hidden option, request of rwbc
+		if (
+			typeof config.max_info_lines === "number" &&
+			config.max_info_lines > 0
+		) {
+			// Hidden option, request of rwbc
 			info_list = info_list.slice(0, config.max_info_lines);
 		}
 
@@ -75,13 +94,24 @@ let infobox_props = {
 		// We'll highlight it if it's a valid OCM *and* clicking there now would make it happen...
 
 		if (mouse_point && this.one_click_moves[mouse_point.x][mouse_point.y]) {
-			if (!active_square || this.one_click_moves[mouse_point.x][mouse_point.y].slice(0, 2) === active_square.s) {
-				highlight_move = this.one_click_moves[mouse_point.x][mouse_point.y];
+			if (
+				!active_square ||
+				this.one_click_moves[mouse_point.x][mouse_point.y].slice(
+					0,
+					2
+				) === active_square.s
+			) {
+				highlight_move =
+					this.one_click_moves[mouse_point.x][mouse_point.y];
 				highlight_class = "ocm_highlight";
 			}
 		}
 
-		if (typeof hoverdraw_div === "number" && hoverdraw_div >= 0 && hoverdraw_div < info_list.length) {
+		if (
+			typeof hoverdraw_div === "number" &&
+			hoverdraw_div >= 0 &&
+			hoverdraw_div < info_list.length
+		) {
 			highlight_move = info_list[hoverdraw_div].move;
 			highlight_class = "hover_highlight";
 		}
@@ -90,16 +120,23 @@ let infobox_props = {
 
 		let no_skip_reasons = [];
 
-		if (node.id !== this.last_drawn_node_id)                                no_skip_reasons.push("node");
-		if (node.table.version !== this.last_drawn_version)                     no_skip_reasons.push("table version");
-		if (highlight_move !== this.last_drawn_highlight_move)                  no_skip_reasons.push("highlight move");
-		if (highlight_class !== this.last_drawn_highlight_class)                no_skip_reasons.push("highlight class");
-		if (info_list.length !== this.last_drawn_length)                        no_skip_reasons.push("info list length");
-		if (allow_inactive_focus !== this.last_drawn_allow_inactive_focus)      no_skip_reasons.push("allow inactive focus");
-		if (CompareArrays(searchmoves, this.last_drawn_searchmoves) === false)  no_skip_reasons.push("searchmoves");
-		if (lookup_object !== this.last_drawn_lookup_object)                    no_skip_reasons.push("lookup object");
+		if (node.id !== this.last_drawn_node_id) no_skip_reasons.push("node");
+		if (node.table.version !== this.last_drawn_version)
+			no_skip_reasons.push("table version");
+		if (highlight_move !== this.last_drawn_highlight_move)
+			no_skip_reasons.push("highlight move");
+		if (highlight_class !== this.last_drawn_highlight_class)
+			no_skip_reasons.push("highlight class");
+		if (info_list.length !== this.last_drawn_length)
+			no_skip_reasons.push("info list length");
+		if (allow_inactive_focus !== this.last_drawn_allow_inactive_focus)
+			no_skip_reasons.push("allow inactive focus");
+		if (CompareArrays(searchmoves, this.last_drawn_searchmoves) === false)
+			no_skip_reasons.push("searchmoves");
+		if (lookup_object !== this.last_drawn_lookup_object)
+			no_skip_reasons.push("lookup object");
 
-		draw_infobox_no_skip_reasons = no_skip_reasons.join(", ");	// For debugging only.
+		draw_infobox_no_skip_reasons = no_skip_reasons.join(", "); // For debugging only.
 
 		if (no_skip_reasons.length === 0) {
 			draw_infobox_total_skips++;
@@ -125,13 +162,17 @@ let infobox_props = {
 		const best_info = info_list[0];
 
 		for (let info of info_list) {
-
 			// The div containing the PV etc...
 
-			const is_active = info.subcycle === best_subcycle || config.never_grayout_infolines;
+			const is_active =
+				info.subcycle === best_subcycle ||
+				config.never_grayout_infolines;
 			let divclass = "infoline";
 
-			if (info.subcycle !== best_subcycle && !config.never_grayout_infolines) {
+			if (
+				info.subcycle !== best_subcycle &&
+				!config.never_grayout_infolines
+			) {
 				divclass += " " + "gray";
 			}
 
@@ -139,16 +180,22 @@ let infobox_props = {
 				divclass += " " + highlight_class;
 			}
 
-			substrings.push(`<div id="infoline_${div_index++}" class="${divclass}">`);
+			substrings.push(
+				`<div id="infoline_${div_index++}" class="${divclass}">`
+			);
 
 			// The "focus" button...
 
 			if (config.searchmoves_buttons) {
 				if (searchmoves.includes(info.move)) {
-					substrings.push(`<span id="searchmove_${info.move}" class="yellow cursor-pointer">${config.focus_on_text}</span> `);
+					substrings.push(
+						`<span id="searchmove_${info.move}" class="yellow cursor-pointer">${config.focus_on_text}</span> `
+					);
 				} else {
 					if (allow_inactive_focus) {
-						substrings.push(`<span id="searchmove_${info.move}" class="gray cursor-pointer">${config.focus_off_text}</span> `);
+						substrings.push(
+							`<span id="searchmove_${info.move}" class="gray cursor-pointer">${config.focus_off_text}</span> `
+						);
 					}
 				}
 			}
@@ -170,30 +217,45 @@ let infobox_props = {
 			}
 
 			if (is_active) {
-				substrings.push(`<strong class="infobox-${MoveQuality(best_info, info)}">${value_string}</strong> `);
+				substrings.push(
+					`<strong class="infobox-${MoveQuality(
+						best_info,
+						info
+					)}">${value_string}</strong> `
+				);
 			} else {
 				substrings.push(`<strong>${value_string}</strong> `);
 			}
 
 			// The depth ...
 			if (config.show_depth) {
-				substrings.push(`<span class="infobox-depth">${info.depth}</span> `);
+				substrings.push(
+					`<span class="infobox-depth">${info.depth}</span> `
+				);
 			}
 
 			// The PV...
 
-			if (!config.hide_lines) {
+			const hide_lines =
+				active_colour === "w"
+					? config.hide_lines_white
+					: config.hide_lines_black;
+
+			if (!hide_lines) {
 				let colour = active_colour;
-				let movenum = node.board.fullmove;			// Only matters for config.infobox_pv_move_numbers
+				let movenum = node.board.fullmove; // Only matters for config.infobox_pv_move_numbers
 				let nice_pv = info.nice_pv();
 
 				for (let i = 0; i < nice_pv.length; i++) {
 					let spanclass = "";
-					if (info.subcycle === best_subcycle || config.never_grayout_infolines) {
+					if (
+						info.subcycle === best_subcycle ||
+						config.never_grayout_infolines
+					) {
 						spanclass = colour === "w" ? "white" : "pink";
 					}
 					if (nice_pv[i].includes("O-O")) {
-						spanclass += (spanclass.length > 0) ? " nobr" : "nobr";
+						spanclass += spanclass.length > 0 ? " nobr" : "nobr";
 					}
 
 					let numstring = "";
@@ -205,7 +267,11 @@ let infobox_props = {
 						}
 					}
 
-					substrings.push(`<span id="infobox_${clicker_index++}" class="pv ${spanclass}">${numstring}${nice_pv[i]} </span>`);
+					substrings.push(
+						`<span id="infobox_${clicker_index++}" class="pv ${spanclass}">${numstring}${
+							nice_pv[i]
+						} </span>`
+					);
 					this.info_clickers.push({
 						move: info.pv[i],
 						is_start: i === 0,
@@ -223,7 +289,6 @@ let infobox_props = {
 			let extra_stat_strings = [];
 
 			if (info.__touched) {
-
 				let stats_list = info.stats_list(
 					{
 						n: config.show_n,
@@ -236,7 +301,9 @@ let infobox_props = {
 						q: config.show_q,
 						u: config.show_u,
 						s: config.show_s,
-					}, node.table.nodes);
+					},
+					node.table.nodes
+				);
 
 				extra_stat_strings = extra_stat_strings.concat(stats_list);
 			}
@@ -247,7 +314,10 @@ let infobox_props = {
 					let pov = null;
 					if (ltype === "chessdbcn") {
 						pov = config.cp_pov;
-					} else if (ltype === "lichess_masters" || ltype === "lichess_plebs") {
+					} else if (
+						ltype === "lichess_masters" ||
+						ltype === "lichess_plebs"
+					) {
 						pov = config.ev_pov;
 					}
 					let o = lookup_moves[info.move];
@@ -262,13 +332,16 @@ let infobox_props = {
 				if (config.infobox_stats_newline) {
 					substrings.push("<br>");
 				}
-				substrings.push(`<span class="gray">(${extra_stat_strings.join(', ')})</span>`);
+				substrings.push(
+					`<span class="gray">(${extra_stat_strings.join(
+						", "
+					)})</span>`
+				);
 			}
 
 			// Close the whole div...
 
 			substrings.push("</div>");
-
 		}
 
 		infobox.innerHTML = substrings.join("");
@@ -285,7 +358,7 @@ let infobox_props = {
 		return node.id === this.info_clickers_node_id;
 	},
 
-	moves_from_click_n: function(n, desired_length = null) {
+	moves_from_click_n: function (n, desired_length = null) {
 		if (typeof n !== "number" || Number.isNaN(n)) {
 			return [];
 		}
@@ -319,7 +392,7 @@ let infobox_props = {
 					if (object.is_start) {
 						break;
 					}
-					move_list.push(object.move);					// Note the different order of stataments compared to the above.
+					move_list.push(object.move); // Note the different order of stataments compared to the above.
 					if (move_list.length >= desired_length) {
 						break;
 					}
@@ -329,10 +402,7 @@ let infobox_props = {
 
 		return move_list;
 	},
-
 };
-
-
 
 // For debugging...
 let draw_infobox_total_skips = 0;

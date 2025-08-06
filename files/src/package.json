@@ -10,7 +10,7 @@
 		"url": "https://github.com/yongyi781/nibbler"
 	},
 	"devDependencies": {
-		"electron": "^37.2.5"
+		"electron": "^37.2.6"
 	},
 	"packageManager": "pnpm@10.14.0"
 }

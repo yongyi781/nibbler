@@ -11,171 +11,178 @@ exports.filename = "config.json";
 
 // To avoid using "remote", we rely on the main process passing userData location in the query...
 
-exports.filepath = electron.app ?
-	path.join(electron.app.getPath("userData"), exports.filename) :											// in Main process
-	path.join(querystring.parse(global.location.search.slice(1))["user_data_path"], exports.filename);		// in Renderer process
+exports.filepath = electron.app
+	? path.join(electron.app.getPath("userData"), exports.filename) // in Main process
+	: path.join(
+			querystring.parse(global.location.search.slice(1))[
+				"user_data_path"
+			],
+			exports.filename
+	  ); // in Renderer process
 
-function Config() { }			// This exists solely to make instanceof work.
+function Config() {} // This exists solely to make instanceof work.
 Config.prototype = {};
 
 exports.defaults = {
-	"warning": "EDITING THIS FILE WHILE NIBBLER IS RUNNING WILL GENERALLY CAUSE YOUR EDITS TO BE LOST.",
+	warning:
+		"EDITING THIS FILE WHILE NIBBLER IS RUNNING WILL GENERALLY CAUSE YOUR EDITS TO BE LOST.",
 
-	"language": "English",
+	language: "English",
 
-	"path": null,				// Not undefined, all normal keys should have an actual value.
+	path: null, // Not undefined, all normal keys should have an actual value.
 
-	"args_unused": null,
-	"options_unused": null,
+	args_unused: null,
+	options_unused: null,
 
-	"disable_hw_accel": false,
-	"x": null,
-	"y": null,
-	"width": 1024,
-	"height": 800,
-	"board_size": 640,
-	"info_font_size": 16,
-	"pgn_font_size": 16,
-	"fen_font_size": 16,
-	"arrow_width": 12,
-	"arrowhead_radius": 18,
-	"board_font": "bold 14px 'Noto Sans', Arial",
+	disable_hw_accel: false,
+	x: null,
+	y: null,
+	width: 1024,
+	height: 800,
+	board_size: 640,
+	info_font_size: 16,
+	pgn_font_size: 16,
+	fen_font_size: 16,
+	arrow_width: 12,
+	arrowhead_radius: 18,
+	board_font: "bold 14px 'Noto Sans', Arial",
 
-	"graph_line_width": 2,
-	"graph_minimum_length": 41,					// Desired depth + 1
-	"graph_max": 6,
+	graph_line_width: 2,
+	graph_minimum_length: 41, // Desired depth + 1
+	graph_max: 6,
 
-	"light_square": "hsl(0 0% 85%)",
-	"dark_square": "hsl(0 0% 71%)",
-	"active_square": "hsl(240 55% 56%)",
-	"move_squares_with_alpha": "hsl(73 100% 42% / 0.5)",
-	"colors": {
-		"best": {
-			"color": "hsl(190 50% 60% / 0.8)",
-			"threshold": 0
+	light_square: "hsl(0 0% 85%)",
+	dark_square: "hsl(0 0% 71%)",
+	active_square: "hsl(240 55% 56%)",
+	move_squares_with_alpha: "hsl(73 100% 42% / 0.5)",
+	colors: {
+		best: {
+			color: "hsl(190 50% 60% / 0.8)",
+			threshold: 0,
 		},
-		"good": {
-			"color": "hsl(120 50% 60% / 0.8)",
-			"threshold": 0.05
+		good: {
+			color: "hsl(120 50% 60% / 0.8)",
+			threshold: 0.05,
 		},
-		"inaccuracy": {
-			"color": "hsl(60 50% 60% / 0.8)",
-			"threshold": 0.1
+		inaccuracy: {
+			color: "hsl(60 50% 60% / 0.8)",
+			threshold: 0.1,
 		},
-		"mistake": {
-			"color": "hsl(30 50% 60% / 0.8)",
-			"threshold": 0.2
+		mistake: {
+			color: "hsl(30 50% 60% / 0.8)",
+			threshold: 0.2,
 		},
-		"blunder": {
-			"color": "hsl(0 50% 60% / 0.8)",
-			"threshold": 1
+		blunder: {
+			color: "hsl(0 50% 60% / 0.8)",
+			threshold: 1,
 		},
-		"unknown": {
-			"color": "hsl(100 50% 30% / 0.8)",
-			"threshold": 9001
-		}
+		unknown: {
+			color: "hsl(100 50% 30% / 0.8)",
+			threshold: 9001,
+		},
 	},
-	"actual_move_colour": "hsl(230 100% 60%)",
+	actual_move_colour: "hsl(230 100% 60%)",
 
-	"searchmoves_buttons": false,
-	"focus_on_text": "focused:",
-	"focus_off_text": "focus?",
+	searchmoves_buttons: false,
+	focus_on_text: "focused:",
+	focus_off_text: "focus?",
 
-	"accept_bounds": false,
-	"max_info_lines": null,						// Hidden option
+	accept_bounds: false,
+	max_info_lines: null, // Hidden option
 
-	"bad_move_threshold": 0.02,
-	"terrible_move_threshold": 0.04,
-	"ab_filter_threshold": 999,
+	bad_move_threshold: 0.02,
+	terrible_move_threshold: 0.04,
+	ab_filter_threshold: 999,
 
-	"arrow_filter_type": "N",
-	"arrow_filter_value": 0.05,
+	arrow_filter_type: "N",
+	arrow_filter_value: 0.05,
 
-	"arrows_enabled": true,
-	"click_spotlight": true,
-	"show_next_move": true,
-	"arrowhead_type": 0,
+	arrows_enabled: true,
+	click_spotlight: true,
+	show_next_move: true,
+	arrowhead_type: 0,
 
-	"ev_pov": "w",
-	"cp_pov": "w",
-	"wdl_pov": "w",
+	ev_pov: "w",
+	cp_pov: "w",
+	wdl_pov: "w",
 
-	"show_cp": true,
-	"show_n": false,
-	"show_n_abs": false,
-	"show_depth": true,
-	"show_p": false,
-	"show_v": false,
-	"show_q": false,
-	"show_u": false,
-	"show_s": false,
-	"show_m": false,
-	"show_wdl": false,
-	"infobox_stats_newline": true,
-	"infobox_pv_move_numbers": false,
-	"hover_draw": true,
-	"hover_method": 0,
-	"hide_lines": false,
+	show_cp: true,
+	show_n: false,
+	show_n_abs: false,
+	show_depth: true,
+	show_p: false,
+	show_v: false,
+	show_q: false,
+	show_u: false,
+	show_s: false,
+	show_m: false,
+	show_wdl: false,
+	infobox_stats_newline: true,
+	infobox_pv_move_numbers: false,
+	hover_draw: true,
+	hover_method: 0,
+	hide_lines_white: false,
+	hide_lines_black: false,
 
-	"looker_api": "lichess_plebs",
-	"look_past_25": false,
+	looker_api: "lichess_plebs",
+	look_past_25: false,
 
-	"pv_click_event": 1,		// 0: nothing, 1: goto, 2: tree
+	pv_click_event: 1, // 0: nothing, 1: goto, 2: tree
 
-	"pgn_ev": false,
-	"pgn_cp": true,
-	"pgn_n": true,
-	"pgn_n_abs": false,
-	"pgn_of_n": true,
-	"pgn_depth": false,
-	"pgn_p": false,
-	"pgn_v": false,
-	"pgn_q": false,
-	"pgn_u": false,
-	"pgn_s": false,
-	"pgn_m": false,
-	"pgn_wdl": false,
+	pgn_ev: false,
+	pgn_cp: true,
+	pgn_n: true,
+	pgn_n_abs: false,
+	pgn_of_n: true,
+	pgn_depth: false,
+	pgn_p: false,
+	pgn_v: false,
+	pgn_q: false,
+	pgn_u: false,
+	pgn_s: false,
+	pgn_m: false,
+	pgn_wdl: false,
 
-	"pgn_dialog_folder": "",
-	"engine_dialog_folder": "",
-	"weights_dialog_folder": "",
-	"evalfile_dialog_folder": "",
-	"syzygy_dialog_folder": "",
-	"pieces_dialog_folder": "",
-	"background_dialog_folder": "",
-	"book_dialog_folder": "",
+	pgn_dialog_folder: "",
+	engine_dialog_folder: "",
+	weights_dialog_folder: "",
+	evalfile_dialog_folder: "",
+	syzygy_dialog_folder: "",
+	pieces_dialog_folder: "",
+	background_dialog_folder: "",
+	book_dialog_folder: "",
 
-	"update_delay": 125,
-	"animate_delay_multiplier": 4,
+	update_delay: 125,
+	animate_delay_multiplier: 4,
 
-	"allow_arbitrary_scripts": false,
-	"ignore_filesize_limits": false,
-	"allow_stopped_analysis": false,
-	"never_suppress_searchmoves": true,
-	"never_grayout_infolines": false,
-	"suppress_ucinewgame": false,
+	allow_arbitrary_scripts: false,
+	ignore_filesize_limits: false,
+	allow_stopped_analysis: false,
+	never_suppress_searchmoves: true,
+	never_grayout_infolines: false,
+	suppress_ucinewgame: false,
 
-	"show_engine_state": false,
+	show_engine_state: false,
 
-	"book_depth": null,
+	book_depth: null,
 
-	"save_enabled": true,
-	"override_piece_directory": null,
-	"override_board": null,
+	save_enabled: true,
+	override_piece_directory: null,
+	override_board: null,
 
-	"leelaish_names": ["Lc0", "Leela", "Ceres"],		// If this gets updated, will need to fix old config files.
+	leelaish_names: ["Lc0", "Leela", "Ceres"], // If this gets updated, will need to fix old config files.
 
-	"logfile": null,
-	"clear_log": true,
-	"logfile_timestamp": false,
-	"log_info_lines": true,
-	"log_useless_info": false,
-	"log_illegal_moves": true,
-	"log_positions": true,
-	"use_lichess_book": true,
-	"lichess_top_moves_only": false,
-	"lichess_book_speeds": ["blitz", "rapid", "classical", "correspondence"],
-	"lichess_book_ratings": [1800, 2000, 2200, 2500]
+	logfile: null,
+	clear_log: true,
+	logfile_timestamp: false,
+	log_info_lines: true,
+	log_useless_info: false,
+	log_illegal_moves: true,
+	log_positions: true,
+	use_lichess_book: true,
+	lichess_top_moves_only: false,
+	lichess_book_speeds: ["blitz", "rapid", "classical", "correspondence"],
+	lichess_book_ratings: [1800, 2000, 2200, 2500],
 };
 
 function fix(cfg) {
@@ -214,7 +221,7 @@ function fix(cfg) {
 
 	for (let key of ["info_font_size", "pgn_font_size", "fen_font_size"]) {
 		if (typeof cfg[key] === "string") {
-			cfg[key] = parseInt(cfg[key], 10);		// Works even if string ends with "px"
+			cfg[key] = parseInt(cfg[key], 10); // Works even if string ends with "px"
 			if (Number.isNaN(cfg[key])) {
 				cfg[key] = exports.defaults[key];
 			}
@@ -267,7 +274,6 @@ function fix(cfg) {
 }
 
 exports.load = () => {
-
 	let cfg = new Config();
 
 	let err_to_return = null;
@@ -278,12 +284,16 @@ exports.load = () => {
 			try {
 				Object.assign(cfg, JSON.parse(raw));
 			} catch (err) {
-				console.log(exports.filename, err.toString(), "...trying to debork...");
+				console.log(
+					exports.filename,
+					err.toString(),
+					"...trying to debork..."
+				);
 				Object.assign(cfg, JSON.parse(debork_json(raw)));
 			}
 		}
 	} catch (err) {
-		console.log(err.toString());							// alert() might not be available.
+		console.log(err.toString()); // alert() might not be available.
 		err_to_return = err.toString();
 	}
 
@@ -303,7 +313,6 @@ exports.load = () => {
 };
 
 exports.save = (cfg) => {
-
 	if (cfg instanceof Config === false) {
 		throw "Wrong type of object sent to config_io.save()";
 	}
@@ -324,12 +333,11 @@ exports.save = (cfg) => {
 	try {
 		fs.writeFileSync(exports.filepath, JSON.stringify(out, null, "\t"));
 	} catch (err) {
-		console.log(err.toString());		// alert() might not be available.
+		console.log(err.toString()); // alert() might not be available.
 	}
 };
 
 exports.create_if_needed = (cfg) => {
-
 	// Note that this must be called fairly late, when userData directory exists.
 
 	if (cfg instanceof Config === false) {

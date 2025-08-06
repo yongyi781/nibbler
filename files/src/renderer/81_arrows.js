@@ -20,6 +20,11 @@ let arrow_props = {
 		const arrows = [];
 		const heads = [];
 
+		const hide_lines =
+			node.board.active === "w"
+				? config.hide_lines_white
+				: config.hide_lines_black;
+
 		let mode;
 		let next_move_head = null;
 
@@ -89,8 +94,10 @@ let arrow_props = {
 			let [x1, y1] = XY(info.move.slice(0, 2));
 			let [x2, y2] = XY(info.move.slice(2, 4));
 
+			console.log(node);
+
 			let colour =
-				!config.hide_lines &&
+				!hide_lines &&
 				info.__touched &&
 				info.subcycle >= best_info.subcycle
 					? config.colors[MoveQuality(best_info, info)].color
@@ -117,10 +124,10 @@ let arrow_props = {
 				}
 			}
 
-			if (info.move === next_move || !config.hide_lines) {
+			if (info.move === next_move || !hide_lines) {
 				let width = 0;
 				if (
-					!config.hide_lines &&
+					!hide_lines &&
 					info.__touched &&
 					info.subcycle >= best_info.subcycle
 				)
@@ -133,7 +140,7 @@ let arrow_props = {
 						)
 					);
 				if (
-					!config.hide_lines &&
+					!hide_lines &&
 					info.mate !== best_info.mate &&
 					Math.sign(info.mate) === Math.sign(best_info.mate)
 				) {
@@ -155,9 +162,7 @@ let arrow_props = {
 			if (normal_castling_flag) {
 				if (
 					!this.one_click_moves[x2 + x_head_adjustment][y2] &&
-					(specific_source ||
-						!config.hide_lines ||
-						info.move === next_move)
+					(specific_source || !hide_lines || info.move === next_move)
 				) {
 					heads.push({
 						colour: colour,
@@ -174,9 +179,7 @@ let arrow_props = {
 			} else {
 				if (
 					!this.one_click_moves[x2][y2] &&
-					(specific_source ||
-						!config.hide_lines ||
-						info.move === next_move)
+					(specific_source || !hide_lines || info.move === next_move)
 				) {
 					heads.push({
 						colour: colour,
@@ -282,7 +285,7 @@ let arrow_props = {
 			let s = "";
 
 			if (
-				!config.hide_lines &&
+				!hide_lines &&
 				o.info.__touched &&
 				o.info.subcycle >= best_info.subcycle
 			) {
@@ -318,7 +321,7 @@ let arrow_props = {
 
 			if (
 				specific_source ||
-				(!config.hide_lines &&
+				(!hide_lines &&
 					o.info.__touched &&
 					o.info.subcycle >= best_info.subcycle)
 			) {
@@ -336,7 +339,7 @@ let arrow_props = {
 			// Text color: winning, losing, drawn
 			let cp = o.info.cp_with_pov(config.ev_pov);
 			boardctx.fillStyle =
-				s === "" || cp < 0 || isNaN(cp) || config.hide_lines
+				s === "" || cp < 0 || isNaN(cp) || hide_lines
 					? "#000000"
 					: cp > 0
 					? "#ffffaa"
