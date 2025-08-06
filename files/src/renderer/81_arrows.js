@@ -94,8 +94,6 @@ let arrow_props = {
 			let [x1, y1] = XY(info.move.slice(0, 2));
 			let [x2, y2] = XY(info.move.slice(2, 4));
 
-			console.log(node);
-
 			let colour =
 				!hide_lines &&
 				info.__touched &&

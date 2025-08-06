@@ -125,17 +125,21 @@ body {
 	pointer-events: auto;
 }
 
+#positioninfobox {
+	margin: 6px 12px;
+	text-align: center;
+}
+
 #fenbox {
 	grid-area: f;
 	display: grid;
 	grid-template-columns: min-content 1fr;
 	grid-template-areas: "fa fb";
-	margin: 12px;
 }
 
 #fenbox > label {
 	grid-area: "fa";
-	padding: 8px;
+	padding: 8px 0;
 }
 
 #fenbox > input {

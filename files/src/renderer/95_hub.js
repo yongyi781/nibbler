@@ -1,10 +1,9 @@
 "use strict";
 
 function NewHub() {
-
 	let hub = Object.create(null);
 
-	hub.engine = NewEngine(hub);						// Just a dummy object with no exe. Fixed by start.js later.
+	hub.engine = NewEngine(hub); // Just a dummy object with no exe. Fixed by start.js later.
 	hub.tree = NewTreeHandler();
 	hub.grapher = NewGrapher();
 	hub.looker = NewLooker();
@@ -13,33 +12,33 @@ function NewHub() {
 
 	// Various state we have to keep track of...
 
-	hub.loaders = [];									// The loaders can have shutdown() called on them to stop ASAP.
-	hub.book = null;									// Either a Polyglot buffer, or an array of {key, move, weight}.
-	hub.pgndata = null;									// Object representing the loaded PGN file.
-	hub.engine_choices = [];							// Made by show_fast_engine_chooser() when needed.
-	hub.pgn_choices_start = 0;							// Where we are in the PGN Chooser screen.
-	hub.friendly_draws = New2DArray(8, 8, null);		// What pieces are drawn in boardfriends. Used to skip redraws.
-	hub.enemy_draws = New2DArray(8, 8, null);			// What pieces are drawn in boardsquares. Used to skip redraws.
-	hub.dirty_squares = New2DArray(8, 8, null);			// What squares have some coloured background.
-	hub.active_square = null;							// Clicked square, shown in blue.
-	hub.hoverdraw_div = -1;								// Which div is hovered; used by draw_infobox().
-	hub.hoverdraw_depth = 0;							// How deep in the hover PV we are.
-	hub.tick = 0;										// How many draw loops we've been through. Used to animate hoverdraw.
-	hub.position_change_time = performance.now();		// Time of the last position change. Used for cooldown on hoverdraw.
-	hub.node_to_clean = hub.tree.node;					// The next node to be cleaned up (done when exiting it).
-	hub.leela_lock_node = null;							// Non-null only when in "analysis_locked" mode.
+	hub.loaders = []; // The loaders can have shutdown() called on them to stop ASAP.
+	hub.book = null; // Either a Polyglot buffer, or an array of {key, move, weight}.
+	hub.pgndata = null; // Object representing the loaded PGN file.
+	hub.engine_choices = []; // Made by show_fast_engine_chooser() when needed.
+	hub.pgn_choices_start = 0; // Where we are in the PGN Chooser screen.
+	hub.friendly_draws = New2DArray(8, 8, null); // What pieces are drawn in boardfriends. Used to skip redraws.
+	hub.enemy_draws = New2DArray(8, 8, null); // What pieces are drawn in boardsquares. Used to skip redraws.
+	hub.dirty_squares = New2DArray(8, 8, null); // What squares have some coloured background.
+	hub.active_square = null; // Clicked square, shown in blue.
+	hub.hoverdraw_div = -1; // Which div is hovered; used by draw_infobox().
+	hub.hoverdraw_depth = 0; // How deep in the hover PV we are.
+	hub.tick = 0; // How many draw loops we've been through. Used to animate hoverdraw.
+	hub.position_change_time = performance.now(); // Time of the last position change. Used for cooldown on hoverdraw.
+	hub.node_to_clean = hub.tree.node; // The next node to be cleaned up (done when exiting it).
+	hub.leela_lock_node = null; // Non-null only when in "analysis_locked" mode.
 
-	hub.looker.add_to_queue(hub.tree.node.board);		// Maybe make initial call to API such as ChessDN.cn...
+	hub.looker.add_to_queue(hub.tree.node.board); // Maybe make initial call to API such as ChessDN.cn...
 	Object.assign(hub, hub_props);
 	return hub;
 }
 
 let hub_props = {
-
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Core methods wrt our main state...
 
-	behave: async function(reason) {			// reason should be "position" or "behaviour"
+	behave: async function (reason) {
+		// reason should be "position" or "behaviour"
 		// Called when position changes.
 		// Called when behaviour changes.
 		//
@@ -54,84 +53,88 @@ let hub_props = {
 		}
 
 		switch (config.behaviour) {
-
 			case "halt":
-
 				this.__halt();
 				break;
 
 			case "analysis_free":
-
 				// Note that the 2nd part of the condition is needed because changing behaviour can change what node_limit()
 				// returns, therefore we might already be running a search for the right node but with the wrong limit.
 				// THIS IS TRUE THROUGHOUT THIS FUNCTION.
 
-				if (this.engine.search_desired.node !== this.tree.node || this.engine.search_desired.limit !== this.node_limit()) {
+				if (
+					this.engine.search_desired.node !== this.tree.node ||
+					this.engine.search_desired.limit !== this.node_limit()
+				) {
 					this.__go(this.tree.node);
 				}
 				break;
 
 			case "auto_analysis":
 			case "back_analysis":
-
 				if (this.tree.node.terminal_reason()) {
-					this.continue_auto_analysis();				// This can get a bit recursive, do we care?
-				} else if (this.engine.search_desired.node !== this.tree.node || this.engine.search_desired.limit !== this.node_limit()) {
+					this.continue_auto_analysis(); // This can get a bit recursive, do we care?
+				} else if (
+					this.engine.search_desired.node !== this.tree.node ||
+					this.engine.search_desired.limit !== this.node_limit()
+				) {
 					this.__go(this.tree.node);
 				}
 				break;
 
 			case "analysis_locked":
-
 				// Moving shouldn't trigger anything, except that re-entering the correct node changes behaviour to halt
 				// iff the search is completed.
 
 				if (reason === "position") {
-
 					if (this.tree.node === this.leela_lock_node) {
 						if (!this.engine.search_desired.node) {
 							this.set_behaviour_direct("halt");
 						}
 					}
-
 				} else {
-
-					if (this.engine.search_desired.node !== this.leela_lock_node || this.engine.search_desired.limit !== this.node_limit()) {
+					if (
+						this.engine.search_desired.node !==
+							this.leela_lock_node ||
+						this.engine.search_desired.limit !== this.node_limit()
+					) {
 						this.__go(this.leela_lock_node);
 					}
-
 				}
 				break;
 
 			case "self_play":
 			case "play_white":
 			case "play_black":
-
-				if ((config.behaviour === "self_play") ||
-					(config.behaviour === "play_white" && this.tree.node.board.active === "w") ||
-					(config.behaviour === "play_black" && this.tree.node.board.active === "b")) {
-
+				if (
+					config.behaviour === "self_play" ||
+					(config.behaviour === "play_white" &&
+						this.tree.node.board.active === "w") ||
+					(config.behaviour === "play_black" &&
+						this.tree.node.board.active === "b")
+				) {
 					if (await this.maybe_setup_book_move()) {
 						this.__halt();
 						break;
 					}
 
-					if (this.engine.search_desired.node !== this.tree.node || this.engine.search_desired.limit !== this.node_limit()) {
+					if (
+						this.engine.search_desired.node !== this.tree.node ||
+						this.engine.search_desired.limit !== this.node_limit()
+					) {
 						this.__go(this.tree.node);
 					}
-
-				} else {			// Play single colour mode, wrong colour.
+				} else {
+					// Play single colour mode, wrong colour.
 
 					this.__halt();
-
 				}
 
 				break;
 		}
 	},
 
-	position_changed: async function(new_game_flag, avoid_confusion) {
-
+	position_changed: async function (new_game_flag, avoid_confusion) {
 		// Called right after this.tree.node is changed, meaning we are now drawing a different position.
 
 		this.escape();
@@ -140,15 +143,28 @@ let hub_props = {
 		this.position_change_time = performance.now();
 		fenbox.value = this.tree.node.board.fen(true);
 
+		const mat = this.tree.node.board.material();
+		let diff = mat.white - mat.black;
+		if (Math.abs(diff) < 0.001) diff = 0;
+		material.innerText = `White ${mat.white.toFixed(
+			1
+		)} ♟️ | Black ${mat.black.toFixed(1)} ♟️ | Difference ${diff.toFixed(
+			1
+		)} ♟️`;
+
 		if (new_game_flag) {
 			this.node_to_clean = null;
 			this.leela_lock_node = null;
-			this.set_behaviour("halt");					// Will cause "stop" to be sent.
+			this.set_behaviour("halt"); // Will cause "stop" to be sent.
 			if (!config.suppress_ucinewgame) {
-				this.engine.send_ucinewgame();			// Must happen after "stop" is sent.
+				this.engine.send_ucinewgame(); // Must happen after "stop" is sent.
 			}
 			this.send_title();
-			if (this.engine.ever_received_uciok && !this.engine.in_960_mode() && this.tree.node.board.normalchess === false) {
+			if (
+				this.engine.ever_received_uciok &&
+				!this.engine.in_960_mode() &&
+				this.tree.node.board.normalchess === false
+			) {
 				alert(messages.c960_warning);
 			}
 			evalbarBlack.style = "height: 50%";
@@ -167,24 +183,32 @@ let hub_props = {
 		// Caller can tell us the change would cause user confusion for some modes...
 
 		if (avoid_confusion) {
-			if (["play_white", "play_black", "self_play", "auto_analysis", "back_analysis"].includes(config.behaviour)) {
+			if (
+				[
+					"play_white",
+					"play_black",
+					"self_play",
+					"auto_analysis",
+					"back_analysis",
+				].includes(config.behaviour)
+			) {
 				this.set_behaviour("halt");
 			}
 		}
 
-		this.maybe_infer_info();						// Before node_exit_cleanup() so that previous ghost info is available when moving forwards.
+		this.maybe_infer_info(); // Before node_exit_cleanup() so that previous ghost info is available when moving forwards.
 		await this.behave("position");
 		this.draw();
 		this.update_evalbar(this.tree.node);
 
-		this.node_exit_cleanup();						// This feels like the right time to do this.
+		this.node_exit_cleanup(); // This feels like the right time to do this.
 		this.node_to_clean = this.tree.node;
 
 		this.looker.add_to_queue(this.tree.node.board);
 		this.update_opening();
 	},
 
-	update_opening: function() {
+	update_opening: function () {
 		if (this.tree.node.parent == null) {
 			openingbox.innerHTML = "";
 			return;
@@ -197,20 +221,32 @@ let hub_props = {
 		// }
 
 		let current_node = this.tree.node;
-		let current_entry = this.looker.lookup(config.looker_api, current_node.board);
+		let current_entry = this.looker.lookup(
+			config.looker_api,
+			current_node.board
+		);
 
 		if (current_entry != null) {
-			while (current_entry?.opening == null && current_node.parent != null) {
+			while (
+				current_entry?.opening == null &&
+				current_node.parent != null
+			) {
 				current_node = current_node.parent;
-				current_entry = this.looker.lookup(config.looker_api, current_node.board);
+				current_entry = this.looker.lookup(
+					config.looker_api,
+					current_node.board
+				);
 			}
 
 			openingbox.innerHTML = current_entry?.opening ?? "";
 		}
 	},
 
-	set_behaviour: async function(s) {
-		if (!this.engine.ever_received_uciok || !this.engine.ever_received_readyok) {
+	set_behaviour: async function (s) {
+		if (
+			!this.engine.ever_received_uciok ||
+			!this.engine.ever_received_readyok
+		) {
 			s = "halt";
 		}
 
@@ -220,15 +256,15 @@ let hub_props = {
 		if (s === config.behaviour) {
 			switch (s) {
 				case "halt":
-					break;					// i.e. do NOT immediately return
+					break; // i.e. do NOT immediately return
 				case "analysis_locked":
 					if (this.leela_lock_node !== this.tree.node) {
-						break;				// i.e. do NOT immediately return
+						break; // i.e. do NOT immediately return
 					}
 					return;
 				case "analysis_free":
 					if (!this.engine.search_desired.node) {
-						break;				// i.e. do NOT immediately return
+						break; // i.e. do NOT immediately return
 					}
 					return;
 				default:
@@ -240,20 +276,27 @@ let hub_props = {
 		await this.behave("behaviour");
 	},
 
-	set_behaviour_direct: function(s) {
-		this.leela_lock_node = (s === "analysis_locked") ? this.tree.node : null;
+	set_behaviour_direct: function (s) {
+		this.leela_lock_node = s === "analysis_locked" ? this.tree.node : null;
 		config.behaviour = s;
 	},
 
-	toggle_go: function() {
-		if (["analysis_free", "self_play", "auto_analysis", "back_analysis"].includes(config.behaviour)) {
+	toggle_go: function () {
+		if (
+			[
+				"analysis_free",
+				"self_play",
+				"auto_analysis",
+				"back_analysis",
+			].includes(config.behaviour)
+		) {
 			this.set_behaviour("halt");
 		} else if (config.behaviour === "halt") {
 			this.set_behaviour("analysis_free");
 		}
 	},
 
-	play_this_colour: function() {
+	play_this_colour: function () {
 		if (this.tree.node.board.active === "w") {
 			this.set_behaviour("play_white");
 		} else {
@@ -261,8 +304,7 @@ let hub_props = {
 		}
 	},
 
-	handle_search_params_change: function() {
-
+	handle_search_params_change: function () {
 		// If there's already a search desired, we can just let __go() figure out what the new parameters should be.
 		// If they match what is already desired then set_search_desired() will ignore the call.
 
@@ -275,8 +317,7 @@ let hub_props = {
 		// another (unless config.allow_stopped_analysis is set).
 	},
 
-	continue_auto_analysis: function() {
-
+	continue_auto_analysis: function () {
 		let ok;
 
 		if (config.behaviour === "auto_analysis") {
@@ -293,17 +334,19 @@ let hub_props = {
 		}
 	},
 
-	lichess_book_move: async function() {
+	lichess_book_move: async function () {
 		let friendly_fen = this.tree.node.board.fen(true);
 		let fen_for_web = ReplaceAll(friendly_fen, " ", "%20");
-		const url = config.looker_api === "lichess_masters" ? `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}` : MakeLichessUrl(this.tree.node.board.fen(true));
+		const url =
+			config.looker_api === "lichess_masters"
+				? `http://explorer.lichess.ovh/masters?topGames=0&fen=${fen_for_web}`
+				: MakeLichessUrl(this.tree.node.board.fen(true));
 
 		let json;
 		try {
 			const response = await fetch(url);
 			json = await response.json();
-		}
-		catch (e) {
+		} catch (e) {
 			console.log(e);
 			return false;
 		}
@@ -318,7 +361,9 @@ let hub_props = {
 		if (config.lichess_top_moves_only) {
 			move = json.moves[0];
 		} else {
-			const moves = json.moves.map(m => { return { move: m, weight: m.white + m.draws + m.black } });
+			const moves = json.moves.map((m) => {
+				return { move: m, weight: m.white + m.draws + m.black };
+			});
 			move = RandWeightedChoice(moves, "move");
 		}
 
@@ -326,22 +371,31 @@ let hub_props = {
 			return false;
 		}
 
-		console.log(`Chose #${json.moves.indexOf(move) + 1} move ${move.san} out of ${json.moves.length} from Lichess opening explorer`);
+		console.log(
+			`Chose #${json.moves.indexOf(move) + 1} move ${move.san} out of ${
+				json.moves.length
+			} from Lichess opening explorer`
+		);
 
 		const correct_node = this.tree.node;
 		const correct_behaviour = config.behaviour;
 
 		setTimeout(() => {
-			if (this.tree.node === correct_node && config.behaviour === correct_behaviour) {
+			if (
+				this.tree.node === correct_node &&
+				config.behaviour === correct_behaviour
+			) {
 				this.move(move.uci);
 			}
 		}, 0);
 		return true;
 	},
 
-	maybe_setup_book_move: async function() {
-
-		if (typeof config.book_depth === "number" && this.tree.node.depth >= config.book_depth * 2) {
+	maybe_setup_book_move: async function () {
+		if (
+			typeof config.book_depth === "number" &&
+			this.tree.node.depth >= config.book_depth * 2
+		) {
 			return false;
 		}
 
@@ -371,7 +425,10 @@ let hub_props = {
 		// Use a setTimeout to prevent recursion (since move() will cause a call to behave())
 
 		setTimeout(() => {
-			if (this.tree.node === correct_node && config.behaviour === correct_behaviour) {
+			if (
+				this.tree.node === correct_node &&
+				config.behaviour === correct_behaviour
+			) {
 				this.move(move);
 			}
 		}, 0);
@@ -379,14 +436,16 @@ let hub_props = {
 		return true;
 	},
 
-	maybe_infer_info: function() {
-
+	maybe_infer_info: function () {
 		// This function creates "ghost" info in the info table when possible and necessary;
 		// such info is inferred from ancestral info. It is also deleted upon leaving the node.
 		//
 		// The whole thing is a bit sketchy, maybe.
 
-		if (config.behaviour === "play_white" || config.behaviour === "play_black") {
+		if (
+			config.behaviour === "play_white" ||
+			config.behaviour === "play_black"
+		) {
 			return;
 		}
 
@@ -413,7 +472,6 @@ let hub_props = {
 		let foo = node.parent;
 
 		while (foo) {
-
 			for (let info of Object.values(foo.table.moveinfo)) {
 				if (info.__touched) {
 					ancestor = foo;
@@ -443,7 +501,10 @@ let hub_props = {
 			return;
 		}
 
-		if (Array.isArray(oldinfo.pv) === false || oldinfo.pv.length <= moves.length) {
+		if (
+			Array.isArray(oldinfo.pv) === false ||
+			oldinfo.pv.length <= moves.length
+		) {
 			return;
 		}
 
@@ -464,7 +525,7 @@ let hub_props = {
 		new_info.set_pv(pv);
 		new_info.__ghost = true;
 		new_info.__touched = true;
-		new_info.subcycle = 1;		// Crude hack, makes draw_infobox() make other moves gray.
+		new_info.subcycle = 1; // Crude hack, makes draw_infobox() make other moves gray.
 		new_info.q = oldinfo.q;
 		new_info.cp = oldinfo.cp;
 		new_info.multipv = 1;
@@ -483,8 +544,7 @@ let hub_props = {
 		node.table.moveinfo[nextmove] = new_info;
 	},
 
-	node_exit_cleanup: function() {
-
+	node_exit_cleanup: function () {
 		if (!this.node_to_clean || this.node_to_clean.destroyed) {
 			return;
 		}
@@ -494,7 +554,10 @@ let hub_props = {
 
 		for (let key of Object.keys(this.node_to_clean.table.moveinfo)) {
 			if (this.node_to_clean.table.moveinfo[key].__ghost) {
-				this.node_to_clean.table.moveinfo[key] = NewInfo(this.node_to_clean.board, key);
+				this.node_to_clean.table.moveinfo[key] = NewInfo(
+					this.node_to_clean.board,
+					key
+				);
 			}
 		}
 	},
@@ -502,18 +565,18 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Spin, our main loop...
 
-	spin: function() {
+	spin: function () {
 		this.tick++;
 		this.draw();
 		this.purge_finished_loaders();
 		setTimeout(this.spin.bind(this), config.update_delay);
 	},
 
-	purge_finished_loaders: function() {
-		this.loaders = this.loaders.filter(o => o.callback);
+	purge_finished_loaders: function () {
+		this.loaders = this.loaders.filter((o) => o.callback);
 	},
 
-	update_evalbar: function(node) {
+	update_evalbar: function (node) {
 		let e = node.table.graph_y;
 		// console.log(`e = ${e}`);
 		const factor = 1 / 7;
@@ -526,7 +589,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Drawing properties...
 
-	draw: function() {
+	draw: function () {
 		// We do the :hover reaction first. This way, we are detecting hover based on the previous cycle's state.
 		// This should prevent the sort of flicker that can occur if we try to detect hover based on changes we
 		// just made (i.e. if we drew then detected hover instantly).
@@ -539,7 +602,10 @@ let hub_props = {
 			this.hoverdraw_div = -1;
 			boardfriends.style.display = "block";
 			canvas.style.outline = "none";
-			this.draw_move_and_active_squares(this.tree.node.move, this.active_square);
+			this.draw_move_and_active_squares(
+				this.tree.node.move,
+				this.active_square
+			);
 			this.draw_enemies_in_table(this.tree.node.board);
 			this.draw_canvas_arrows();
 			this.draw_friendlies_in_table(this.tree.node.board);
@@ -552,11 +618,9 @@ let hub_props = {
 		this.update_evalbar(this.tree.node);
 	},
 
-	draw_friendlies_in_table: function(board) {
-
+	draw_friendlies_in_table: function (board) {
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
-
 				let piece_to_draw = "";
 
 				if (board.colour(Point(x, y)) === board.active) {
@@ -578,21 +642,22 @@ let hub_props = {
 					td.style["background-image"] = "none";
 					td.draggable = false;
 				} else {
-					td.style["background-image"] = images[piece_to_draw].string_for_bg_style;
+					td.style["background-image"] =
+						images[piece_to_draw].string_for_bg_style;
 					td.draggable = true;
 				}
 			}
 		}
 	},
 
-	draw_enemies_in_table: function(board) {
-
+	draw_enemies_in_table: function (board) {
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
-
 				let piece_to_draw = "";
 
-				if (board.colour(Point(x, y)) === OppositeColour(board.active)) {
+				if (
+					board.colour(Point(x, y)) === OppositeColour(board.active)
+				) {
 					piece_to_draw = board.state[x][y];
 				}
 
@@ -610,7 +675,8 @@ let hub_props = {
 				if (piece_to_draw === "") {
 					td.style["background-image"] = "none";
 				} else {
-					td.style["background-image"] = images[piece_to_draw].string_for_bg_style;
+					td.style["background-image"] =
+						images[piece_to_draw].string_for_bg_style;
 				}
 
 				td.draggable = false;
@@ -618,8 +684,7 @@ let hub_props = {
 		}
 	},
 
-	draw_move_and_active_squares: function(move, active_square) {
-
+	draw_move_and_active_squares: function (move, active_square) {
 		// These constants are stupidly used in set_active_square() also.
 
 		const EMPTY = 0;
@@ -661,13 +726,9 @@ let hub_props = {
 		// We check whether each square is already so, and change it otherwise.
 
 		for (let x = 0; x < 8; x++) {
-
 			for (let y = 0; y < 8; y++) {
-
 				switch (this.dmaas_scratch[x][y]) {
-
 					case EMPTY:
-
 						if (this.dirty_squares[x][y] !== EMPTY) {
 							let s = S(x, y);
 							let td = document.getElementById("underlay_" + s);
@@ -678,18 +739,17 @@ let hub_props = {
 						break;
 
 					case HIGHLIGHT:
-
 						if (this.dirty_squares[x][y] !== HIGHLIGHT) {
 							let s = S(x, y);
 							let td = document.getElementById("underlay_" + s);
-							td.style["background-color"] = config.move_squares_with_alpha;
+							td.style["background-color"] =
+								config.move_squares_with_alpha;
 							this.dirty_squares[x][y] = HIGHLIGHT;
 						}
 
 						break;
 
 					case ACTIVE:
-
 						if (this.dirty_squares[x][y] !== ACTIVE) {
 							let s = S(x, y);
 							let td = document.getElementById("underlay_" + s);
@@ -703,9 +763,12 @@ let hub_props = {
 		}
 	},
 
-	hoverdraw: function() {
-
-		if (!config.hover_draw || this.info_handler.clickers_are_valid_for_node(this.tree.node) === false) {
+	hoverdraw: function () {
+		if (
+			!config.hover_draw ||
+			this.info_handler.clickers_are_valid_for_node(this.tree.node) ===
+				false
+		) {
 			return false;
 		}
 
@@ -721,7 +784,10 @@ let hub_props = {
 		let div_index = null;
 
 		for (let item of overlist) {
-			if (typeof item.id === "string" && item.id.startsWith("infoline_")) {
+			if (
+				typeof item.id === "string" &&
+				item.id.startsWith("infoline_")
+			) {
 				div = item;
 				div_index = parseInt(item.id.slice("infoline_".length), 10);
 				break;
@@ -744,7 +810,6 @@ let hub_props = {
 		}
 
 		if (typeof click_n !== "number" || Number.isNaN(click_n)) {
-
 			// We failed to get a click_n value. But if we are in Animate or Final Position mode,
 			// it should still work even if the user isn't hovering over a move exactly; we can
 			// just pass any valid click_n from the line... this is a pretty dumb hack.
@@ -754,7 +819,10 @@ let hub_props = {
 			}
 
 			for (let item of div.childNodes) {
-				if (typeof item.id === "string" && item.id.startsWith("infobox_")) {
+				if (
+					typeof item.id === "string" &&
+					item.id.startsWith("infobox_")
+				) {
 					click_n = parseInt(item.id.slice("infobox_".length), 10);
 					break;
 				}
@@ -768,18 +836,17 @@ let hub_props = {
 		//
 
 		if (config.hover_method === 0) {
-			return this.hoverdraw_animate(div_index, click_n);		// Sets this.hoverdraw_div
+			return this.hoverdraw_animate(div_index, click_n); // Sets this.hoverdraw_div
 		} else if (config.hover_method === 1) {
-			return this.hoverdraw_single(div_index, click_n);		// Sets this.hoverdraw_div
+			return this.hoverdraw_single(div_index, click_n); // Sets this.hoverdraw_div
 		} else if (config.hover_method === 2) {
-			return this.hoverdraw_final(div_index, click_n);		// Sets this.hoverdraw_div
+			return this.hoverdraw_final(div_index, click_n); // Sets this.hoverdraw_div
 		} else {
-			return false;											// Caller must set this.hoverdraw_div to -1
+			return false; // Caller must set this.hoverdraw_div to -1
 		}
 	},
 
-	hoverdraw_animate: function(div_index, click_n) {
-
+	hoverdraw_animate: function (div_index, click_n) {
 		// If the user is hovering over an unexpected div index in the infobox, reset depth...
 
 		if (div_index !== this.hoverdraw_div) {
@@ -793,7 +860,10 @@ let hub_props = {
 			this.hoverdraw_depth++;
 		}
 
-		let moves = this.info_handler.moves_from_click_n(click_n, this.hoverdraw_depth);
+		let moves = this.info_handler.moves_from_click_n(
+			click_n,
+			this.hoverdraw_depth
+		);
 
 		if (Array.isArray(moves) === false || moves.length === 0) {
 			return false;
@@ -802,8 +872,7 @@ let hub_props = {
 		return this.draw_fantasy_from_moves(moves);
 	},
 
-	hoverdraw_single: function(div_index, click_n) {
-
+	hoverdraw_single: function (div_index, click_n) {
 		this.hoverdraw_div = div_index;
 
 		let moves = this.info_handler.moves_from_click_n(click_n);
@@ -815,8 +884,7 @@ let hub_props = {
 		return this.draw_fantasy_from_moves(moves);
 	},
 
-	hoverdraw_final: function(div_index, click_n) {
-
+	hoverdraw_final: function (div_index, click_n) {
 		this.hoverdraw_div = div_index;
 
 		let moves = this.info_handler.moves_from_click_n(click_n, 999);
@@ -828,8 +896,7 @@ let hub_props = {
 		return this.draw_fantasy_from_moves(moves);
 	},
 
-	draw_fantasy_from_moves: function(moves) {
-
+	draw_fantasy_from_moves: function (moves) {
 		// We don't assume moves is an array of legal moves, or even an array.
 		// This is probably paranoid at this point but meh.
 
@@ -847,45 +914,59 @@ let hub_props = {
 			board = board.move(move);
 		}
 
-		let move = moves[moves.length - 1];		// Possibly undefined...
+		let move = moves[moves.length - 1]; // Possibly undefined...
 
 		this.draw_fantasy(board, move);
 		return true;
 	},
 
-	draw_fantasy: function(board, move) {
+	draw_fantasy: function (board, move) {
 		this.draw_move_and_active_squares(move, null);
 		this.draw_enemies_in_table(board);
-		boardctx.clearRect(0, 0, canvas.width, canvas.height);		// Clearing the canvas arrows.
+		boardctx.clearRect(0, 0, canvas.width, canvas.height); // Clearing the canvas arrows.
 		this.draw_friendlies_in_table(board);
 	},
 
-	draw_canvas_arrows: function() {
+	draw_canvas_arrows: function () {
 		boardctx.clearRect(0, 0, canvas.width, canvas.height);
 		if (config.book_explorer) {
 			this.draw_explorer_arrows();
 		} else if (config.lichess_explorer) {
 			this.draw_lichess_arrows();
 		} else {
-			let arrow_spotlight_square = config.click_spotlight ? this.active_square : null;
-			let next_move = (config.show_next_move && this.tree.node.children.length > 0) ? this.tree.node.children[0].move : null;
-			this.info_handler.draw_arrows(this.tree.node, arrow_spotlight_square, next_move);
+			let arrow_spotlight_square = config.click_spotlight
+				? this.active_square
+				: null;
+			let next_move =
+				config.show_next_move && this.tree.node.children.length > 0
+					? this.tree.node.children[0].move
+					: null;
+			this.info_handler.draw_arrows(
+				this.tree.node,
+				arrow_spotlight_square,
+				next_move
+			);
 		}
 	},
 
-	draw_explorer_arrows: function() {
-
+	draw_explorer_arrows: function () {
 		// This is all pretty isolated from everything else. Keep it that way.
 
 		if (!this.book) {
 			this.explorer_objects_cache = null;
 			this.explorer_cache_node_id = null;
-			this.info_handler.draw_explorer_arrows(this.tree.node, [], null);		// Needs to happen, to update the one_click_moves.
+			this.info_handler.draw_explorer_arrows(this.tree.node, [], null); // Needs to happen, to update the one_click_moves.
 			return;
 		}
 
-		if (!this.explorer_objects_cache || this.explorer_cache_node_id !== this.tree.node.id) {
-			let objects = BookProbe(KeyFromBoard(this.tree.node.board), this.book);
+		if (
+			!this.explorer_objects_cache ||
+			this.explorer_cache_node_id !== this.tree.node.id
+		) {
+			let objects = BookProbe(
+				KeyFromBoard(this.tree.node.board),
+				this.book
+			);
 			let total_weight = 0;
 			if (Array.isArray(objects)) {
 				for (let o of objects) {
@@ -893,13 +974,16 @@ let hub_props = {
 				}
 			}
 			if (total_weight <= 0) {
-				total_weight = 1;		// Avoid div by zero.
+				total_weight = 1; // Avoid div by zero.
 			}
 			let tmp = {};
 			for (let o of objects) {
 				if (!this.tree.node.board.illegal(o.move)) {
 					if (tmp[o.move] === undefined) {
-						tmp[o.move] = { move: o.move, weight: o.weight / total_weight };
+						tmp[o.move] = {
+							move: o.move,
+							weight: o.weight / total_weight,
+						};
 					}
 				}
 			}
@@ -908,17 +992,25 @@ let hub_props = {
 			this.explorer_objects_cache.sort((a, b) => b.weight - a.weight);
 		}
 
-		let arrow_spotlight_square = config.click_spotlight ? this.active_square : null;
-		this.info_handler.draw_explorer_arrows(this.tree.node, this.explorer_objects_cache, arrow_spotlight_square);
+		let arrow_spotlight_square = config.click_spotlight
+			? this.active_square
+			: null;
+		this.info_handler.draw_explorer_arrows(
+			this.tree.node,
+			this.explorer_objects_cache,
+			arrow_spotlight_square
+		);
 	},
 
-	draw_lichess_arrows: function() {
-
+	draw_lichess_arrows: function () {
 		// Modified version of the above.
 
 		let ok = true;
 
-		if (config.looker_api !== "lichess_masters" && config.looker_api !== "lichess_plebs") {
+		if (
+			config.looker_api !== "lichess_masters" &&
+			config.looker_api !== "lichess_plebs"
+		) {
 			ok = false;
 		}
 
@@ -931,23 +1023,29 @@ let hub_props = {
 		if (!ok) {
 			this.explorer_objects_cache = null;
 			this.explorer_cache_node_id = null;
-			this.info_handler.draw_explorer_arrows(this.tree.node, [], null);		// Needs to happen, to update the one_click_moves.
+			this.info_handler.draw_explorer_arrows(this.tree.node, [], null); // Needs to happen, to update the one_click_moves.
 			return;
 		}
 
-		if (!this.explorer_objects_cache || this.explorer_cache_node_id !== this.tree.node.id) {
+		if (
+			!this.explorer_objects_cache ||
+			this.explorer_cache_node_id !== this.tree.node.id
+		) {
 			let total_weight = 0;
 			for (let o of Object.values(entry.moves)) {
 				total_weight += o.total;
 			}
 			if (total_weight <= 0) {
-				total_weight = 1;		// Avoid div by zero.
+				total_weight = 1; // Avoid div by zero.
 			}
 			let tmp = {};
 			for (let move of Object.keys(entry.moves)) {
 				if (!this.tree.node.board.illegal(move)) {
 					if (tmp[move] === undefined) {
-						tmp[move] = { move: move, weight: entry.moves[move].total / total_weight };
+						tmp[move] = {
+							move: move,
+							weight: entry.moves[move].total / total_weight,
+						};
 					}
 				}
 			}
@@ -956,26 +1054,37 @@ let hub_props = {
 			this.explorer_objects_cache.sort((a, b) => b.weight - a.weight);
 		}
 
-		let arrow_spotlight_square = config.click_spotlight ? this.active_square : null;
-		this.info_handler.draw_explorer_arrows(this.tree.node, this.explorer_objects_cache, arrow_spotlight_square);
+		let arrow_spotlight_square = config.click_spotlight
+			? this.active_square
+			: null;
+		this.info_handler.draw_explorer_arrows(
+			this.tree.node,
+			this.explorer_objects_cache,
+			arrow_spotlight_square
+		);
 	},
 
-	draw_statusbox: function() {
-
+	draw_statusbox: function () {
 		let analysing_other = null;
 
-		if (config.behaviour === "analysis_locked" && this.leela_lock_node && this.leela_lock_node !== this.tree.node) {
+		if (
+			config.behaviour === "analysis_locked" &&
+			this.leela_lock_node &&
+			this.leela_lock_node !== this.tree.node
+		) {
 			if (!this.leela_lock_node.parent) {
 				analysing_other = "root";
 			} else {
-				analysing_other = "position after " + this.leela_lock_node.token(false, true);
+				analysing_other =
+					"position after " + this.leela_lock_node.token(false, true);
 			}
 		}
 
 		let loading_message = null;
 
 		for (let loader of this.loaders) {
-			if (loader.callback) {				// By our rules, can only exist if the load is still pending...
+			if (loader.callback) {
+				// By our rules, can only exist if the load is still pending...
 				if (performance.now() - loader.starttime > 100) {
 					loading_message = loader.msg;
 					break;
@@ -992,7 +1101,7 @@ let hub_props = {
 		);
 	},
 
-	draw_infobox: function() {
+	draw_infobox: function () {
 		this.info_handler.draw_infobox(
 			this.tree.node,
 			this.mouse_point(),
@@ -1000,50 +1109,65 @@ let hub_props = {
 			this.tree.node.board.active,
 			this.hoverdraw_div,
 			config.behaviour === "halt" || config.never_suppress_searchmoves,
-			config.looker_api ? this.looker.lookup(config.looker_api, this.tree.node.board) : null);
+			config.looker_api
+				? this.looker.lookup(config.looker_api, this.tree.node.board)
+				: null
+		);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Fundamental engine methods... not to be called directly, except by behave() and handle_search_params_change()...
 
-	__halt: function() {
+	__halt: function () {
 		this.engine.set_search_desired(null);
 	},
 
-	__go: function(node) {
+	__go: function (node) {
 		this.hide_fullbox();
 		if (!node || node.destroyed || node.terminal_reason()) {
 			this.engine.set_search_desired(null);
 			return;
 		}
-		this.engine.set_search_desired(node, this.node_limit(), engineconfig[this.engine.filepath].limit_by_time, node.searchmoves);
+		this.engine.set_search_desired(
+			node,
+			this.node_limit(),
+			engineconfig[this.engine.filepath].limit_by_time,
+			node.searchmoves
+		);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Info receivers...
 
-	receive_bestmove: function(s, relevant_node) {
-
-		let ok;		// Could be used by 2 different parts of the switch (but not at time of writing...)
+	receive_bestmove: function (s, relevant_node) {
+		let ok; // Could be used by 2 different parts of the switch (but not at time of writing...)
 
 		switch (config.behaviour) {
-
 			case "self_play":
 			case "play_white":
 			case "play_black":
-
 				if (relevant_node !== this.tree.node) {
-					LogBoth(`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`);
+					LogBoth(
+						`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`
+					);
 					this.set_behaviour("halt");
 					break;
 				}
 
-				let tokens = s.split(" ").filter(z => z !== "");
+				let tokens = s.split(" ").filter((z) => z !== "");
 				ok = this.move(tokens[1]);
 
 				if (!ok) {
-					LogBoth(`BAD BESTMOVE (${tokens[1]}) IN POSITION ${this.tree.node.board.fen(true)}`);
-					this.set_special_message(`WARNING! Bad bestmove (${tokens[1]}) received!`, "yellow", 10000);
+					LogBoth(
+						`BAD BESTMOVE (${
+							tokens[1]
+						}) IN POSITION ${this.tree.node.board.fen(true)}`
+					);
+					this.set_special_message(
+						`WARNING! Bad bestmove (${tokens[1]}) received!`,
+						"yellow",
+						10000
+					);
 				} else {
 					if (this.tree.node.terminal_reason()) {
 						this.set_behaviour("halt");
@@ -1054,9 +1178,10 @@ let hub_props = {
 
 			case "auto_analysis":
 			case "back_analysis":
-
 				if (relevant_node !== this.tree.node) {
-					LogBoth(`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`);
+					LogBoth(
+						`(ignored bestmove, relevant_node !== hub.tree.node, config.behaviour was "${config.behaviour}")`
+					);
 					this.set_behaviour("halt");
 				} else {
 					this.continue_auto_analysis();
@@ -1064,15 +1189,13 @@ let hub_props = {
 
 				break;
 
-			case "analysis_free":			// We hit the node limit.
-
+			case "analysis_free": // We hit the node limit.
 				if (!config.allow_stopped_analysis) {
 					this.set_behaviour("halt");
 				}
 				break;
 
 			case "analysis_locked":
-
 				// We hit the node limit. If the node we're looking at isn't the locked node, don't
 				// change behaviour. (It will get changed when we enter the locked node.)
 
@@ -1080,14 +1203,11 @@ let hub_props = {
 					this.set_behaviour("halt");
 				}
 				break;
-
 		}
 	},
 
-	receive_misc: function(s) {
-
+	receive_misc: function (s) {
 		if (s.startsWith("id name")) {
-
 			// Note that we do need to set the leelaish flag on the engine here (rather than relying on the
 			// autodetection in info.js) so that correct options can be sent.
 
@@ -1103,16 +1223,25 @@ let hub_props = {
 			// Our defaults in engineconfig_io.newentry() are appropriate for Leelaish engines.
 			// But if this is the first time we see an A/B engine, we must adjust them...
 
-			if (!this.engine.leelaish && !engineconfig[this.engine.filepath].options["MultiPV"]) {
+			if (
+				!this.engine.leelaish &&
+				!engineconfig[this.engine.filepath].options["MultiPV"]
+			) {
 				// This likely indicates the engine is new to the config.
-				engineconfig[this.engine.filepath].options["MultiPV"] = 3;				// Will get ack'd when engine_send_all_options() happens
-				engineconfig[this.engine.filepath].search_nodes_special = 10000000;
+				engineconfig[this.engine.filepath].options["MultiPV"] = 3; // Will get ack'd when engine_send_all_options() happens
+				engineconfig[
+					this.engine.filepath
+				].search_nodes_special = 10000000;
 				this.send_ack_node_limit(true);
 			}
 
 			// Pass unknown engines to the error handler to be displayed...
 
-			if (!s.includes("Lc0") && !s.includes("Ceres") && !s.includes("Stockfish")) {
+			if (
+				!s.includes("Lc0") &&
+				!s.includes("Ceres") &&
+				!s.includes("Stockfish")
+			) {
 				this.info_handler.err_receive(s.slice("id name".length).trim());
 			}
 
@@ -1120,7 +1249,6 @@ let hub_props = {
 		}
 
 		if (s.startsWith("uciok")) {
-
 			// Until we receive uciok and readyok, set_behaviour() does nothing and set_search_desired() ignores calls, so "go" cannot have been sent.
 
 			this.engine_send_all_options();
@@ -1129,46 +1257,53 @@ let hub_props = {
 		}
 
 		if (s.startsWith("readyok")) {
-
 			// Until we receive uciok and readyok, set_behaviour() does nothing and set_search_desired() ignores calls, so "go" cannot have been sent.
 
-			this.set_behaviour("halt");					// Likely redundant (should be "halt" anyway), but ensures the hub is in a sane state.
-			this.engine.send_ucinewgame();				// Relies on the engine not running.
+			this.set_behaviour("halt"); // Likely redundant (should be "halt" anyway), but ensures the hub is in a sane state.
+			this.engine.send_ucinewgame(); // Relies on the engine not running.
 			return;
 		}
 
 		// Misc messages. Treat ones that aren't valid UCI as errors to be passed along...
 
-		if (!s.startsWith("id") &&
+		if (
+			!s.startsWith("id") &&
 			!s.startsWith("option") &&
-			!s.startsWith("bestmove") &&				// These messages shouldn't reach this function
-			!s.startsWith("info")						// These messages shouldn't reach this function
+			!s.startsWith("bestmove") && // These messages shouldn't reach this function
+			!s.startsWith("info") // These messages shouldn't reach this function
 		) {
 			this.info_handler.err_receive(s);
 		}
 	},
 
-	err_receive: function(s) {
-
+	err_receive: function (s) {
 		// Some highlights... this is obviously super-fragile based on the precise strings Leela sends.
 
 		if (s.startsWith("Found configuration file: ")) {
-			this.info_handler.err_receive(HighlightString(s, "Found configuration file: ", "blue"));
+			this.info_handler.err_receive(
+				HighlightString(s, "Found configuration file: ", "blue")
+			);
 			return;
 		}
 
 		if (s.startsWith("Loading Syzygy tablebases from ")) {
-			this.info_handler.err_receive(HighlightString(s, "Loading Syzygy tablebases from ", "blue"));
+			this.info_handler.err_receive(
+				HighlightString(s, "Loading Syzygy tablebases from ", "blue")
+			);
 			return;
 		}
 
 		if (s.startsWith("Loading weights file from: ")) {
-			this.info_handler.err_receive(HighlightString(s, "Loading weights file from: ", "blue"));
+			this.info_handler.err_receive(
+				HighlightString(s, "Loading weights file from: ", "blue")
+			);
 			return;
 		}
 
 		if (s.startsWith("Found pb network file: ")) {
-			this.info_handler.err_receive(HighlightString(s, "Found pb network file: ", "blue"));
+			this.info_handler.err_receive(
+				HighlightString(s, "Found pb network file: ", "blue")
+			);
 			return;
 		}
 
@@ -1178,29 +1313,25 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Node limits...
 
-	node_limit: function() {
-
+	node_limit: function () {
 		// Given the current state of the config, what is the node limit?
 		// Note that this value is used as a time limit instead, if engineconfig[this.engine.filepath].limit_by_time is set.
 
 		let cfg_value;
 
 		switch (config.behaviour) {
-
 			case "play_white":
 			case "play_black":
 			case "self_play":
 			case "auto_analysis":
 			case "back_analysis":
-
-				cfg_value = engineconfig[this.engine.filepath].search_nodes_special;
+				cfg_value =
+					engineconfig[this.engine.filepath].search_nodes_special;
 				break;
 
 			default:
-
 				cfg_value = engineconfig[this.engine.filepath].search_nodes;
 				break;
-
 		}
 
 		// Should match the system in engine.js.
@@ -1212,13 +1343,14 @@ let hub_props = {
 		}
 	},
 
-	adjust_node_limit: function(direction, special_flag) {
-
-		let cfg_value = special_flag ? engineconfig[this.engine.filepath].search_nodes_special : engineconfig[this.engine.filepath].search_nodes;
+	adjust_node_limit: function (direction, special_flag) {
+		let cfg_value = special_flag
+			? engineconfig[this.engine.filepath].search_nodes_special
+			: engineconfig[this.engine.filepath].search_nodes;
 
 		if (direction > 0) {
-
-			if (typeof cfg_value !== "number" || cfg_value <= 0) {				// Already unlimited
+			if (typeof cfg_value !== "number" || cfg_value <= 0) {
+				// Already unlimited
 				this.set_node_limit_generic(null, special_flag);
 				return;
 			}
@@ -1231,11 +1363,13 @@ let hub_props = {
 			}
 
 			this.set_node_limit_generic(null, special_flag);
-
 		} else {
-
-			if (typeof cfg_value !== "number" || cfg_value <= 0) {				// Unlimited; reduce to highest finite option
-				this.set_node_limit_generic(limit_options[limit_options.length - 1], special_flag);
+			if (typeof cfg_value !== "number" || cfg_value <= 0) {
+				// Unlimited; reduce to highest finite option
+				this.set_node_limit_generic(
+					limit_options[limit_options.length - 1],
+					special_flag
+				);
 				return;
 			}
 
@@ -1250,16 +1384,15 @@ let hub_props = {
 		}
 	},
 
-	set_node_limit: function(val) {
+	set_node_limit: function (val) {
 		this.set_node_limit_generic(val, false);
 	},
 
-	set_node_limit_special: function(val) {
+	set_node_limit_special: function (val) {
 		this.set_node_limit_generic(val, true);
 	},
 
-	set_node_limit_generic: function(val, special_flag) {
-
+	set_node_limit_generic: function (val, special_flag) {
 		if (typeof val !== "number" || val <= 0) {
 			val = null;
 		}
@@ -1274,7 +1407,10 @@ let hub_props = {
 		}
 
 		if (val) {
-			this.set_special_message(`${msg_start} now ${CommaNum(val)} ${by_time ? "ms" : ""}`, "blue");
+			this.set_special_message(
+				`${msg_start} now ${CommaNum(val)} ${by_time ? "ms" : ""}`,
+				"blue"
+			);
 		} else {
 			this.set_special_message(`${msg_start} removed!`, "blue");
 		}
@@ -1290,9 +1426,10 @@ let hub_props = {
 		this.handle_search_params_change();
 	},
 
-	send_ack_node_limit: function(special_flag) {
-
-		let ack_type = special_flag ? "ack_special_node_limit" : "ack_node_limit";
+	send_ack_node_limit: function (special_flag) {
+		let ack_type = special_flag
+			? "ack_special_node_limit"
+			: "ack_node_limit";
 		let val;
 
 		if (special_flag) {
@@ -1308,65 +1445,80 @@ let hub_props = {
 		}
 	},
 
-	toggle_limit_by_time: function() {
-		engineconfig[this.engine.filepath].limit_by_time = !engineconfig[this.engine.filepath].limit_by_time;
+	toggle_limit_by_time: function () {
+		engineconfig[this.engine.filepath].limit_by_time =
+			!engineconfig[this.engine.filepath].limit_by_time;
 		this.send_ack_limit_by_time();
 		this.handle_search_params_change();
 	},
 
-	send_ack_limit_by_time: function() {
-		ipcRenderer.send("ack_limit_by_time", engineconfig[this.engine.filepath].limit_by_time);
+	send_ack_limit_by_time: function () {
+		ipcRenderer.send(
+			"ack_limit_by_time",
+			engineconfig[this.engine.filepath].limit_by_time
+		);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Engine-related acks...
 
-	send_ack_engine: function() {
+	send_ack_engine: function () {
 		this.engine.send_ack_engine();
 	},
 
-	send_ack_setoption: function(name) {
+	send_ack_setoption: function (name) {
 		this.engine.send_ack_setoption(name);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Misc engine methods...
 
-	soft_engine_reset: function() {
-		this.set_behaviour("halt");					// Will cause "stop" to be sent.
-		this.engine.send_ucinewgame();				// Must happen after "stop" is sent.
+	soft_engine_reset: function () {
+		this.set_behaviour("halt"); // Will cause "stop" to be sent.
+		this.engine.send_ucinewgame(); // Must happen after "stop" is sent.
 	},
 
-	forget_analysis: function() {
+	forget_analysis: function () {
 		CleanTree(this.tree.root);
 		this.tree.node.table.autopopulate(this.tree.node);
-		this.set_behaviour("halt");					// Will cause "stop" to be sent.
-		this.engine.send_ucinewgame();				// Must happen after "stop" is sent.
-		this.engine.suppress_cycle_info = this.info_handler.engine_cycle;		// Ignore further info updates from this cycle.
+		this.set_behaviour("halt"); // Will cause "stop" to be sent.
+		this.engine.send_ucinewgame(); // Must happen after "stop" is sent.
+		this.engine.suppress_cycle_info = this.info_handler.engine_cycle; // Ignore further info updates from this cycle.
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// UCI options...
 
-	set_uci_option: function(name, val, save_to_cfg = false, blue_text = true) {
-
+	set_uci_option: function (
+		name,
+		val,
+		save_to_cfg = false,
+		blue_text = true
+	) {
 		// Note that all early returns from this function need to send an ack
 		// of the prevailing value to fix checkmarks in the main process.
 
-		if (!this.engine.ever_received_uciok) {									// Correct leelaish flag not yet known.
+		if (!this.engine.ever_received_uciok) {
+			// Correct leelaish flag not yet known.
 			alert(messages.too_soon_to_set_options);
 			this.engine.send_ack_setoption(name);
 			return;
 		}
 
 		if (this.engine.leelaish && name.toLowerCase() === "multipv") {
-			this.set_special_message("MultiPV should be 500 for this engine", "blue");
+			this.set_special_message(
+				"MultiPV should be 500 for this engine",
+				"blue"
+			);
 			this.engine.send_ack_setoption(name);
 			return;
 		}
 
 		if (!this.engine.known(name)) {
-			this.set_special_message(`${name} not known by this engine`, "blue");
+			this.set_special_message(
+				`${name} not known by this engine`,
+				"blue"
+			);
 			this.engine.send_ack_setoption(name);
 			return;
 		}
@@ -1384,38 +1536,38 @@ let hub_props = {
 		}
 
 		this.set_behaviour("halt");
-		let sent = this.engine.setoption(name, val);							// Will ack the new value.
+		let sent = this.engine.setoption(name, val); // Will ack the new value.
 		if (blue_text) {
 			this.set_special_message(sent, "blue");
 		}
 	},
 
-	set_uci_option_permanent: function(name, val) {
+	set_uci_option_permanent: function (name, val) {
 		this.set_uci_option(name, val, true);
 	},
 
-	set_uci_option_permanent_and_cleartree: function(name, val) {
+	set_uci_option_permanent_and_cleartree: function (name, val) {
 		this.set_uci_option(name, val, true);
 		if (this.engine.leelaish) {
 			this.set_uci_option("ClearTree", true, false, false);
 		}
 	},
 
-	disable_syzygy: function() {
+	disable_syzygy: function () {
 		delete engineconfig[this.engine.filepath].options["SyzygyPath"];
-		this.restart_engine();		// Causes the correct ack to be sent.
+		this.restart_engine(); // Causes the correct ack to be sent.
 	},
 
-	auto_weights: function() {
+	auto_weights: function () {
 		delete engineconfig[this.engine.filepath].options["EvalFile"];
 		delete engineconfig[this.engine.filepath].options["WeightsFile"];
-		this.restart_engine();		// Causes the correct acks to be sent.
+		this.restart_engine(); // Causes the correct acks to be sent.
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Engine startup...
 
-	reload_engineconfig: function() {
+	reload_engineconfig: function () {
 		[load_err2, engineconfig] = engineconfig_io.load();
 		if (load_err2) {
 			alert(load_err2);
@@ -1423,7 +1575,7 @@ let hub_props = {
 		this.restart_engine();
 	},
 
-	switch_engine: function(filename) {
+	switch_engine: function (filename) {
 		this.set_behaviour("halt");
 		if (this.engine_start(filename)) {
 			config.path = filename;
@@ -1433,8 +1585,8 @@ let hub_props = {
 		}
 	},
 
-	restart_engine: function() {
-		this.engine.warn_send_fail = false;			// Don't want "send failed" warnings from old engine any more.
+	restart_engine: function () {
+		this.engine.warn_send_fail = false; // Don't want "send failed" warnings from old engine any more.
 		this.set_behaviour("halt");
 		if (this.engine_start(config.path)) {
 			// pass
@@ -1444,11 +1596,16 @@ let hub_props = {
 		}
 	},
 
-	engine_start: function(filepath, blue_fail) {
-
-		if (!filepath || typeof filepath !== "string" || fs.existsSync(filepath) === false) {
+	engine_start: function (filepath, blue_fail) {
+		if (
+			!filepath ||
+			typeof filepath !== "string" ||
+			fs.existsSync(filepath) === false
+		) {
 			if (blue_fail && !load_err1 && !load_err2) {
-				this.err_receive(`<span class="blue">${messages.engine_not_present}</span>`);
+				this.err_receive(
+					`<span class="blue">${messages.engine_not_present}</span>`
+				);
 				this.err_receive("");
 			}
 			return false;
@@ -1461,14 +1618,16 @@ let hub_props = {
 
 		if (success === false) {
 			if (blue_fail && !load_err1 && !load_err2) {
-				this.err_receive(`<span class="blue">${messages.engine_failed_to_start}</span>`);
+				this.err_receive(
+					`<span class="blue">${messages.engine_failed_to_start}</span>`
+				);
 				this.err_receive("");
 			}
 			return false;
 		}
 
 		this.engine.shutdown();
-		this.engine = new_engine;					// Don't reuse engine objects, not even the dummy object. There are sync issues due to fake "go"s.
+		this.engine = new_engine; // Don't reuse engine objects, not even the dummy object. There are sync issues due to fake "go"s.
 
 		if (!engineconfig[this.engine.filepath]) {
 			engineconfig[this.engine.filepath] = engineconfig_io.newentry();
@@ -1477,29 +1636,34 @@ let hub_props = {
 
 		this.engine.send("uci");
 
-		this.send_ack_node_limit(false);			// Ack the node limits that are set in engineconfig[this.engine.filepath]
+		this.send_ack_node_limit(false); // Ack the node limits that are set in engineconfig[this.engine.filepath]
 		this.send_ack_node_limit(true);
 
-		this.send_ack_limit_by_time();				// Also ack the limit_by_time boolean for that menu item.
+		this.send_ack_limit_by_time(); // Also ack the limit_by_time boolean for that menu item.
 
 		this.info_handler.reset_engine_info();
-		this.info_handler.must_draw_infobox();		// To display the new stderr log that appears.
+		this.info_handler.must_draw_infobox(); // To display the new stderr log that appears.
 
 		return true;
 	},
 
-	engine_send_all_options: function() {			// The engine should never have been given a "go" before this.
+	engine_send_all_options: function () {
+		// The engine should never have been given a "go" before this.
 
 		// Options that are sent regardless of whether the engine seems to know about them...
 
-		let forced_engine_options = this.engine.leelaish ? forced_lc0_options : forced_ab_options;
+		let forced_engine_options = this.engine.leelaish
+			? forced_lc0_options
+			: forced_ab_options;
 		for (let [key, value] of Object.entries(forced_engine_options)) {
 			this.engine.setoption(key, value);
 		}
 
 		// Standard options... only sent if the engine has said it knows them...
 
-		let standard_engine_options = this.engine.leelaish ? standard_lc0_options : standard_ab_options;
+		let standard_engine_options = this.engine.leelaish
+			? standard_lc0_options
+			: standard_ab_options;
 		for (let [key, value] of Object.entries(standard_engine_options)) {
 			if (this.engine.known(key)) {
 				this.engine.setoption(key, value);
@@ -1511,9 +1675,12 @@ let hub_props = {
 		let options = engineconfig[this.engine.filepath].options;
 		let keys = Object.keys(options);
 
-		keys.sort((a, b) => {		// "It is recommended to set Hash after setting Threads."
-			if (a.toLowerCase() === "hash" && b.toLowerCase() !== "hash") return 1;
-			if (a.toLowerCase() !== "hash" && b.toLowerCase() === "hash") return -1;
+		keys.sort((a, b) => {
+			// "It is recommended to set Hash after setting Threads."
+			if (a.toLowerCase() === "hash" && b.toLowerCase() !== "hash")
+				return 1;
+			if (a.toLowerCase() !== "hash" && b.toLowerCase() === "hash")
+				return -1;
 			return 0;
 		});
 
@@ -1525,7 +1692,8 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Tree manipulation methods...
 
-	move: function(s) {							// It is safe to call this with illegal moves.
+	move: function (s) {
+		// It is safe to call this with illegal moves.
 
 		if (typeof s !== "string") {
 			console.log(`hub.move(${s}) - bad argument`);
@@ -1548,7 +1716,10 @@ let hub_props = {
 		// without committing to anything.
 
 		if (s.length === 4) {
-			if ((board.piece(source) === "P" && source.y === 1) || (board.piece(source) === "p" && source.y === 6)) {
+			if (
+				(board.piece(source) === "P" && source.y === 1) ||
+				(board.piece(source) === "p" && source.y === 6)
+			) {
 				let illegal_reason = board.illegal(s + "q");
 				if (illegal_reason) {
 					console.log(`hub.move(${s}) - ${illegal_reason}`);
@@ -1572,27 +1743,32 @@ let hub_props = {
 		return true;
 	},
 
-	random_move: function() {
+	random_move: function () {
 		let legals = this.tree.node.board.movegen();
 		if (legals.length > 0) {
 			this.move(RandChoice(legals));
 		}
 	},
 
-	play_info_index: function(n) {
-
-		let line_starts = this.info_handler.info_clickers.filter(o => o.is_start);
+	play_info_index: function (n) {
+		let line_starts = this.info_handler.info_clickers.filter(
+			(o) => o.is_start
+		);
 
 		if (n < line_starts.length) {
-
 			let move = line_starts[n].move;
 
 			let table_move = this.tree.node.table.moveinfo[move];
 
-			if (table_move && table_move.__touched) {		// Allow this to happen if the move is touched
+			if (table_move && table_move.__touched) {
+				// Allow this to happen if the move is touched
 				this.move(move);
-			} else if (config.looker_api) {					// Allow this to happen if the move is in the selected API database
-				let db_entry = this.looker.lookup(config.looker_api, this.tree.node.board);
+			} else if (config.looker_api) {
+				// Allow this to happen if the move is in the selected API database
+				let db_entry = this.looker.lookup(
+					config.looker_api,
+					this.tree.node.board
+				);
 				if (db_entry && db_entry.moves[move]) {
 					this.move(move);
 				}
@@ -1602,89 +1778,92 @@ let hub_props = {
 
 	// Note that the various tree.methods() return whether or not the current node changed.
 
-	return_to_lock: function() {
+	return_to_lock: function () {
 		if (config.behaviour === "analysis_locked") {
-			if (this.tree.set_node(this.leela_lock_node)) {		// Fool-proof against null / destroyed.
+			if (this.tree.set_node(this.leela_lock_node)) {
+				// Fool-proof against null / destroyed.
 				this.position_changed(false, true);
 			}
 		}
 	},
 
-	prev: function() {
+	prev: function () {
 		if (this.tree.prev()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	next: function() {
+	next: function () {
 		if (this.tree.next()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	goto_root: function() {
+	goto_root: function () {
 		if (this.tree.goto_root()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	goto_end: function() {
+	goto_end: function () {
 		if (this.tree.goto_end()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	previous_sibling: function() {
+	previous_sibling: function () {
 		if (this.tree.previous_sibling()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	next_sibling: function() {
+	next_sibling: function () {
 		if (this.tree.next_sibling()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	return_to_main_line: function() {
+	return_to_main_line: function () {
 		if (this.tree.return_to_main_line()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	delete_node: function() {
+	delete_node: function () {
 		if (this.tree.delete_node()) {
 			this.position_changed(false, true);
 		}
 	},
 
-	promote_to_main_line: function() {
+	promote_to_main_line: function () {
 		this.tree.promote_to_main_line();
 	},
 
-	promote: function() {
+	promote: function () {
 		this.tree.promote();
 	},
 
-	delete_other_lines: function() {
+	delete_other_lines: function () {
 		this.tree.delete_other_lines();
 	},
 
-	delete_children: function() {
+	delete_children: function () {
 		this.tree.delete_children();
 	},
 
-	delete_siblings: function() {
+	delete_siblings: function () {
 		this.tree.delete_siblings();
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 
-	new_game: function() {
-		this.load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	new_game: function () {
+		this.load_fen(
+			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		);
 	},
 
-	new_960: function(n) {
+	new_960: function (n) {
 		if (n === undefined) {
 			n = RandInt(0, 960);
 		}
@@ -1693,26 +1872,30 @@ let hub_props = {
 
 	// ---------------------------------------------------------------------------------------------------------------------
 
-	pgn_to_clipboard: function() {
+	pgn_to_clipboard: function () {
 		PGNToClipboard(this.tree.node);
 	},
 
-	save: function(filename) {
+	save: function (filename) {
 		SavePGN(filename, this.tree.node);
 	},
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Loading PGN...
 
-	open: function(filename) {
-
-		if (filename === __dirname || filename === ".") {		// Can happen when extra args are passed to main process. Silently return.
+	open: function (filename) {
+		if (filename === __dirname || filename === ".") {
+			// Can happen when extra args are passed to main process. Silently return.
 			return;
 		}
-		if (fs.existsSync(filename) === false) {				// Can happen when extra args are passed to main process. Silently return.
+		if (fs.existsSync(filename) === false) {
+			// Can happen when extra args are passed to main process. Silently return.
 			return;
 		}
-		if (!config.ignore_filesize_limits && FileExceedsGigabyte(filename, 2)) {
+		if (
+			!config.ignore_filesize_limits &&
+			FileExceedsGigabyte(filename, 2)
+		) {
 			alert(messages.file_too_big);
 			return;
 		}
@@ -1737,7 +1920,7 @@ let hub_props = {
 		this.loaders.push(loader);
 	},
 
-	handle_loaded_pgndata: function(pgndata) {
+	handle_loaded_pgndata: function (pgndata) {
 		if (!pgndata || pgndata.count() === 0) {
 			alert("No data found.");
 			return;
@@ -1755,7 +1938,8 @@ let hub_props = {
 		}
 	},
 
-	load_pgn_object: function(o) {				// Returns true or false - whether this actually succeeded.
+	load_pgn_object: function (o) {
+		// Returns true or false - whether this actually succeeded.
 
 		let root_node;
 
@@ -1775,7 +1959,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Books...
 
-	unload_book: function() {
+	unload_book: function () {
 		this.book = null;
 		for (let loader of this.loaders) {
 			if (loader.type === "book") {
@@ -1785,9 +1969,11 @@ let hub_props = {
 		this.send_ack_book();
 	},
 
-	load_polyglot_book: function(filename) {
-
-		if (!config.ignore_filesize_limits && FileExceedsGigabyte(filename, 2)) {
+	load_polyglot_book: function (filename) {
+		if (
+			!config.ignore_filesize_limits &&
+			FileExceedsGigabyte(filename, 2)
+		) {
 			alert(messages.file_too_big);
 			this.send_ack_book();
 			return;
@@ -1810,7 +1996,12 @@ let hub_props = {
 					this.book = data;
 					this.explorer_objects_cache = null;
 					this.send_ack_book();
-					this.set_special_message(`Finished loading book (moves: ${Math.floor(data.length / 16)})`, "green");
+					this.set_special_message(
+						`Finished loading book (moves: ${Math.floor(
+							data.length / 16
+						)})`,
+						"green"
+					);
 				} else {
 					alert(messages.bad_bin_book);
 				}
@@ -1822,9 +2013,11 @@ let hub_props = {
 		this.loaders.push(loader);
 	},
 
-	load_pgn_book: function(filename) {
-
-		if (!config.ignore_filesize_limits && FileExceedsGigabyte(filename, 0.02)) {
+	load_pgn_book: function (filename) {
+		if (
+			!config.ignore_filesize_limits &&
+			FileExceedsGigabyte(filename, 0.02)
+		) {
 			alert(messages.pgn_book_too_big);
 			this.send_ack_book();
 			return;
@@ -1846,7 +2039,10 @@ let hub_props = {
 				this.book = data;
 				this.explorer_objects_cache = null;
 				this.send_ack_book();
-				this.set_special_message(`Finished loading book (moves: ${data.length})`, "green");
+				this.set_special_message(
+					`Finished loading book (moves: ${data.length})`,
+					"green"
+				);
 			} else {
 				console.log(err);
 			}
@@ -1855,7 +2051,7 @@ let hub_props = {
 		this.loaders.push(loader);
 	},
 
-	send_ack_book: function() {
+	send_ack_book: function () {
 		let msg = false;
 		if (this.book) {
 			msg = this.book instanceof Buffer ? "polyglot" : "pgn";
@@ -1866,19 +2062,18 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Loading from clipboard or fenbox...
 
-	load_fen_or_pgn_from_string: function(s) {
+	load_fen_or_pgn_from_string: function (s) {
 		if (typeof s !== "string") return;
 		s = s.trim();
 		try {
-			LoadFEN(s);			// Used as a test. Throws on any error.
+			LoadFEN(s); // Used as a test. Throws on any error.
 			this.load_fen(s);
 		} catch (err) {
 			this.load_pgn_from_string(s);
 		}
 	},
 
-	load_pgn_from_string: function(s) {
-
+	load_pgn_from_string: function (s) {
 		if (typeof s !== "string") {
 			return;
 		}
@@ -1904,12 +2099,10 @@ let hub_props = {
 		this.loaders.push(loader);
 	},
 
-	load_fen: function(s, abnormal) {
-
+	load_fen: function (s, abnormal) {
 		let board;
 
 		try {
-
 			board = LoadFEN(s);
 
 			// If the FEN loader thought it looked like normal chess, we must
@@ -1920,7 +2113,6 @@ let hub_props = {
 			if (abnormal) {
 				board.normalchess = false;
 			}
-
 		} catch (err) {
 			alert(err);
 			return;
@@ -1930,8 +2122,7 @@ let hub_props = {
 		this.position_changed(true, true);
 	},
 
-	load_from_fenbox: function(s) {
-
+	load_from_fenbox: function (s) {
 		s = s.trim();
 
 		if (s === this.tree.node.board.fen(true)) {
@@ -1955,7 +2146,11 @@ let hub_props = {
 		if (s.length === 8) {
 			let ok = true;
 			for (let c of s) {
-				if (["K", "k", "Q", "q", "R", "r", "B", "b", "N", "n"].includes(c) === false) {
+				if (
+					["K", "k", "Q", "q", "R", "r", "B", "b", "N", "n"].includes(
+						c
+					) === false
+				) {
 					ok = false;
 					break;
 				}
@@ -1972,8 +2167,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Mouse and mouseclicks...
 
-	set_active_square: function(new_point) {
-
+	set_active_square: function (new_point) {
 		// We do this immediately so it's snappy and responsive, rather than waiting for the next draw cycle. But we don't
 		// want to actually call draw() here since whatever called this may well end up triggering a draw anyway.
 
@@ -1982,19 +2176,19 @@ let hub_props = {
 		if (old_point) {
 			let td = document.getElementById("underlay_" + old_point.s);
 			td.style["background-color"] = "transparent";
-			this.dirty_squares[old_point.x][old_point.y] = 0;		// Lame. This is the constant for EMPTY.
+			this.dirty_squares[old_point.x][old_point.y] = 0; // Lame. This is the constant for EMPTY.
 		}
 
 		if (new_point) {
 			let td = document.getElementById("underlay_" + new_point.s);
 			td.style["background-color"] = config.active_square;
-			this.dirty_squares[new_point.x][new_point.y] = 2;		// Lame. This is the constant for ACTIVE.
+			this.dirty_squares[new_point.x][new_point.y] = 2; // Lame. This is the constant for ACTIVE.
 		}
 
 		this.active_square = new_point ? new_point : null;
 	},
 
-	boardfriends_click: function(event) {
+	boardfriends_click: function (event) {
 		let s = EventPathString(event, "overlay_");
 		let p = Point(s);
 
@@ -2002,22 +2196,24 @@ let hub_props = {
 			return;
 		}
 
-		this.hide_promotiontable();		// Just in case it's up.
+		this.hide_promotiontable(); // Just in case it's up.
 
 		let ocm = this.info_handler.one_click_moves[p.x][p.y];
 		let board = this.tree.node.board;
 
-		if (!this.active_square && ocm && board.colour(p) !== board.active) {		// Note that we test colour difference
-			this.set_active_square(null);											// to disallow castling moves from OCM
-			this.move(ocm);															// since the dest is the rook (which
-			return;																	// the user might want to click on.)
+		if (!this.active_square && ocm && board.colour(p) !== board.active) {
+			// Note that we test colour difference
+			this.set_active_square(null); // to disallow castling moves from OCM
+			this.move(ocm); // since the dest is the rook (which
+			return; // the user might want to click on.)
 		}
 
 		if (this.active_square) {
-			let move = this.active_square.s + p.s;		// e.g. "e2e4" - note promotion char is handled by hub.move()
+			let move = this.active_square.s + p.s; // e.g. "e2e4" - note promotion char is handled by hub.move()
 			this.set_active_square(null);
 			let ok = this.move(move);
-			if (!ok && config.click_spotlight) {		// No need to worry about spotlight arrows if the move actually happened
+			if (!ok && config.click_spotlight) {
+				// No need to worry about spotlight arrows if the move actually happened
 				this.draw_canvas_arrows();
 			}
 			return;
@@ -2039,16 +2235,20 @@ let hub_props = {
 		}
 	},
 
-	infobox_click: function(event) {
-
-		if (event.button !== 0 || this.info_handler.clickers_are_valid_for_node(this.tree.node) === false) {
+	infobox_click: function (event) {
+		if (
+			event.button !== 0 ||
+			this.info_handler.clickers_are_valid_for_node(this.tree.node) ===
+				false
+		) {
 			return;
 		}
 
 		let n = EventPathN(event, "infobox_");
 		let moves = this.info_handler.moves_from_click_n(n);
 
-		if (!moves || moves.length === 0) {				// We do assume length > 0 below.
+		if (!moves || moves.length === 0) {
+			// We do assume length > 0 below.
 			this.maybe_searchmove_click(event);
 			return;
 		}
@@ -2077,15 +2277,16 @@ let hub_props = {
 		}
 	},
 
-	maybe_searchmove_click: function(event) {
-
+	maybe_searchmove_click: function (event) {
 		let sm = EventPathString(event, "searchmove_");
-		if (typeof sm !== "string" || (sm.length < 4 || sm.length > 5)) {
+		if (typeof sm !== "string" || sm.length < 4 || sm.length > 5) {
 			return;
 		}
 
 		if (this.tree.node.searchmoves.includes(sm)) {
-			this.tree.node.searchmoves = this.tree.node.searchmoves.filter(move => move !== sm);
+			this.tree.node.searchmoves = this.tree.node.searchmoves.filter(
+				(move) => move !== sm
+			);
 		} else {
 			this.tree.node.searchmoves.push(sm);
 		}
@@ -2094,7 +2295,7 @@ let hub_props = {
 		this.handle_search_params_change();
 	},
 
-	movelist_click: function(event) {
+	movelist_click: function (event) {
 		if (event.button === 0) {
 			if (this.tree.handle_click(event)) {
 				this.position_changed(false, true);
@@ -2102,7 +2303,7 @@ let hub_props = {
 		}
 	},
 
-	winrate_click: function(event) {
+	winrate_click: function (event) {
 		if (event.button === 0) {
 			let node = this.grapher.node_from_click(this.tree.node, event);
 
@@ -2116,7 +2317,7 @@ let hub_props = {
 		}
 	},
 
-	statusbox_click: function(event) {
+	statusbox_click: function (event) {
 		if (event.button === 0) {
 			if (EventPathString(event, "gobutton")) {
 				this.set_behaviour("analysis_free");
@@ -2142,8 +2343,7 @@ let hub_props = {
 		}
 	},
 
-	fullbox_click: function(event) {
-
+	fullbox_click: function (event) {
 		let n;
 
 		// PGN chooser...
@@ -2172,14 +2372,16 @@ let hub_props = {
 
 		n = EventPathN(event, "engine_chooser_");
 		if (typeof n === "number") {
-			let filepath = this.engine_choices[n];			// The array is remade every time the fast engine chooser is displayed
+			let filepath = this.engine_choices[n]; // The array is remade every time the fast engine chooser is displayed
 			if (filepath) {
-				if (event.button === 2) {					// Right-click
+				if (event.button === 2) {
+					// Right-click
 					if (this.engine.filepath !== filepath) {
 						delete engineconfig[filepath];
 						this.show_fast_engine_chooser();
 					}
-				} else {									// Any other click
+				} else {
+					// Any other click
 					this.switch_engine(filepath);
 					this.hide_fullbox();
 				}
@@ -2188,14 +2390,13 @@ let hub_props = {
 		}
 	},
 
-	promotiontable_click: function(event) {
+	promotiontable_click: function (event) {
 		let s = EventPathString(event, "promotion_chooser_");
 		this.hide_promotiontable();
 		this.move(s);
 	},
 
-	handle_drop: function(event) {
-
+	handle_drop: function (event) {
 		// Note to self - examining the event in the console can be misleading
 		// because the object seems to get changed after it's finished firing
 		// or something.
@@ -2206,7 +2407,12 @@ let hub_props = {
 
 		// Is it a file?
 
-		if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0] && get_path_for_file(event.dataTransfer.files[0])) {
+		if (
+			event.dataTransfer &&
+			event.dataTransfer.files &&
+			event.dataTransfer.files[0] &&
+			get_path_for_file(event.dataTransfer.files[0])
+		) {
 			this.open(get_path_for_file(event.dataTransfer.files[0]));
 			return;
 		}
@@ -2215,15 +2421,18 @@ let hub_props = {
 
 		let text_data = event.dataTransfer.getData("text");
 		if (text_data.startsWith("overlay_")) {
-
-			let source = Point(text_data.slice(8, 10));		// Possibly null
+			let source = Point(text_data.slice(8, 10)); // Possibly null
 			let dest = null;
 
-			let path = event.path || (event.composedPath && event.composedPath());
+			let path =
+				event.path || (event.composedPath && event.composedPath());
 
 			if (path) {
 				for (let item of path) {
-					if (typeof item.id === "string" && item.id.startsWith("overlay_")) {
+					if (
+						typeof item.id === "string" &&
+						item.id.startsWith("overlay_")
+					) {
 						dest = Point(item.id.slice(8, 10));
 						break;
 					}
@@ -2232,7 +2441,8 @@ let hub_props = {
 
 			if (source && dest) {
 				let ok = this.move(source.s + dest.s);
-				if (!ok && config.click_spotlight) {		// No need to worry about spotlight arrows if the move actually happened
+				if (!ok && config.click_spotlight) {
+					// No need to worry about spotlight arrows if the move actually happened
 					this.draw_canvas_arrows();
 				}
 			}
@@ -2241,11 +2451,11 @@ let hub_props = {
 		}
 	},
 
-	mouse_point: function() {
+	mouse_point: function () {
 		let overlist = document.querySelectorAll(":hover");
 		for (let item of overlist) {
 			if (typeof item.id === "string" && item.id.startsWith("overlay_")) {
-				return Point(item.id.slice(8));		// Possibly null
+				return Point(item.id.slice(8)); // Possibly null
 			}
 		}
 		return null;
@@ -2254,8 +2464,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Settings (but NOT including UCI options)...
 
-	toggle: function(option) {
-
+	toggle: function (option) {
 		// Cases with their own handler...
 
 		if (option === "flip") {
@@ -2283,7 +2492,7 @@ let hub_props = {
 			}
 		}
 		if (option === "searchmoves_buttons") {
-			this.tree.node.searchmoves = [];		// This is reasonable regardless of which way the toggle went.
+			this.tree.node.searchmoves = []; // This is reasonable regardless of which way the toggle went.
 			this.handle_search_params_change();
 		}
 
@@ -2291,15 +2500,17 @@ let hub_props = {
 		this.draw();
 	},
 
-	toggle_flip: function() {						// config.flip should not be directly set, call this function instead.
+	toggle_flip: function () {
+		// config.flip should not be directly set, call this function instead.
 
 		config.flip = !config.flip;
 
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 4; y++) {
-
 				let first = document.getElementById(`overlay_${S(x, y)}`);
-				let second = document.getElementById(`overlay_${S(7 - x, 7 - y)}`);
+				let second = document.getElementById(
+					`overlay_${S(7 - x, 7 - y)}`
+				);
 				SwapElements(first, second);
 
 				first = document.getElementById(`underlay_${S(x, y)}`);
@@ -2309,17 +2520,16 @@ let hub_props = {
 		}
 
 		evalbar.className = config.flip ? "reverse" : "";
-		this.draw();								// For the canvas stuff.
+		this.draw(); // For the canvas stuff.
 	},
 
-	set_arrow_filter: function(type, value) {
+	set_arrow_filter: function (type, value) {
 		config.arrow_filter_type = type;
 		config.arrow_filter_value = value;
 		this.draw();
 	},
 
-	set_looker_api: function(value) {
-
+	set_looker_api: function (value) {
 		if (config.looker_api === value) {
 			return;
 		}
@@ -2335,9 +2545,11 @@ let hub_props = {
 		this.explorer_objects_cache = null;
 	},
 
-	invert_searchmoves: function() {
-
-		if (!config.searchmoves_buttons || Array.isArray(this.tree.node.searchmoves) === false) {
+	invert_searchmoves: function () {
+		if (
+			!config.searchmoves_buttons ||
+			Array.isArray(this.tree.node.searchmoves) === false
+		) {
 			return;
 		}
 
@@ -2359,25 +2571,25 @@ let hub_props = {
 		this.handle_search_params_change();
 	},
 
-	clear_searchmoves: function() {
+	clear_searchmoves: function () {
 		this.tree.node.searchmoves = [];
 		this.handle_search_params_change();
 	},
 
-	set_pgn_font_size: function(n) {
+	set_pgn_font_size: function (n) {
 		movelist.style["font-size"] = n.toString() + "px";
 		fenbox.style["font-size"] = n.toString() + "px";
 		config.pgn_font_size = n;
 		config.fen_font_size = n;
 	},
 
-	set_arrow_size: function(width, radius, fontsize) {
+	set_arrow_size: function (width, radius, fontsize) {
 		config.arrow_width = width;
 		config.arrowhead_radius = radius;
 		config.board_font = `bold ${fontsize}px Noto Sans`;
 	},
 
-	set_info_font_size: function(n) {
+	set_info_font_size: function (n) {
 		infobox.style["font-size"] = n.toString() + "px";
 		statusbox.style["font-size"] = n.toString() + "px";
 		fullbox.style["font-size"] = n.toString() + "px";
@@ -2385,13 +2597,13 @@ let hub_props = {
 		this.rebuild_sizes();
 	},
 
-	set_board_size: function(sz) {
+	set_board_size: function (sz) {
 		config.square_size = Math.floor(sz / 8);
 		config.board_size = config.square_size * 8;
 		this.rebuild_sizes();
 	},
 
-	change_piece_set: function(directory) {
+	change_piece_set: function (directory) {
 		if (directory) {
 			if (images.validate_folder(directory) === false) {
 				alert(messages.invalid_pieces_directory);
@@ -2407,25 +2619,35 @@ let hub_props = {
 		config["override_piece_directory"] = directory;
 	},
 
-	change_background: function(file, config_save = true) {
+	change_background: function (file, config_save = true) {
 		if (file && fs.existsSync(file)) {
 			let img = new Image();
-			img.src = file;			// Automagically gets converted to "file:///C:/foo/bar/whatever.png"
+			img.src = file; // Automagically gets converted to "file:///C:/foo/bar/whatever.png"
 			boardsquares.style["background-image"] = `url("${img.src}")`;
 		} else {
-			boardsquares.style["background-image"] = background(config.light_square, config.dark_square, config.square_size);
+			boardsquares.style["background-image"] = background(
+				config.light_square,
+				config.dark_square,
+				config.square_size
+			);
 		}
 		if (config_save) {
 			config.override_board = file;
 		}
 	},
 
-	rebuild_sizes: function() {
+	rebuild_sizes: function () {
 		// This assumes everything already exists.
 		// Derived from the longer version in start.js, which it does not replace.
 
-		boardfriends.width = canvas.width = boardsquares.width = config.board_size;
-		boardfriends.height = canvas.height = boardsquares.height = config.board_size;
+		boardfriends.width =
+			canvas.width =
+			boardsquares.width =
+				config.board_size;
+		boardfriends.height =
+			canvas.height =
+			boardsquares.height =
+				config.board_size;
 
 		for (let y = 0; y < 8; y++) {
 			for (let x = 0; x < 8; x++) {
@@ -2436,37 +2658,44 @@ let hub_props = {
 			}
 		}
 
-		promotiontable.style.left = (boardsquares.offsetLeft + config.square_size * 2).toString() + "px";
-		promotiontable.style.top = (boardsquares.offsetTop + config.square_size * 3.5).toString() + "px";
+		promotiontable.style.left =
+			(boardsquares.offsetLeft + config.square_size * 2).toString() +
+			"px";
+		promotiontable.style.top =
+			(boardsquares.offsetTop + config.square_size * 3.5).toString() +
+			"px";
 		promotiontable.style["background-color"] = config.active_square;
 
 		this.draw();
 	},
 
-	set_logfile: function(filename) {				// Arg can be null to stop logging.
+	set_logfile: function (filename) {
+		// Arg can be null to stop logging.
 		config.logfile = null;
-		Log("Stopping log.");						// This will do nothing, but calling Log() forces it to close any open file.
+		Log("Stopping log."); // This will do nothing, but calling Log() forces it to close any open file.
 		config.logfile = filename;
 		this.send_ack_logfile();
 	},
 
-	set_language: function(s) {
+	set_language: function (s) {
 		config.language = s;
 		alert(translate.t("RESTART_REQUIRED", s));
 	},
 
-	send_ack_logfile: function() {
+	send_ack_logfile: function () {
 		ipcRenderer.send("ack_logfile", config.logfile);
 	},
 
-	save_config: function() {
-		if (!load_err1) {							// If the config file was broken, never save to it, let the user fix it.
+	save_config: function () {
+		if (!load_err1) {
+			// If the config file was broken, never save to it, let the user fix it.
 			config_io.save(config);
 		}
 	},
 
-	save_engineconfig: function() {
-		if (!load_err2) {							// If the config file was broken, never save to it, let the user fix it.
+	save_engineconfig: function () {
+		if (!load_err2) {
+			// If the config file was broken, never save to it, let the user fix it.
 			engineconfig_io.save(engineconfig);
 		}
 	},
@@ -2474,7 +2703,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Misc...
 
-	quit: async function() {
+	quit: async function () {
 		this.engine.shutdown();
 		await this.store_window_position();
 		this.save_config();
@@ -2482,43 +2711,59 @@ let hub_props = {
 		ipcRenderer.send("terminate");
 	},
 
-	store_window_position: async function() {
-		const { x, y, width, height } = await ipcRenderer.invoke("get_window_position");
+	store_window_position: async function () {
+		const { x, y, width, height } = await ipcRenderer.invoke(
+			"get_window_position"
+		);
 		config.x = x;
 		config.y = y;
 		config.width = width;
 		config.height = height;
 	},
 
-	set_special_message: function(s, css_class, duration) {
+	set_special_message: function (s, css_class, duration) {
 		this.status_handler.set_special_message(s, css_class, duration);
 		this.draw_statusbox();
 	},
 
-	infobox_to_clipboard: function() {
+	infobox_to_clipboard: function () {
 		let s = infobox.innerText;
 		s = ReplaceAll(s, `${config.focus_on_text} `, "");
 		s = ReplaceAll(s, `${config.focus_off_text} `, "");
-		clipboard.writeText(this.tree.node.board.fen(true) + "\n" + statusbox.innerText + "\n\n" + s);
+		clipboard.writeText(
+			this.tree.node.board.fen(true) +
+				"\n" +
+				statusbox.innerText +
+				"\n\n" +
+				s
+		);
 	},
 
-	send_title: function() {
+	send_title: function () {
 		let title = "Nibbler";
 		let root = this.tree.root;
-		if (root.tags && root.tags.White && root.tags.White !== "White" && root.tags.Black && root.tags.Black !== "Black") {
+		if (
+			root.tags &&
+			root.tags.White &&
+			root.tags.White !== "White" &&
+			root.tags.Black &&
+			root.tags.Black !== "Black"
+		) {
 			title += `: ${root.tags.White} - ${root.tags.Black}`;
 		}
-		ipcRenderer.send("set_title", UnsafeStringHTML(title));		// Fix any &amp; and that sort of thing in the names.
+		ipcRenderer.send("set_title", UnsafeStringHTML(title)); // Fix any &amp; and that sort of thing in the names.
 	},
 
-	generate_simple_book: function() {		// For https://github.com/rooklift/lc0_lichess
-		let histories = this.tree.root.end_nodes().map(end => end.history_old_format());
-		let text_lines = histories.map(h => "\t\"" + h.join(" ") + "\"");
+	generate_simple_book: function () {
+		// For https://github.com/rooklift/lc0_lichess
+		let histories = this.tree.root
+			.end_nodes()
+			.map((end) => end.history_old_format());
+		let text_lines = histories.map((h) => '\t"' + h.join(" ") + '"');
 		console.log("[\n" + text_lines.join(",\n") + "\n]");
 	},
 
-	run_script: function(filename) {
-
+	run_script: function (filename) {
 		const disallowed = ["position", "go", "stop", "ponderhit", "quit"];
 
 		let buf;
@@ -2532,13 +2777,19 @@ let hub_props = {
 		this.set_behaviour("halt");
 
 		let s = buf.toString();
-		let lines = s.split("\n").map(z => z.trim()).filter(z => z !== "");
+		let lines = s
+			.split("\n")
+			.map((z) => z.trim())
+			.filter((z) => z !== "");
 
 		if (!config.allow_arbitrary_scripts) {
 			for (let line of lines) {
 				for (let d of disallowed) {
 					if (line.startsWith(d)) {
-						this.set_special_message(`${messages.invalid_script}`, "yellow");
+						this.set_special_message(
+							`${messages.invalid_script}`,
+							"yellow"
+						);
 						console.log(`Refused to run script: ${filename}`);
 						return;
 					}
@@ -2550,16 +2801,19 @@ let hub_props = {
 
 		for (let line of lines) {
 			if (config.allow_arbitrary_scripts) {
-				this.engine.send(line, true);			// Force mode, so setoptions don't get held back
+				this.engine.send(line, true); // Force mode, so setoptions don't get held back
 			} else {
 				this.engine.send(line);
 			}
 			console.log(line);
 		}
-		this.set_special_message(`${path.basename(filename)}: Sent ${lines.length} lines`, "blue");
+		this.set_special_message(
+			`${path.basename(filename)}: Sent ${lines.length} lines`,
+			"blue"
+		);
 	},
 
-	fire_gc: function() {
+	fire_gc: function () {
 		if (!global || !global.gc) {
 			alert("Unable.");
 		} else {
@@ -2567,21 +2821,23 @@ let hub_props = {
 		}
 	},
 
-	log_ram: function() {
-		console.log(`RAM after ${Math.floor(performance.now() / 1000)} seconds:`);
+	log_ram: function () {
+		console.log(
+			`RAM after ${Math.floor(performance.now() / 1000)} seconds:`
+		);
 		for (let foo of Object.entries(process.memoryUsage())) {
 			let type = foo[0] + " ".repeat(12 - foo[0].length);
 			let mb = foo[1] / (1024 * 1024);
-			let mb_rounded = Math.floor(mb * 1000) / 1000;			// 3 d.p.
+			let mb_rounded = Math.floor(mb * 1000) / 1000; // 3 d.p.
 			console.log(type, "(MB)", mb_rounded);
 		}
 	},
 
-	console: function(...args) {
+	console: function (...args) {
 		console.log(...args);
 	},
 
-	toggle_debug_css: function() {
+	toggle_debug_css: function () {
 		let ss = document.styleSheets[0];
 		let i = 0;
 		for (let rule of Object.values(ss.cssRules)) {
@@ -2597,8 +2853,7 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Fullbox (our full size info div)...
 
-	show_pgn_chooser: function() {
-
+	show_pgn_chooser: function () {
 		const interval = 100;
 
 		if (!this.pgndata || this.pgndata.count() === 0) {
@@ -2610,9 +2865,11 @@ let hub_props = {
 		let count = this.pgndata.count();
 
 		if (this.pgn_choices_start >= count) {
-			this.pgn_choices_start = Math.floor((count - 1) / interval) * interval;
+			this.pgn_choices_start =
+				Math.floor((count - 1) / interval) * interval;
 		}
-		if (this.pgn_choices_start < 0) {		// The most important thing, values < 0 will crash.
+		if (this.pgn_choices_start < 0) {
+			// The most important thing, values < 0 will crash.
 			this.pgn_choices_start = 0;
 		}
 
@@ -2620,25 +2877,39 @@ let hub_props = {
 
 		let max_ordinal_length = count.toString().length;
 
-		let prevnextfoo = (count > interval) ?			// All these values get fixed on function entry if they're out-of-bounds. ids should be unique.
-			`<span id="pgn_index_chooser_-99999999">Start </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start - 10000}"> <<<< </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start - 1000}"> <<< </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start - 100}"> << </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start + 100}"> >> </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start + 1000}"> >>> </span>|` +
-			`<span id="pgn_index_chooser_${this.pgn_choices_start + 10000}"> >>>> </span>|` +
-			`<span id="pgn_index_chooser_99999999"> End (${count}) </span>` +
-			`&mdash; <span class="green">${this.pgndata.source}</span>`
-			:
-			`<span class="green">${this.pgndata.source}</span>`;
+		let prevnextfoo =
+			count > interval // All these values get fixed on function entry if they're out-of-bounds. ids should be unique.
+				? `<span id="pgn_index_chooser_-99999999">Start </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start - 10000
+				  }"> <<<< </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start - 1000
+				  }"> <<< </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start - 100
+				  }"> << </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start + 100
+				  }"> >> </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start + 1000
+				  }"> >>> </span>|` +
+				  `<span id="pgn_index_chooser_${
+						this.pgn_choices_start + 10000
+				  }"> >>>> </span>|` +
+				  `<span id="pgn_index_chooser_99999999"> End (${count}) </span>` +
+				  `&mdash; <span class="green">${this.pgndata.source}</span>`
+				: `<span class="green">${this.pgndata.source}</span>`;
 
 		lines.push(prevnextfoo);
 		lines.push("<ul>");
-		for (let n = this.pgn_choices_start; n < this.pgn_choices_start + interval; n++) {
-
+		for (
+			let n = this.pgn_choices_start;
+			n < this.pgn_choices_start + interval;
+			n++
+		) {
 			if (n < count) {
-
 				let pad = n < 10 ? " " : "";
 
 				let p = this.pgndata.getrecord(n);
@@ -2646,30 +2917,49 @@ let hub_props = {
 				let s;
 
 				if (p.tags.Result === "1-0") {
-					s = `${pad}${n}. <span class="blue">${p.tags.White || "Unknown"}</span> - ${p.tags.Black || "Unknown"}`;
+					s = `${pad}${n}. <span class="blue">${
+						p.tags.White || "Unknown"
+					}</span> - ${p.tags.Black || "Unknown"}`;
 				} else if (p.tags.Result === "0-1") {
-					s = `${pad}${n}. ${p.tags.White || "Unknown"} - <span class="blue">${p.tags.Black || "Unknown"}</span>`;
+					s = `${pad}${n}. ${
+						p.tags.White || "Unknown"
+					} - <span class="blue">${p.tags.Black || "Unknown"}</span>`;
 				} else {
-					s = `${pad}${n}. ${p.tags.White || "Unknown"} - ${p.tags.Black || "Unknown"}`;
+					s = `${pad}${n}. ${p.tags.White || "Unknown"} - ${
+						p.tags.Black || "Unknown"
+					}`;
 				}
 
 				if (p.tags.Opening && p.tags.Opening !== "?") {
 					s += `  <span class="gray">(${p.tags.Opening})</span>`;
-				} else if (p.tags.Variant && p.tags.Variant.toLowerCase() !== "standard" && p.tags.Variant.toLowerCase() !== "from position") {
+				} else if (
+					p.tags.Variant &&
+					p.tags.Variant.toLowerCase() !== "standard" &&
+					p.tags.Variant.toLowerCase() !== "from position"
+				) {
 					s += `  <span class="gray">(${p.tags.Variant})</span>`;
 				}
 
-				lines.push(`<li class="pgnchooser" id="pgn_chooser_${n}">${s}</li>`);
+				lines.push(
+					`<li class="pgnchooser" id="pgn_chooser_${n}">${s}</li>`
+				);
+			} else if (count > interval) {
+				// Pad the chooser with blank lines so the buttons at the bottom behave nicely. This is stupid though.
 
-			} else if (count > interval) {		// Pad the chooser with blank lines so the buttons at the bottom behave nicely. This is stupid though.
-
-				lines.push(`<li><span class="darkgray">${n}.${n === count ? " [end]" : ""}</li>`);
-
+				lines.push(
+					`<li><span class="darkgray">${n}.${
+						n === count ? " [end]" : ""
+					}</li>`
+				);
 			}
 		}
 		lines.push("</ul>");
 		if (count > interval) {
-			prevnextfoo = ReplaceAll(prevnextfoo, `span id="pgn_index_chooser_`, `span id="pgn_index_b_chooser_`);		// id should be unique per element.
+			prevnextfoo = ReplaceAll(
+				prevnextfoo,
+				`span id="pgn_index_chooser_`,
+				`span id="pgn_index_b_chooser_`
+			); // id should be unique per element.
 			lines.push(prevnextfoo);
 		}
 
@@ -2677,50 +2967,62 @@ let hub_props = {
 		this.show_fullbox();
 	},
 
-	show_sent_options: function() {
-
+	show_sent_options: function () {
 		let lines = [];
 
-		lines.push(`<span class="yellow">${this.engine.filepath || "No engine loaded"}</span>`);
+		lines.push(
+			`<span class="yellow">${
+				this.engine.filepath || "No engine loaded"
+			}</span>`
+		);
 		lines.push("");
 
 		for (let name of Object.keys(this.engine.sent_options)) {
-			lines.push(`${name}<br>    <span class="green">${this.engine.sent_options[name]}</span>`);
+			lines.push(
+				`${name}<br>    <span class="green">${this.engine.sent_options[name]}</span>`
+			);
 		}
 
 		fullbox_content.innerHTML = lines.join("<br>");
 		this.show_fullbox();
 	},
 
-	show_error_log: function() {
+	show_error_log: function () {
 		fullbox_content.innerHTML = this.info_handler.error_log;
 		this.show_fullbox();
 	},
 
-	show_fast_engine_chooser: function() {
-
+	show_fast_engine_chooser: function () {
 		this.engine_choices = [];
 
 		let divs = [];
 
 		for (let filepath of Object.keys(engineconfig)) {
-
 			if (filepath === "") {
 				continue;
 			}
 
-			let ac = (this.engine.filepath === filepath) ? ` <span class="blue">(active)</span>` : "";
+			let ac =
+				this.engine.filepath === filepath
+					? ` <span class="blue">(active)</span>`
+					: "";
 
-			divs.push(`<div class="enginechooser" id="engine_chooser_${this.engine_choices.length}"><span class="gray">${path.dirname(filepath)}</span>` +
-				`<br>    ${path.basename(filepath)}${ac}</div>`);
+			divs.push(
+				`<div class="enginechooser" id="engine_chooser_${
+					this.engine_choices.length
+				}"><span class="gray">${path.dirname(filepath)}</span>` +
+					`<br>    ${path.basename(filepath)}${ac}</div>`
+			);
 
-			this.engine_choices.push(filepath);					// After the above calc using length
+			this.engine_choices.push(filepath); // After the above calc using length
 		}
 
 		if (divs.length === 0) {
 			divs.push(`<div>No engines known yet.</div>`);
 		} else {
-			divs.unshift(`<div class="infoline green">Click to load.<br>Right-click to remove from ${engineconfig_io.filename}.</div>`);
+			divs.unshift(
+				`<div class="infoline green">Click to load.<br>Right-click to remove from ${engineconfig_io.filename}.</div>`
+			);
 		}
 
 		fullbox_content.innerHTML = divs.join("");
@@ -2730,13 +3032,17 @@ let hub_props = {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// Showing and hiding things...
 
-	show_promotiontable: function(partial_move) {
-
-		let pieces = this.tree.node.board.active === "w" ? ["Q", "R", "B", "N"] : ["q", "r", "b", "n"];
+	show_promotiontable: function (partial_move) {
+		let pieces =
+			this.tree.node.board.active === "w"
+				? ["Q", "R", "B", "N"]
+				: ["q", "r", "b", "n"];
 
 		for (let piece of pieces) {
-			let td = document.getElementsByClassName("promotion_" + piece.toLowerCase())[0];		// Our 4 TDs each have a unique class.
-			td.id = "promotion_chooser_" + partial_move + piece.toLowerCase();						// We store the actual move in the id.
+			let td = document.getElementsByClassName(
+				"promotion_" + piece.toLowerCase()
+			)[0]; // Our 4 TDs each have a unique class.
+			td.id = "promotion_chooser_" + partial_move + piece.toLowerCase(); // We store the actual move in the id.
 			td.width = config.square_size;
 			td.height = config.square_size;
 			td.style["background-image"] = images[piece].string_for_bg_style;
@@ -2745,21 +3051,22 @@ let hub_props = {
 		promotiontable.style.display = "block";
 	},
 
-	hide_promotiontable: function() {
+	hide_promotiontable: function () {
 		promotiontable.style.display = "none";
 	},
 
-	show_fullbox: function() {
+	show_fullbox: function () {
 		this.set_behaviour("halt");
 		this.hide_promotiontable();
 		fullbox.style.display = "block";
 	},
 
-	hide_fullbox: function() {
+	hide_fullbox: function () {
 		fullbox.style.display = "none";
 	},
 
-	escape: function() {					// Set things into a clean state.
+	escape: function () {
+		// Set things into a clean state.
 		this.hide_fullbox();
 		this.hide_promotiontable();
 		if (this.active_square) {

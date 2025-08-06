@@ -1,6 +1,5 @@
 "use strict";
 
-
 //		Note that ALL CASTLING MOVES are expected to be in format KING-TO-ROOK (e.g. e1h1).
 //		That is, only Chess960 format is allowed.
 //
@@ -8,11 +7,8 @@
 //		so we don't. We either convert old-format moves to new-format as soon as we receive
 //		them, or we treat them as illegal.
 
-
 const position_prototype = {
-
-	move: function(s) {
-
+	move: function (s) {
 		// s is some valid UCI move like "d1f3" or "e7e8q". For the most part, this function
 		// assumes the move is legal - all sorts of weird things can happen if this isn't so.
 		//
@@ -30,13 +26,25 @@ const position_prototype = {
 		let [x1, y1] = XY(s.slice(0, 2));
 		let [x2, y2] = XY(s.slice(2, 4));
 
-		if (x1 < 0 || y1 < 0 || x1 > 7 || y1 > 7 || x2 < 0 || y2 < 0 || x2 > 7 || y2 > 7) {
+		if (
+			x1 < 0 ||
+			y1 < 0 ||
+			x1 > 7 ||
+			y1 > 7 ||
+			x2 < 0 ||
+			y2 < 0 ||
+			x2 > 7 ||
+			y2 > 7
+		) {
 			console.log("position_prototype.move called with arg", s);
 			return this;
 		}
 
 		if (this.state[x1][y1] === "") {
-			console.log("position_prototype.move called with empty source, arg was", s);
+			console.log(
+				"position_prototype.move called with empty source, arg was",
+				s
+			);
 			return this;
 		}
 
@@ -46,10 +54,13 @@ const position_prototype = {
 
 		let white_flag = ret.is_white(Point(x1, y1));
 		let pawn_flag = ret.state[x1][y1] === "P" || ret.state[x1][y1] === "p";
-		let castle_flag = (ret.state[x2][y2] === "R" && white_flag) || (ret.state[x2][y2] === "r" && white_flag === false);
+		let castle_flag =
+			(ret.state[x2][y2] === "R" && white_flag) ||
+			(ret.state[x2][y2] === "r" && white_flag === false);
 		let capture_flag = castle_flag === false && ret.state[x2][y2];
 
-		if (pawn_flag && x1 !== x2) {		// Make sure capture_flag is set even for enpassant captures
+		if (pawn_flag && x1 !== x2) {
+			// Make sure capture_flag is set even for enpassant captures
 			capture_flag = true;
 		}
 
@@ -63,22 +74,26 @@ const position_prototype = {
 			ret.__delete_black_castling();
 		}
 
-		if (y1 === 7 && ret.state[x1][y1] === "R") {			// White rook moved.
+		if (y1 === 7 && ret.state[x1][y1] === "R") {
+			// White rook moved.
 			let ch = String.fromCharCode(x1 + 65);
 			ret.__delete_castling_char(ch);
 		}
 
-		if (y2 === 7 && ret.state[x2][y2] === "R") {			// White rook was captured (or castled onto).
+		if (y2 === 7 && ret.state[x2][y2] === "R") {
+			// White rook was captured (or castled onto).
 			let ch = String.fromCharCode(x2 + 65);
 			ret.__delete_castling_char(ch);
 		}
 
-		if (y1 === 0 && ret.state[x1][y1] === "r") {			// Black rook moved.
+		if (y1 === 0 && ret.state[x1][y1] === "r") {
+			// Black rook moved.
 			let ch = String.fromCharCode(x1 + 97);
 			ret.__delete_castling_char(ch);
 		}
 
-		if (y2 === 0 && ret.state[x2][y2] === "r") {			// Black rook was captured (or castled onto).
+		if (y2 === 0 && ret.state[x2][y2] === "r") {
+			// Black rook was captured (or castled onto).
 			let ch = String.fromCharCode(x2 + 97);
 			ret.__delete_castling_char(ch);
 		}
@@ -98,24 +113,23 @@ const position_prototype = {
 		// Handle the moves of castling...
 
 		if (castle_flag) {
-
 			let k_ch = ret.state[x1][y1];
 			let r_ch = ret.state[x2][y2];
 
-			if (x2 > x1) {		// Kingside castling
+			if (x2 > x1) {
+				// Kingside castling
 
 				ret.state[x1][y1] = "";
 				ret.state[x2][y2] = "";
 				ret.state[6][y1] = k_ch;
 				ret.state[5][y1] = r_ch;
-
-			} else {			// Queenside castling
+			} else {
+				// Queenside castling
 
 				ret.state[x1][y1] = "";
 				ret.state[x2][y2] = "";
 				ret.state[2][y1] = k_ch;
 				ret.state[3][y1] = r_ch;
-
 			}
 		}
 
@@ -138,14 +152,22 @@ const position_prototype = {
 
 		ret.enpassant = null;
 
-		if (pawn_flag && y1 === 6 && y2 === 4) {		// White pawn advanced 2
-			if (ret.piece(Point(x1 - 1, 4)) === "p" || ret.piece(Point(x1 + 1, 4)) === "p") {
+		if (pawn_flag && y1 === 6 && y2 === 4) {
+			// White pawn advanced 2
+			if (
+				ret.piece(Point(x1 - 1, 4)) === "p" ||
+				ret.piece(Point(x1 + 1, 4)) === "p"
+			) {
 				ret.enpassant = Point(x1, 5);
 			}
 		}
 
-		if (pawn_flag && y1 === 1 && y2 === 3) {		// Black pawn advanced 2
-			if (ret.piece(Point(x1 - 1, 3)) === "P" || ret.piece(Point(x1 + 1, 3)) === "P") {
+		if (pawn_flag && y1 === 1 && y2 === 3) {
+			// Black pawn advanced 2
+			if (
+				ret.piece(Point(x1 - 1, 3)) === "P" ||
+				ret.piece(Point(x1 + 1, 3)) === "P"
+			) {
 				ret.enpassant = Point(x1, 2);
 			}
 		}
@@ -164,7 +186,7 @@ const position_prototype = {
 		}
 
 		if (y2 === 7 && pawn_flag) {
-			ret.state[x2][y2] = promotion_char;		// Always lowercase.
+			ret.state[x2][y2] = promotion_char; // Always lowercase.
 		}
 
 		// Swap who the current player is...
@@ -174,7 +196,7 @@ const position_prototype = {
 		return ret;
 	},
 
-	__delete_castling_char: function(delete_char) {
+	__delete_castling_char: function (delete_char) {
 		let new_rights = "";
 		for (let ch of this.castling) {
 			if (ch !== delete_char) {
@@ -184,28 +206,29 @@ const position_prototype = {
 		this.castling = new_rights;
 	},
 
-	__delete_white_castling: function() {
+	__delete_white_castling: function () {
 		let new_rights = "";
 		for (let ch of this.castling) {
-			if ("a" <= ch && ch <= "h") {		// i.e. black survives
+			if ("a" <= ch && ch <= "h") {
+				// i.e. black survives
 				new_rights += ch;
 			}
 		}
 		this.castling = new_rights;
 	},
 
-	__delete_black_castling: function() {
+	__delete_black_castling: function () {
 		let new_rights = "";
 		for (let ch of this.castling) {
-			if ("A" <= ch && ch <= "H") {		// i.e. white survives
+			if ("A" <= ch && ch <= "H") {
+				// i.e. white survives
 				new_rights += ch;
 			}
 		}
 		this.castling = new_rights;
 	},
 
-	illegal: function(s) {
-
+	illegal: function (s) {
 		// Returns "" if the move is legal, otherwise returns the reason it isn't.
 
 		if (typeof s !== "string") {
@@ -217,7 +240,16 @@ const position_prototype = {
 		let [x1, y1] = XY(s.slice(0, 2));
 		let [x2, y2] = XY(s.slice(2, 4));
 
-		if (x1 < 0 || y1 < 0 || x1 > 7 || y1 > 7 || x2 < 0 || y2 < 0 || x2 > 7 || y2 > 7) {
+		if (
+			x1 < 0 ||
+			y1 < 0 ||
+			x1 > 7 ||
+			y1 > 7 ||
+			x2 < 0 ||
+			y2 < 0 ||
+			x2 > 7 ||
+			y2 > 7
+		) {
 			return "off board";
 		}
 
@@ -235,7 +267,10 @@ const position_prototype = {
 		if (this.same_colour(Point(x1, y1), Point(x2, y2))) {
 			if (this.state[x1][y1] === "K" && this.state[x2][y2] === "R") {
 				return this.illegal_castling(x1, y1, x2, y2);
-			} else if (this.state[x1][y1] === "k" && this.state[x2][y2] === "r") {
+			} else if (
+				this.state[x1][y1] === "k" &&
+				this.state[x2][y2] === "r"
+			) {
 				return this.illegal_castling(x1, y1, x2, y2);
 			} else {
 				return "source and destination have same colour";
@@ -274,7 +309,6 @@ const position_prototype = {
 		// Pawns...
 
 		if (["P", "p"].includes(this.state[x1][y1])) {
-
 			if (Math.abs(x2 - x1) === 0) {
 				if (this.state[x2][y2]) {
 					return "pawn cannot capture forwards";
@@ -286,7 +320,6 @@ const position_prototype = {
 			}
 
 			if (Math.abs(x2 - x1) === 1) {
-
 				if (this.state[x2][y2] === "") {
 					if (this.enpassant !== Point(x2, y2)) {
 						return "pawn cannot capture thin air";
@@ -326,7 +359,6 @@ const position_prototype = {
 		// Kings...
 
 		if (["K", "k"].includes(this.state[x1][y1])) {
-
 			if (Math.abs(y2 - y1) > 1) {
 				return "illegal king movement";
 			}
@@ -338,7 +370,11 @@ const position_prototype = {
 
 		// Check for blockers (pieces between source and dest).
 
-		if (["K", "Q", "R", "B", "P", "k", "q", "r", "b", "p"].includes(this.state[x1][y1])) {
+		if (
+			["K", "Q", "R", "B", "P", "k", "q", "r", "b", "p"].includes(
+				this.state[x1][y1]
+			)
+		) {
 			if (this.los(x1, y1, x2, y2) === false) {
 				return "movement blocked";
 			}
@@ -347,24 +383,28 @@ const position_prototype = {
 		// Check promotion and string lengths...
 		// We DO NOT tolerate missing promotion characters.
 
-		if ((y1 === 1 && this.state[x1][y1] === "P") || (y1 === 6 && this.state[x1][y1] === "p")) {
-
+		if (
+			(y1 === 1 && this.state[x1][y1] === "P") ||
+			(y1 === 6 && this.state[x1][y1] === "p")
+		) {
 			if (s.length !== 5) {
 				return "bad string length";
 			}
 
 			let promotion = s[4];
 
-			if (promotion !== "q" && promotion !== "r" && promotion !== "b" && promotion !== "n") {
+			if (
+				promotion !== "q" &&
+				promotion !== "r" &&
+				promotion !== "b" &&
+				promotion !== "n"
+			) {
 				return "move requires a valid promotion piece";
 			}
-
 		} else {
-
 			if (s.length !== 4) {
 				return "bad string length";
 			}
-
 		}
 
 		// Check for check...
@@ -377,8 +417,7 @@ const position_prototype = {
 		return "";
 	},
 
-	illegal_castling: function(x1, y1, x2, y2) {
-
+	illegal_castling: function (x1, y1, x2, y2) {
 		// We can assume a king is on [x1, y1] and a same-colour rook is on [x2, y2]
 
 		if (y1 !== y2) {
@@ -412,10 +451,12 @@ const position_prototype = {
 		let king_target_x;
 		let rook_target_x;
 
-		if (x1 < x2) {				// Castling kingside
+		if (x1 < x2) {
+			// Castling kingside
 			king_target_x = 6;
 			rook_target_x = 5;
-		} else {					// Castling queenside
+		} else {
+			// Castling queenside
 			king_target_x = 2;
 			rook_target_x = 3;
 		}
@@ -430,7 +471,7 @@ const position_prototype = {
 				return "cannot castle [out of / through / into] check";
 			}
 			if (x === x1 || x === x2) {
-				continue;					// After checking for checks
+				continue; // After checking for checks
 			}
 			if (this.state[x][y1]) {
 				return "castling blocked for king movement";
@@ -458,8 +499,7 @@ const position_prototype = {
 		return "";
 	},
 
-	sequence_illegal: function(moves) {
-
+	sequence_illegal: function (moves) {
 		let pos = this;
 
 		for (let s of moves) {
@@ -473,12 +513,11 @@ const position_prototype = {
 		return "";
 	},
 
-	can_capture_king: function() {
-
+	can_capture_king: function () {
 		// Can the side to move capture the opponent's king? Helper function for illegal() etc.
 		// But this is slow, do not use when king location is known - just call attacked() instead.
 
-		let kch = this.active === "w" ? "k" : "K";			// i.e. the INACTIVE king
+		let kch = this.active === "w" ? "k" : "K"; // i.e. the INACTIVE king
 		let opp_colour = this.active === "w" ? "b" : "w";
 
 		for (let x = 0; x < 8; x++) {
@@ -489,11 +528,10 @@ const position_prototype = {
 			}
 		}
 
-		return false;		// King not actually present...
+		return false; // King not actually present...
 	},
 
-	king_in_check: function() {
-
+	king_in_check: function () {
 		// Don't call this if the king position is already
 		// known since this method uses an expensive find().
 
@@ -507,7 +545,8 @@ const position_prototype = {
 		return this.attacked(king_loc, this.active);
 	},
 
-	los: function(x1, y1, x2, y2) {		// Returns false if there is no "line of sight" between the 2 points.
+	los: function (x1, y1, x2, y2) {
+		// Returns false if there is no "line of sight" between the 2 points.
 
 		// Check the line is straight....
 
@@ -532,7 +571,6 @@ const position_prototype = {
 		let y = y1;
 
 		while (true) {
-
 			x += step_x;
 			y += step_y;
 
@@ -546,22 +584,20 @@ const position_prototype = {
 		}
 	},
 
-	attacked: function(target, my_colour) {
-
+	attacked: function (target, my_colour) {
 		if (!my_colour) {
 			throw "attacked(): no colour given";
 		}
 
-		if (!target) {		// Because it was null from Point(foo) perhaps.
+		if (!target) {
+			// Because it was null from Point(foo) perhaps.
 			return false;
 		}
 
 		// Attacks along the lines...
 
 		for (let step_x = -1; step_x <= 1; step_x++) {
-
 			for (let step_y = -1; step_y <= 1; step_y++) {
-
 				if (step_x === 0 && step_y === 0) continue;
 
 				if (this.line_attack(target, step_x, step_y, my_colour)) {
@@ -572,8 +608,16 @@ const position_prototype = {
 
 		// Knights...
 
-		for (let d of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]) {
-
+		for (let d of [
+			[-2, -1],
+			[-2, 1],
+			[-1, -2],
+			[-1, 2],
+			[1, -2],
+			[1, 2],
+			[2, -1],
+			[2, 1],
+		]) {
 			let x = target.x + d[0];
 			let y = target.y + d[1];
 
@@ -588,15 +632,15 @@ const position_prototype = {
 		return false;
 	},
 
-	line_attack: function(target, step_x, step_y, my_colour) {
-
+	line_attack: function (target, step_x, step_y, my_colour) {
 		// Is the target square under attack via the line specified by step_x and step_y (which are both -1, 0, or 1) ?
 
 		if (!my_colour) {
 			throw "line_attack(): no colour given";
 		}
 
-		if (!target) {		// Because it was null from Point(foo) perhaps.
+		if (!target) {
+			// Because it was null from Point(foo) perhaps.
 			return false;
 		}
 
@@ -607,15 +651,14 @@ const position_prototype = {
 		let x = target.x;
 		let y = target.y;
 
-		let ranged_attackers = ["Q", "q", "R", "r"];	// Ranged attackers that can go in a cardinal direction.
+		let ranged_attackers = ["Q", "q", "R", "r"]; // Ranged attackers that can go in a cardinal direction.
 		if (step_x !== 0 && step_y !== 0) {
-			ranged_attackers = ["Q", "q", "B", "b"];	// Ranged attackers that can go in a diagonal direction.
+			ranged_attackers = ["Q", "q", "B", "b"]; // Ranged attackers that can go in a diagonal direction.
 		}
 
 		let iteration = 0;
 
 		while (true) {
-
 			iteration++;
 
 			x += step_x;
@@ -647,18 +690,18 @@ const position_prototype = {
 			// Pawns and kings are special cases (attacking iff it's the first iteration)
 
 			if (iteration === 1) {
-
 				if (["K", "k"].includes(this.state[x][y])) {
 					return true;
 				}
 
 				if (Math.abs(step_x) === 1) {
-
-					if (this.state[x][y] === "p" && step_y === -1) {	// Black pawn in attacking position
+					if (this.state[x][y] === "p" && step_y === -1) {
+						// Black pawn in attacking position
 						return true;
 					}
 
-					if (this.state[x][y] === "P" && step_y === 1) {		// White pawn in attacking position
+					if (this.state[x][y] === "P" && step_y === 1) {
+						// White pawn in attacking position
 						return true;
 					}
 				}
@@ -668,8 +711,7 @@ const position_prototype = {
 		}
 	},
 
-	find: function(piece, startx, starty, endx, endy) {
-
+	find: function (piece, startx, starty, endx, endy) {
 		// Find all pieces of the specified type (colour-specific).
 		// Search range is INCLUSIVE. Result returned as a list of points.
 		// You can call this function with just a piece to search the whole board.
@@ -703,7 +745,8 @@ const position_prototype = {
 		return ret;
 	},
 
-	find_castling_move: function(long_flag) {		// Returns a (possibly illegal) castling move (e.g. "e1h1") or ""
+	find_castling_move: function (long_flag) {
+		// Returns a (possibly illegal) castling move (e.g. "e1h1") or ""
 
 		let king_loc;
 
@@ -727,7 +770,7 @@ const position_prototype = {
 
 		if (long_flag) {
 			possible_rights_chars = possible_rights_chars.slice(0, king_loc.x);
-			possible_rights_chars.reverse();		// So we propose the shortest move first, if more than 1 is allowed by the rights.
+			possible_rights_chars.reverse(); // So we propose the shortest move first, if more than 1 is allowed by the rights.
 		} else {
 			possible_rights_chars = possible_rights_chars.slice(king_loc.x + 1);
 		}
@@ -745,7 +788,8 @@ const position_prototype = {
 		return "";
 	},
 
-	parse_pgn: function(s) {		// Returns a UCI move and an error message.
+	parse_pgn: function (s) {
+		// Returns a UCI move and an error message.
 
 		// Replace fruity dash characters with proper ASCII dash "-"
 
@@ -763,11 +807,19 @@ const position_prototype = {
 		// At this point, if s is actually a UCI string (which it won't be in real PGN) we can return it.
 		// This is a hack to allow pasting of stuff from non-PGN sources I guess...
 
-		if (s.length === 4 || (s.length === 5 && ["q", "r", "b", "n"].includes(s[4]))) {
-			if (s[0] >= "a" && s[0] <= "h" &&
-				s[1] >= "1" && s[1] <= "8" &&
-				s[2] >= "a" && s[2] <= "h" &&
-				s[3] >= "1" && s[3] <= "8"
+		if (
+			s.length === 4 ||
+			(s.length === 5 && ["q", "r", "b", "n"].includes(s[4]))
+		) {
+			if (
+				s[0] >= "a" &&
+				s[0] <= "h" &&
+				s[1] >= "1" &&
+				s[1] <= "8" &&
+				s[2] >= "a" &&
+				s[2] <= "h" &&
+				s[3] >= "1" &&
+				s[3] <= "8"
 			) {
 				let tmp = this.c960_castling_converter(s);
 				if (!this.illegal(tmp)) {
@@ -790,7 +842,6 @@ const position_prototype = {
 		s = ReplaceAll(s, "0-0", "O-O");
 
 		if (s.toUpperCase() === "O-O") {
-
 			let mv = this.find_castling_move(false);
 
 			if (mv && !this.illegal(mv)) {
@@ -801,7 +852,6 @@ const position_prototype = {
 		}
 
 		if (s.toUpperCase() === "O-O-O") {
-
 			let mv = this.find_castling_move(true);
 
 			if (mv && !this.illegal(mv)) {
@@ -827,7 +877,11 @@ const position_prototype = {
 		// A lax writer might also write the promotion string without an equals sign...
 
 		if (promotion === "") {
-			if (["Q", "R", "B", "N", "q", "r", "b", "n"].includes(s[s.length - 1])) {
+			if (
+				["Q", "R", "B", "N", "q", "r", "b", "n"].includes(
+					s[s.length - 1]
+				)
+			) {
 				promotion = s[s.length - 1].toLowerCase();
 				s = s.slice(0, -1);
 			}
@@ -921,26 +975,26 @@ const position_prototype = {
 		}
 	},
 
-	piece: function(point) {
+	piece: function (point) {
 		if (!point) return "";
 		return this.state[point.x][point.y];
 	},
 
-	is_white: function(point) {
+	is_white: function (point) {
 		let piece = this.piece(point);
-		return ["K", "Q", "R", "B", "N", "P"].includes(piece);		// Can't do "KQRBNP".includes() as that catches "".
+		return ["K", "Q", "R", "B", "N", "P"].includes(piece); // Can't do "KQRBNP".includes() as that catches "".
 	},
 
-	is_black: function(point) {
+	is_black: function (point) {
 		let piece = this.piece(point);
-		return ["k", "q", "r", "b", "n", "p"].includes(piece);		// Can't do "kqrbnp".includes() as that catches "".
+		return ["k", "q", "r", "b", "n", "p"].includes(piece); // Can't do "kqrbnp".includes() as that catches "".
 	},
 
-	is_empty: function(point) {
+	is_empty: function (point) {
 		return this.piece(point) === "";
 	},
 
-	colour: function(point) {
+	colour: function (point) {
 		let piece = this.piece(point);
 		if (piece === "") {
 			return "";
@@ -951,18 +1005,15 @@ const position_prototype = {
 		return "b";
 	},
 
-	same_colour: function(point1, point2) {
+	same_colour: function (point1, point2) {
 		return this.colour(point1) === this.colour(point2);
 	},
 
-	movegen: function(one_only = false) {
-
+	movegen: function (one_only = false) {
 		let moves = [];
 
 		for (let x = 0; x < 8; x++) {
-
 			for (let y = 0; y < 8; y++) {
-
 				let source = Point(x, y);
 
 				if (this.colour(source) !== this.active) {
@@ -971,33 +1022,37 @@ const position_prototype = {
 
 				let piece = this.state[x][y];
 
-				if (piece !== "K" && piece !== "k") {		// We don't include kings because castling is troublesome.
+				if (piece !== "K" && piece !== "k") {
+					// We don't include kings because castling is troublesome.
 
 					for (let slider of movegen_sliders[piece]) {
-
 						// The sliders are lists where, if one move is blocked, every subsequent move in the slider is also
 						// blocked. Note that the test is "blocked / offboard". The test is not "is illegal" - sometimes one
 						// move will be illegal but a move further down the slider will be legal - e.g. if it blocks a check.
 
 						for (let [dx, dy] of slider) {
-
 							let x2 = x + dx;
 							let y2 = y + dy;
 
-							if (x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7) {		// No move further along the slider will be legal.
+							if (x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7) {
+								// No move further along the slider will be legal.
 								break;
 							}
 
 							let dest = Point(x2, y2);
 							let dest_colour = this.colour(dest);
 
-							if (dest_colour === this.active) {				// No move further along the slider will be legal.
+							if (dest_colour === this.active) {
+								// No move further along the slider will be legal.
 								break;
 							}
 
 							let move = source.s + dest.s;
 
-							if ((piece === "P" && dest.y === 0) || (piece === "p" && dest.y === 7)) {
+							if (
+								(piece === "P" && dest.y === 0) ||
+								(piece === "p" && dest.y === 7)
+							) {
 								if (this.illegal(move + "q") === "") {
 									moves.push(move + "q");
 									if (one_only) {
@@ -1016,14 +1071,13 @@ const position_prototype = {
 								}
 							}
 
-							if (dest_colour !== "") {						// No move further along the slider will be legal.
+							if (dest_colour !== "") {
+								// No move further along the slider will be legal.
 								break;
 							}
 						}
 					}
-
 				} else {
-
 					// King moves that involve vertical direction...
 
 					for (let dx of [-1, 0, 1]) {
@@ -1063,27 +1117,45 @@ const position_prototype = {
 		return moves;
 	},
 
-	nice_movegen: function() {
-		return this.movegen().map(s => this.nice_string(s));
+	nice_movegen: function () {
+		return this.movegen().map((s) => this.nice_string(s));
 	},
 
-	no_moves: function() {
+	no_moves: function () {
 		return this.movegen(true).length === 0;
 	},
 
-	c960_castling_converter: function(s) {
-
+	c960_castling_converter: function (s) {
 		// Given some move s, convert it to the new Chess 960 castling format if needed.
 
-		if (s === "e1g1" && this.state[4][7] === "K" && this.castling.includes("G") === false) return "e1h1";
-		if (s === "e1c1" && this.state[4][7] === "K" && this.castling.includes("C") === false) return "e1a1";
-		if (s === "e8g8" && this.state[4][0] === "k" && this.castling.includes("g") === false) return "e8h8";
-		if (s === "e8c8" && this.state[4][0] === "k" && this.castling.includes("c") === false) return "e8a8";
+		if (
+			s === "e1g1" &&
+			this.state[4][7] === "K" &&
+			this.castling.includes("G") === false
+		)
+			return "e1h1";
+		if (
+			s === "e1c1" &&
+			this.state[4][7] === "K" &&
+			this.castling.includes("C") === false
+		)
+			return "e1a1";
+		if (
+			s === "e8g8" &&
+			this.state[4][0] === "k" &&
+			this.castling.includes("g") === false
+		)
+			return "e8h8";
+		if (
+			s === "e8c8" &&
+			this.state[4][0] === "k" &&
+			this.castling.includes("c") === false
+		)
+			return "e8a8";
 		return s;
 	},
 
-	nice_string: function(s) {
-
+	nice_string: function (s) {
 		// Given some raw (but valid) UCI move string, return a nice human-readable
 		// string for display in the browser window. This string should never be
 		// examined by the caller, merely displayed.
@@ -1109,9 +1181,15 @@ const position_prototype = {
 		let check = "";
 		let next_board = this.move(s);
 		let opponent_king_char = this.active === "w" ? "k" : "K";
-		let opponent_king_square = this.find(opponent_king_char)[0];	// Might be undefined on corrupt board...
+		let opponent_king_square = this.find(opponent_king_char)[0]; // Might be undefined on corrupt board...
 
-		if (opponent_king_square && next_board.attacked(opponent_king_square, next_board.colour(opponent_king_square))) {
+		if (
+			opponent_king_square &&
+			next_board.attacked(
+				opponent_king_square,
+				next_board.colour(opponent_king_square)
+			)
+		) {
 			if (next_board.no_moves()) {
 				check = "#";
 			} else {
@@ -1119,8 +1197,9 @@ const position_prototype = {
 			}
 		}
 
-		if (["K", "k", "Q", "q", "R", "r", "B", "b", "N", "n"].includes(piece)) {
-
+		if (
+			["K", "k", "Q", "q", "R", "r", "B", "b", "N", "n"].includes(piece)
+		) {
 			if (["K", "k"].includes(piece)) {
 				if (this.colour(dest) === this.colour(source)) {
 					if (dest.x > source.x) {
@@ -1139,7 +1218,7 @@ const position_prototype = {
 			let valid_moves = [];
 
 			for (let foo of possible_sources) {
-				possible_moves.push(foo.s + dest.s);		// e.g. "g1f3" - note we are only dealing with pieces, so no worries about promotion
+				possible_moves.push(foo.s + dest.s); // e.g. "g1f3" - note we are only dealing with pieces, so no worries about promotion
 			}
 
 			for (let move of possible_moves) {
@@ -1149,18 +1228,18 @@ const position_prototype = {
 			}
 
 			if (valid_moves.length > 2) {
-
 				// Full disambiguation.
 
 				if (this.piece(dest) === "") {
 					return piece.toUpperCase() + source.s + dest.s + check;
 				} else {
-					return piece.toUpperCase() + source.s + "x" + dest.s + check;
+					return (
+						piece.toUpperCase() + source.s + "x" + dest.s + check
+					);
 				}
 			}
 
 			if (valid_moves.length === 2) {
-
 				// Partial disambiguation.
 
 				let source1 = Point(valid_moves[0].slice(0, 2));
@@ -1169,15 +1248,21 @@ const position_prototype = {
 				let disambiguator;
 
 				if (source1.x === source2.x) {
-					disambiguator = source.s[1];		// Note source (the true source), not source1
+					disambiguator = source.s[1]; // Note source (the true source), not source1
 				} else {
-					disambiguator = source.s[0];		// Note source (the true source), not source1
+					disambiguator = source.s[0]; // Note source (the true source), not source1
 				}
 
 				if (this.piece(dest) === "") {
 					return piece.toUpperCase() + disambiguator + dest.s + check;
 				} else {
-					return piece.toUpperCase() + disambiguator + "x" + dest.s + check;
+					return (
+						piece.toUpperCase() +
+						disambiguator +
+						"x" +
+						dest.s +
+						check
+					);
 				}
 			}
 
@@ -1210,7 +1295,7 @@ const position_prototype = {
 		return ret;
 	},
 
-	next_number_string: function() {
+	next_number_string: function () {
 		if (this.active === "w") {
 			return `${this.fullmove}.`;
 		} else {
@@ -1218,20 +1303,17 @@ const position_prototype = {
 		}
 	},
 
-	fen: function(friendly_flag, book_flag) {
-
+	fen: function (friendly_flag, book_flag) {
 		// friendly_flag - for when the engine isn't the consumer.
 		// book_flag - for when we should omit the move numbers.
 
 		let s = "";
 
 		for (let y = 0; y < 8; y++) {
-
 			let x = 0;
 			let blanks = 0;
 
 			while (true) {
-
 				if (this.state[x][y] === "") {
 					blanks++;
 				} else {
@@ -1275,12 +1357,46 @@ const position_prototype = {
 		if (book_flag) {
 			return s + ` ${this.active} ${castling_string} ${ep_string}`;
 		} else {
-			return s + ` ${this.active} ${castling_string} ${ep_string} ${this.halfmove} ${this.fullmove}`;
+			return (
+				s +
+				` ${this.active} ${castling_string} ${ep_string} ${this.halfmove} ${this.fullmove}`
+			);
 		}
 	},
 
-	insufficient_material: function() {
+	material: function () {
+		console.log(this);
+		// From Larry Kaufman's 2021 system, middlegame values.
+		const values = { p: 1, n: 3.2, b: 3.3, r: 4.8, q: 9.4 };
+		const bishopPairBonus = 0.3;
+		let white = 0,
+			black = 0,
+			bishopWLight = false,
+			bishopWDark = false,
+			bishopBLight = false,
+			bishopBDark = false;
+		for (let x = 0; x < 8; x++) {
+			for (let y = 0; y < 8; y++) {
+				const s = this.state[x][y];
+				const sLower = s.toLowerCase();
+				if (s !== "" && sLower in values) {
+					if (s === sLower) black += values[sLower];
+					else white += values[sLower];
+				}
+				if (s === "B")
+					if ((x + y) % 2 == 0) bishopWLight = true;
+					else bishopWDark = true;
+				if (s === "b")
+					if ((x + y) % 2 == 0) bishopBLight = true;
+					else bishopBDark = true;
+			}
+		}
+		if (bishopWLight && bishopWDark) white += bishopPairBonus;
+		if (bishopBLight && bishopBDark) black += bishopPairBonus;
+		return { white, black };
+	},
 
+	insufficient_material: function () {
 		// There are some subtleties around help-mates and also positions where
 		// mate is forced despite there not being enough material if the pieces
 		// were elsewhere. This code below should have no false positives...
@@ -1290,21 +1406,21 @@ const position_prototype = {
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
 				switch (this.state[x][y]) {
-				case "Q":
-				case "q":
-				case "R":
-				case "r":
-				case "P":
-				case "p":
-					return false;
-				case "B":
-				case "b":
-				case "N":
-				case "n":
-					minors++;
-					if (minors >= 2) {
+					case "Q":
+					case "q":
+					case "R":
+					case "r":
+					case "P":
+					case "p":
 						return false;
-					}
+					case "B":
+					case "b":
+					case "N":
+					case "n":
+						minors++;
+						if (minors >= 2) {
+							return false;
+						}
 				}
 			}
 		}
@@ -1312,11 +1428,14 @@ const position_prototype = {
 		return true;
 	},
 
-	count_pieces: function() {
-		return this.state.flat().map(x => x !== "").reduce((x, y) => x + y);
+	count_pieces: function () {
+		return this.state
+			.flat()
+			.map((x) => x !== "")
+			.reduce((x, y) => x + y);
 	},
 
-	graphic: function() {
+	graphic: function () {
 		let units = [];
 		for (let y = 0; y < 8; y++) {
 			units.push("\n");
@@ -1335,10 +1454,10 @@ const position_prototype = {
 		return units.join("");
 	},
 
-	compare: function(other) {
+	compare: function (other) {
 		if (this.active !== other.active) return false;
 		if (this.castling !== other.castling) return false;
-		if (this.enpassant !== other.enpassant) return false;		// FIXME? Issues around fake e.p. squares.
+		if (this.enpassant !== other.enpassant) return false; // FIXME? Issues around fake e.p. squares.
 		for (let x = 0; x < 8; x++) {
 			for (let y = 0; y < 8; y++) {
 				if (this.state[x][y] !== other.state[x][y]) {
@@ -1349,24 +1468,39 @@ const position_prototype = {
 		return true;
 	},
 
-	copy: function() {
-		return NewPosition(this.state, this.active, this.castling, this.enpassant, this.halfmove, this.fullmove, this.normalchess);
+	copy: function () {
+		return NewPosition(
+			this.state,
+			this.active,
+			this.castling,
+			this.enpassant,
+			this.halfmove,
+			this.fullmove,
+			this.normalchess
+		);
 	},
 };
 
-function NewPosition(state = null, active = "w", castling = "", enpassant = null, halfmove = 0, fullmove = 1, normalchess = false) {
-
+function NewPosition(
+	state = null,
+	active = "w",
+	castling = "",
+	enpassant = null,
+	halfmove = 0,
+	fullmove = 1,
+	normalchess = false
+) {
 	let p = Object.create(position_prototype);
 
 	p.state = [
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
-		["","","","","","","",""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
+		["", "", "", "", "", "", "", ""],
 	];
 
 	if (state) {
