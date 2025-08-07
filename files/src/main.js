@@ -1686,7 +1686,7 @@ function menu_build() {
 				},
 				{
 					label: "Hide lines for white",
-					accelerator: "s",
+					accelerator: "w",
 					type: "checkbox",
 					checked: config.hide_lines_white,
 					click: () => {
@@ -1698,7 +1698,7 @@ function menu_build() {
 				},
 				{
 					label: "Hide lines for black",
-					accelerator: "Shift+S",
+					accelerator: "b",
 					type: "checkbox",
 					checked: config.hide_lines_black,
 					click: () => {

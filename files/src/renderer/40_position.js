@@ -1365,7 +1365,6 @@ const position_prototype = {
 	},
 
 	material: function () {
-		console.log(this);
 		// From Larry Kaufman's 2021 system, middlegame values.
 		const values = { p: 1, n: 3.2, b: 3.3, r: 4.8, q: 9.4 };
 		const bishopPairBonus = 0.3;

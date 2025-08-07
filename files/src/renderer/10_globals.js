@@ -117,7 +117,6 @@ const forced_ab_options = {};
 const standard_ab_options = {
 	Contempt: 0,
 	"Move Overhead": 0,
-	UCI_ShowWDL: true,
 };
 
 // Yeah this seemed a good idea at the time.........................

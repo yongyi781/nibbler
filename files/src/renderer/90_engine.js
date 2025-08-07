@@ -39,40 +39,57 @@ We are in one of these states (currently implicit in the logic):
 
 */
 
-const GUI_WANTS_TO_KNOW = ["Backend", "EvalFile", "WeightsFile", "SyzygyPath", "Threads", "Hash", "MultiPV",
-	"ContemptMode", "Contempt", "WDLCalibrationElo", "WDLEvalObjectivity", "ScoreType", "Temperature", "TempDecayMoves"];
+const GUI_WANTS_TO_KNOW = [
+	"Backend",
+	"EvalFile",
+	"WeightsFile",
+	"SyzygyPath",
+	"Threads",
+	"Hash",
+	"MultiPV",
+	"ContemptMode",
+	"Contempt",
+	"WDLCalibrationElo",
+	"WDLEvalObjectivity",
+	"ScoreType",
+	"Temperature",
+	"TempDecayMoves",
+];
 
 let NoSearch = Object.freeze({
 	node: null,
 	limit: null,
 	limit_by_time: false,
-	searchmoves: Object.freeze([])
+	searchmoves: Object.freeze([]),
 });
 
-function SearchParams(node = null, limit = null, limit_by_time = false, searchmoves = null) {
-
+function SearchParams(
+	node = null,
+	limit = null,
+	limit_by_time = false,
+	searchmoves = null
+) {
 	if (!node) return NoSearch;
 
 	let validated;
 
 	if (Array.isArray(searchmoves)) {
-		validated = node.validate_searchmoves(searchmoves);		// returns a new array
+		validated = node.validate_searchmoves(searchmoves); // returns a new array
 	} else {
 		validated = [];
 	}
 
-	Object.freeze(validated);			// under no circumstances refactor this to freeze the original searchmoves
+	Object.freeze(validated); // under no circumstances refactor this to freeze the original searchmoves
 
 	return Object.freeze({
 		node: node,
 		limit: limit,
 		limit_by_time: limit_by_time,
-		searchmoves: validated
+		searchmoves: validated,
 	});
 }
 
 function NewEngine(hub) {
-
 	let eng = Object.create(null);
 
 	eng.hub = hub;
@@ -80,36 +97,34 @@ function NewEngine(hub) {
 	eng.scanner = null;
 	eng.err_scanner = null;
 
-	eng.filepath = "";					// Used to decide what entry in engineconfig to use. Start as "", which has defaults for the dummy engine.
+	eng.filepath = ""; // Used to decide what entry in engineconfig to use. Start as "", which has defaults for the dummy engine.
 
 	eng.last_send = null;
 	eng.unresolved_stop_time = null;
 	eng.ever_received_uciok = false;
 	eng.ever_received_readyok = false;
 	eng.have_quit = false;
-	eng.suppress_cycle_info = null;		// Stupid hack to allow "forget all analysis" to work; info lines from this cycle are ignored.
+	eng.suppress_cycle_info = null; // Stupid hack to allow "forget all analysis" to work; info lines from this cycle are ignored.
 
-	eng.known_options = Object.create(null);		// Keys are always lowercase.
-	eng.sent_options = Object.create(null);			// Keys are always lowercase. Values are always strings.
+	eng.known_options = Object.create(null); // Keys are always lowercase.
+	eng.sent_options = Object.create(null); // Keys are always lowercase. Values are always strings.
 	eng.setoption_queue = [];
 
 	eng.warn_send_fail = true;
-	eng.leelaish = false;				// Most likely set by hub upon an "id name" line, though can also be set by info_handler.
+	eng.leelaish = false; // Most likely set by hub upon an "id name" line, though can also be set by info_handler.
 
-	eng.search_running = NoSearch;		// The search actually being run right now.
-	eng.search_desired = NoSearch;		// The search we want Leela to be running. Often the same object as above.
-	eng.search_completed = NoSearch;	// Whatever object search_running was when the last "bestmove" came.
+	eng.search_running = NoSearch; // The search actually being run right now.
+	eng.search_desired = NoSearch; // The search we want Leela to be running. Often the same object as above.
+	eng.search_completed = NoSearch; // Whatever object search_running was when the last "bestmove" came.
 
 	// -------------------------------------------------------------------------------------------
 
-	eng.send = function(msg, force) {
-
+	eng.send = function (msg, force) {
 		// Importantly, setoption messages are normally held back until the engine is not running.
 
 		msg = msg.trim();
 
 		if (msg.startsWith("setoption")) {
-
 			if (this.search_running.node && !force) {
 				this.setoption_queue.push(msg);
 				return;
@@ -120,8 +135,7 @@ function NewEngine(hub) {
 			let i2 = lower.indexOf(" value ");
 
 			if (i1 !== -1 && i2 !== -1 && i2 > i1) {
-
-				let key = lower.slice(i1 + 6, i2).trim();			// Keys are always lowercase.
+				let key = lower.slice(i1 + 6, i2).trim(); // Keys are always lowercase.
 				let val = msg.slice(i2 + 7).trim();
 
 				if (key.length > 0) {
@@ -154,8 +168,7 @@ function NewEngine(hub) {
 		}
 	};
 
-	eng.send_desired = function() {
-
+	eng.send_desired = function () {
 		if (this.search_running.node) {
 			throw "send_desired() called but search was running";
 		}
@@ -171,8 +184,12 @@ function NewEngine(hub) {
 		let root_fen = node.get_root().board.fen(!this.in_960_mode());
 		let setup = `fen ${root_fen}`;
 
-		if (!this.in_960_mode() && setup === "fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-			setup = "startpos";		// May as well send this format if we're not in 960 mode.
+		if (
+			!this.in_960_mode() &&
+			setup ===
+				"fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		) {
+			setup = "startpos"; // May as well send this format if we're not in 960 mode.
 		}
 
 		let moves;
@@ -204,7 +221,10 @@ function NewEngine(hub) {
 			s = `go nodes ${n}`;
 		}
 
-		if (config.searchmoves_buttons && this.search_desired.searchmoves.length > 0) {
+		if (
+			config.searchmoves_buttons &&
+			this.search_desired.searchmoves.length > 0
+		) {
 			s += " searchmoves";
 			for (let move of this.search_desired.searchmoves) {
 				s += " " + move;
@@ -218,8 +238,12 @@ function NewEngine(hub) {
 		this.hub.info_handler.engine_subcycle++;
 	};
 
-	eng.set_search_desired = function(node, limit, limit_by_time, searchmoves) {
-
+	eng.set_search_desired = function (
+		node,
+		limit,
+		limit_by_time,
+		searchmoves
+	) {
 		if (!this.ever_received_uciok || !this.ever_received_readyok) {
 			console.log("set_search_desired() aborted - too early");
 			return;
@@ -232,8 +256,15 @@ function NewEngine(hub) {
 
 		if (this.search_desired.node === params.node) {
 			if (this.search_desired.limit === params.limit) {
-				if (this.search_desired.limit_by_time === params.limit_by_time) {
-					if (CompareArrays(this.search_desired.searchmoves, params.searchmoves)) {
+				if (
+					this.search_desired.limit_by_time === params.limit_by_time
+				) {
+					if (
+						CompareArrays(
+							this.search_desired.searchmoves,
+							params.searchmoves
+						)
+					) {
 						return;
 					}
 				}
@@ -255,26 +286,25 @@ function NewEngine(hub) {
 				this.send_desired();
 			}
 		}
-
 	};
 
-	eng.send_queued_setoptions = function() {
+	eng.send_queued_setoptions = function () {
 		for (let msg of this.setoption_queue) {
-			this.send(msg, true);					// Use the force flag in case we haven't set search_running to its correct value.
+			this.send(msg, true); // Use the force flag in case we haven't set search_running to its correct value.
 		}
 		this.setoption_queue = [];
 	};
 
-	eng.send_ucinewgame = function() {				// Engine should be halted before calling this.
+	eng.send_ucinewgame = function () {
+		// Engine should be halted before calling this.
 		if (!this.ever_received_uciok || !this.ever_received_readyok) {
 			console.log("send_ucinewgame() aborted - too early");
-			return;				// This is OK. When we actually get these, hub will send ucinewgame.
+			return; // This is OK. When we actually get these, hub will send ucinewgame.
 		}
 		this.send("ucinewgame");
 	};
 
-	eng.handle_bestmove_line = function(line) {
-
+	eng.handle_bestmove_line = function (line) {
 		this.search_completed = this.search_running;
 		this.search_running = NoSearch;
 
@@ -287,29 +317,33 @@ function NewEngine(hub) {
 		// and search_running will have identical properties but be different objects; in that case
 		// it is correct to send the desired object as a new search.
 
-		let no_new_search   = this.search_desired === this.search_completed || !this.search_desired.node;
-		let report_bestmove = this.search_desired === this.search_completed && this.search_completed.node;
+		let no_new_search =
+			this.search_desired === this.search_completed ||
+			!this.search_desired.node;
+		let report_bestmove =
+			this.search_desired === this.search_completed &&
+			this.search_completed.node;
 
 		if (no_new_search) {
 			this.search_desired = NoSearch;
 			if (report_bestmove) {
 				Log("< " + line);
-				this.send_queued_setoptions();									// After logging the incoming.
-				this.hub.receive_bestmove(line, this.search_completed.node);	// May trigger a new search, so do it last.
+				this.send_queued_setoptions(); // After logging the incoming.
+				this.hub.receive_bestmove(line, this.search_completed.node); // May trigger a new search, so do it last.
 			} else {
 				Log("(ignore halted) < " + line);
-				this.send_queued_setoptions();									// After logging the incoming.
+				this.send_queued_setoptions(); // After logging the incoming.
 			}
 		} else {
 			Log("(ignore old) < " + line);
-			this.send_queued_setoptions();										// After logging the incoming.
+			this.send_queued_setoptions(); // After logging the incoming.
 			this.send_desired();
 		}
 	};
 
-	eng.handle_info_line = function(line) {
-
-		if (line.startsWith("info string ERROR")) {								// Stockfish sends these.
+	eng.handle_info_line = function (line) {
+		if (line.startsWith("info string ERROR")) {
+			// Stockfish sends these.
 			Log("< " + line);
 			this.hub.info_handler.err_receive(line.slice(12));
 			return;
@@ -328,7 +362,10 @@ function NewEngine(hub) {
 		// Stockfish has a nasty habit of sending super short PVs when you stop its search.
 		// To get around that, we ignore info from SF if it comes during transition.
 
-		if (!this.leelaish && this.search_desired.node !== this.search_running.node) {
+		if (
+			!this.leelaish &&
+			this.search_desired.node !== this.search_running.node
+		) {
 			if (config.log_info_lines) Log("(ignore A/B late) < " + line);
 			return;
 		}
@@ -341,42 +378,46 @@ function NewEngine(hub) {
 			return;
 		}
 
-		this.hub.info_handler.receive(this, this.search_running, line);		// Responsible for logging lines that get this far.
+		this.hub.info_handler.receive(this, this.search_running, line); // Responsible for logging lines that get this far.
 	};
 
-	eng.setoption = function(name, value) {
+	eng.setoption = function (name, value) {
 		let s = `setoption name ${name} value ${value}`;
 		this.send(s);
-		return s;			// Just so the caller can pop s up as a message if it wants.
+		return s; // Just so the caller can pop s up as a message if it wants.
 	};
 
-	eng.pressbutton = function(name) {
+	eng.pressbutton = function (name) {
 		let s = `setoption name ${name}`;
 		this.send(s);
-		return s;			// Just so the caller can pop s up as a message if it wants.
+		return s; // Just so the caller can pop s up as a message if it wants.
 	};
 
-	eng.send_ack_setoption = function(name) {
-		let key = name.toLowerCase();																// Keys are always stored in lowercase.
-		let val = typeof this.sent_options[key] === "string" ? this.sent_options[key] : "";			// Values are strings, if present
-		let o = {key, val};
+	eng.send_ack_setoption = function (name) {
+		let key = name.toLowerCase(); // Keys are always stored in lowercase.
+		let val =
+			typeof this.sent_options[key] === "string"
+				? this.sent_options[key]
+				: ""; // Values are strings, if present
+		let o = { key, val };
 		ipcRenderer.send("ack_setoption", o);
 		return o;
 	};
 
-	eng.in_960_mode = function() {
-		return this.sent_options["uci_chess960"] === "true";				// The string "true" since these values are always strings.
+	eng.in_960_mode = function () {
+		return this.sent_options["uci_chess960"] === "true"; // The string "true" since these values are always strings.
 	};
 
-	eng.known = function(s) {
+	eng.known = function (s) {
 		return this.known_options[s.toLowerCase()] !== undefined;
 	};
 
-	eng.send_ack_engine = function() {
+	eng.send_ack_engine = function () {
 		ipcRenderer.send("ack_engine", this.filepath);
 	};
 
-	eng.setup = function(filepath, args) {		// Returns true on success, false otherwise.
+	eng.setup = function (filepath, args) {
+		// Returns true on success, false otherwise.
 
 		Log("");
 		Log(`Launching ${filepath}`);
@@ -384,24 +425,27 @@ function NewEngine(hub) {
 		Log("");
 
 		try {
-			if (path.basename(filepath).toLowerCase().includes("lc0")) {		// Stupid hack to make Lc0 show all its options.
+			if (path.basename(filepath).toLowerCase().includes("lc0")) {
+				// Stupid hack to make Lc0 show all its options.
 				if (args.includes("--show-hidden") === false) {
 					args = ["--show-hidden"].concat(args);
 				}
 			}
-			this.exe = child_process.spawn(filepath, args, {cwd: path.dirname(filepath)});
+			this.exe = child_process.spawn(filepath, args, {
+				cwd: path.dirname(filepath),
+			});
 		} catch (err) {
 			console.log(`engine.setup() failed: ${err.toString()}`);
 			return false;
 		}
 
 		this.filepath = filepath;
-		this.send_ack_engine();			// After this.filepath is set.
+		this.send_ack_engine(); // After this.filepath is set.
 
 		// Main process wants to keep track of what these things are set to (for menu checks).
 		// These will all ack the value "" to main.js since no value has been set yet...
 
-		this.sent_options = Object.create(null);		// Blank anything we "sent" up till now.
+		this.sent_options = Object.create(null); // Blank anything we "sent" up till now.
 
 		for (let key of GUI_WANTS_TO_KNOW) {
 			this.send_ack_setoption(key);
@@ -414,13 +458,13 @@ function NewEngine(hub) {
 		this.scanner = readline.createInterface({
 			input: this.exe.stdout,
 			output: undefined,
-			terminal: false
+			terminal: false,
 		});
 
 		this.err_scanner = readline.createInterface({
 			input: this.exe.stderr,
 			output: undefined,
-			terminal: false
+			terminal: false,
 		});
 
 		this.err_scanner.on("line", (line) => {
@@ -430,24 +474,27 @@ function NewEngine(hub) {
 		});
 
 		this.scanner.on("line", (line) => {
-
 			if (this.have_quit) return;
 
 			if (line.startsWith("bestmove")) {
-				this.handle_bestmove_line(line);		// Will do logging, possibly adding a reason for rejection.
+				this.handle_bestmove_line(line); // Will do logging, possibly adding a reason for rejection.
 			} else if (line.startsWith("info")) {
-				this.handle_info_line(line);			// Will do logging, possibly adding a reason for rejection.
+				this.handle_info_line(line); // Will do logging, possibly adding a reason for rejection.
 			} else {
 				Log("< " + line);
 				if (line.startsWith("option")) {
 					let a = line.indexOf(" name ");
 					let b = line.indexOf(" type ");
 					if (a !== -1 && b != -1) {
-						let optname = line.slice(a + 6, b).trim().toLowerCase();
+						let optname = line
+							.slice(a + 6, b)
+							.trim()
+							.toLowerCase();
 						this.known_options[optname] = line.slice(b + 1);
-						if (optname === "uci_chess960") {					// As a special thing, always set UCI_Chess960 where possible.
-							this.setoption("UCI_Chess960", true);			// (Why is this not just done in globals.js? I forget...)
-						}
+						// if (optname === "uci_chess960") {
+						// 	// As a special thing, always set UCI_Chess960 where possible.
+						// 	this.setoption("UCI_Chess960", true); // (Why is this not just done in globals.js? I forget...)
+						// }
 					}
 				}
 				if (line.startsWith("uciok")) {
@@ -458,13 +505,13 @@ function NewEngine(hub) {
 				}
 				this.hub.receive_misc(SafeStringHTML(line));
 			}
-
 		});
 
 		return true;
 	};
 
-	eng.shutdown = function() {				// Note: Don't reuse the engine object.
+	eng.shutdown = function () {
+		// Note: Don't reuse the engine object.
 		this.have_quit = true;
 		this.send("quit");
 		if (this.exe) {
